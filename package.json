@@ -1,0 +1,22 @@
+{
+  "devDependencies": {
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
+    "axios": "^1.16.1",
+    "react-h5-audio-player": "^3.10.2"
+  },
+  "name": "tunevault",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
