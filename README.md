@@ -1,4 +1,4 @@
-# 🎵 TuneVault API
+# 🎵 TuneVault
 
 TuneVault là một ứng dụng quản lý và phát nhạc trực tuyến được xây dựng bằng .NET Web API và Frontend.
 
