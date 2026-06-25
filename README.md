@@ -1,6 +1,6 @@
 # 🎵 TuneVault API
 
-TuneVault là một ứng dụng quản lý và phát nhạc trực tuyến được xây dựng bằng .NET Web API.
+TuneVault là một ứng dụng quản lý và phát nhạc trực tuyến được xây dựng bằng .NET Web API và Frontend.
 
 ## 🚀 Tính năng chính
 * Quản lý kho nhạc, nghệ sĩ và album.
@@ -9,11 +9,27 @@ TuneVault là một ứng dụng quản lý và phát nhạc trực tuyến đư
 
 ## 🛠️ Công nghệ sử dụng
 * **Backend:** .NET 8 / C#
+* **Frontend:** Node.js (React / Vue / Angular...)
 * **Database:** SQL Server / Entity Framework Core
 * **Tools:** Git, Postman
 
-## 💻 Hướng dẫn chạy dự án ở Local
+---
 
-1. **Clone dự án:**
-   ```bash
-   git clone [https://github.com/HKhang-backenddev/TuneVault.git](https://github.com/HKhang-backenddev/TuneVault.git)
+## 💻 Hướng dẫn Khởi chạy Dự án ở Local
+
+Để khởi chạy và thử nghiệm toàn bộ hệ thống, bạn cần mở **2 cửa sổ Terminal / Command Prompt** độc lập để chạy song song cả Backend và Frontend theo hướng dẫn chi tiết dưới đây:
+
+### 🛠️ Bước 1: Khởi chạy Backend (.NET Web API)
+Mở cửa sổ Terminal thứ nhất, sử dụng lệnh `cd` để di chuyển vào thư mục chứa mã nguồn API. Sau đó, chạy dự án bằng lệnh `dotnet watch run`. Lệnh này giúp kích hoạt chế độ theo dõi thay đổi, hệ thống sẽ tự động biên dịch và tải lại mỗi khi bạn chỉnh sửa mã nguồn backend.
+```bash
+cd Backend/TuneVault.API
+dotnet watch run
+```
+
+### 💻 Bước 2: Khởi chạy Giao diện Frontend
+Mở cửa sổ Terminal thứ hai để quản lý phần giao diện. Trước hết, bạn dùng lệnh cd di chuyển vào thư mục Frontend. Nếu đây là lần đầu tiên chạy dự án trên máy, bạn cần chạy lệnh npm install để tải và cài đặt toàn bộ các thư viện đóng gói cần thiết. Cuối cùng, khởi động server local bằng lệnh npm run dev.
+```bash
+cd Frontend
+npm install //neu chua cai dat
+npm run dev
+```
