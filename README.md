@@ -51,3 +51,4 @@ npm install //neu chua cai dat
 ```bash
 npm run dev
 ```
+4. Mở trình duyệt và truy cập http://localhost:5173. Frontend sẽ tự động kết nối với Backend đang chạy online.
