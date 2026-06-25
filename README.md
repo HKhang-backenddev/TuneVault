@@ -11,7 +11,7 @@ TuneVault là một ứng dụng quản lý và phát nhạc trực tuyến đư
 * **Backend:** .NET 8 / C#
 * **Frontend:** Node.js (React / Vue / Angular...)
 * **Database:** SQL Server / Entity Framework Core
-* **Tools:** Git, Postman
+* **Tools:** Git
 
 ---
 
