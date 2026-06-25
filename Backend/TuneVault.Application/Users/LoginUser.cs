@@ -1,64 +1,55 @@
+using BCrypt.Net;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
+using TuneVault.Domain;
 using TuneVault.Infrastructure;
 
 namespace TuneVault.Application.Users;
 
-public record LoginUser(string Email, string Password) : IRequest<LoginResponse>;
+public record LoginUser(string UsernameOrEmail, string Password) : IRequest<LoginResult>;
 
-public record LoginResponse(Guid UserId, string Username, string Email, string Token);
+public record LoginResult(string Token, Guid UserId, string DisplayName);
 
 public class LoginUserValidator : AbstractValidator<LoginUser>
 {
     public LoginUserValidator()
     {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress();
-        RuleFor(x => x.Password).NotEmpty();
+        RuleFor(x => x.UsernameOrEmail).NotEmpty().WithMessage("Tên đăng nhập hoặc email không được để trống.");
+        RuleFor(x => x.Password).NotEmpty().WithMessage("Mật khẩu không được để trống.");
     }
 }
 
-public class LoginUserHandler : IRequestHandler<LoginUser, LoginResponse>
+public class LoginUserHandler : IRequestHandler<LoginUser, LoginResult>
 {
     private readonly TuneVaultDbContext _context;
-    private readonly IValidator<LoginUser> _validator;
     private readonly ITokenService _tokenService;
 
-    public LoginUserHandler(TuneVaultDbContext context, IValidator<LoginUser> validator, ITokenService tokenService)
+    public LoginUserHandler(TuneVaultDbContext context, ITokenService tokenService)
     {
         _context = context;
-        _validator = validator;
         _tokenService = tokenService;
     }
 
-    public async Task<LoginResponse> Handle(LoginUser request, CancellationToken cancellationToken)
+    public async Task<LoginResult> Handle(LoginUser request, CancellationToken cancellationToken)
     {
-        await _validator.ValidateAndThrowAsync(request, cancellationToken);
+        var user = await _context.Users
+            .Select(u => new User { // Chỉ chọn các trường cần thiết để xác thực
+                Id = u.Id,
+                Username = u.Username,
+                Email = u.Email,
+                PasswordHash = u.PasswordHash,
+                DisplayName = u.DisplayName
+            })
+            .FirstOrDefaultAsync(u => u.Username == request.UsernameOrEmail || u.Email == request.UsernameOrEmail, cancellationToken);
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
-        if (user == null)
-            throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng!");
+        if (user == null || !global::BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash)) 
+        {
+            throw new UnauthorizedAccessException("Tên đăng nhập hoặc mật khẩu không đúng.");
+        }
 
-        var passwordHash = HashPassword(request.Password);
-        if (user.PasswordHash != passwordHash)
-            throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng!");
+        var token = _tokenService.GenerateJwtToken(user);
 
-        var token = _tokenService.GenerateToken(user.Id, user.Email);
-
-        return new LoginResponse(user.Id, user.Username, user.Email, token);
+        return new LoginResult(token, user.Id, user.DisplayName ?? user.Username);
     }
-
-    private static string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToHexString(bytes);
-    }
-}
-
-public interface ITokenService
-{
-    string GenerateToken(Guid userId, string email);
 }

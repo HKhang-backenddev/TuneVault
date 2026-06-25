@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TuneVault.Application.Users;
+using FluentValidation; // Thêm using này
 
 namespace TuneVault.API.Controllers;
 
@@ -20,30 +21,31 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var userId = await _mediator.Send(command);
-            return Ok(new { Message = "Đăng ký tài khoản thành công!", UserId = userId });
+            var result = await _mediator.Send(command);
+            return Ok(new { userId = result, message = "Đăng ký thành công!" });
+        }
+        catch (ValidationException vex) // Bắt lỗi Validation cụ thể
+        {
+            // Trả về lỗi validation theo định dạng chuẩn ProblemDetails
+            var errors = vex.Errors.GroupBy(e => e.PropertyName)
+                                   .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+            return BadRequest(new ValidationProblemDetails(errors)
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Validation Error",
+                Detail = "One or more validation errors occurred."
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(new { Error = ex.Message });
+            return BadRequest(new { message = ex.Message });
         }
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginUser command)
     {
-        try
-        {
-            var response = await _mediator.Send(command);
-            return Ok(response);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { Error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { Error = ex.Message });
-        }
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 }

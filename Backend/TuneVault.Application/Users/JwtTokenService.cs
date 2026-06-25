@@ -1,42 +1,51 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+using TuneVault.Domain;
 
 namespace TuneVault.Application.Users;
 
 public class JwtTokenService : ITokenService
 {
-    private readonly string _secretKey;
-    private readonly string _issuer;
-    private readonly string _audience;
-    private readonly int _expirationMinutes;
+    private readonly IConfiguration _configuration;
+    private readonly SymmetricSecurityKey _key;
 
-    public JwtTokenService(IConfiguration configuration)
+    public JwtTokenService(IConfiguration configuration, SymmetricSecurityKey key)
     {
-        _secretKey = configuration["Jwt:SecretKey"] ?? "your-secret-key-min-32-characters-long";
-        _issuer = configuration["Jwt:Issuer"] ?? "TuneVault";
-        _audience = configuration["Jwt:Audience"] ?? "TuneVaultClient";
-        _expirationMinutes = int.Parse(configuration["Jwt:ExpirationMinutes"] ?? "60");
+        _configuration = configuration;
+        _key = key;
     }
 
-    public string GenerateToken(Guid userId, string email)
+    public string GenerateJwtToken(User user)
     {
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim("displayName", user.DisplayName ?? user.Username),
+            new Claim("bio", user.Bio ?? ""), // Thêm bio vào claim
+            new Claim("avatarUrl", user.AvatarUrl ?? "") // Thêm avatarUrl vào claim
+        };
+
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_secretKey);
+
+        // Đây là cách tiếp cận đáng tin cậy nhất để đảm bảo 'kid' được thêm vào header.
+        // Chúng ta tạo một SigningCredentials mới và truyền trực tiếp SymmetricSecurityKey (vốn đã có KeyId).
+        // JwtSecurityTokenHandler sẽ tự động đọc KeyId từ key và thêm vào header của token.
+        var signingCredentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Email, email)
-            }),
-            Expires = DateTime.UtcNow.AddMinutes(_expirationMinutes),
-            Issuer = _issuer,
-            Audience = _audience,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            Issuer = _configuration["Jwt:Issuer"],
+            Audience = _configuration["Jwt:Audience"],
+            Subject = new ClaimsIdentity(claims),
+            NotBefore = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddDays(7), // Sử dụng UtcNow để nhất quán
+            SigningCredentials = signingCredentials
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);

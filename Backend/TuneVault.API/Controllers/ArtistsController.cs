@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TuneVault.Application.Artists;
 using TuneVault.Application.Media;
+using TuneVault.Application.Common;
 
 namespace TuneVault.API.Controllers;
 
@@ -22,11 +23,11 @@ public class ArtistsController : ControllerBase
         try
         {
             var response = await _mediator.Send(new GetArtistsQuery(query, page, pageSize));
-            return Ok(response);
+            return Ok(ApiResponse<GetArtistsResponse>.SuccessResult(response));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { Error = ex.Message });
+            return BadRequest(ApiResponse<string>.Failure(ex.Message));
         }
     }
 
@@ -36,15 +37,15 @@ public class ArtistsController : ControllerBase
         try
         {
             var artist = await _mediator.Send(new GetArtistByIdQuery(id));
-            return Ok(artist);
+            return Ok(ApiResponse<ArtistDetailDto>.SuccessResult(artist));
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { Error = ex.Message });
+            return NotFound(ApiResponse<string>.Failure(ex.Message));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { Error = ex.Message });
+            return BadRequest(ApiResponse<string>.Failure(ex.Message));
         }
     }
 
@@ -54,11 +55,11 @@ public class ArtistsController : ControllerBase
         try
         {
             var response = await _mediator.Send(new GetArtistSongsQuery(id, page, pageSize));
-            return Ok(response);
+            return Ok(ApiResponse<GetSongsResponse>.SuccessResult(response));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { Error = ex.Message });
+            return BadRequest(ApiResponse<string>.Failure(ex.Message));
         }
     }
 }

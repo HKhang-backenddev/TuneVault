@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TuneVault.Application.Media;
+using TuneVault.Application.Common;
 
 namespace TuneVault.API.Controllers;
 
@@ -21,11 +22,11 @@ public class SongsController : ControllerBase
         try
         {
             var response = await _mediator.Send(new GetSongsQuery(query, page, pageSize));
-            return Ok(response);
+            return Ok(ApiResponse<GetSongsResponse>.SuccessResult(response));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { Error = ex.Message });
+            return BadRequest(ApiResponse<string>.Failure(ex.Message));
         }
     }
 
@@ -35,15 +36,15 @@ public class SongsController : ControllerBase
         try
         {
             var song = await _mediator.Send(new GetSongByIdQuery(id));
-            return Ok(song);
+            return Ok(ApiResponse<SongDetailDto>.SuccessResult(song));
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { Error = ex.Message });
+            return NotFound(ApiResponse<string>.Failure(ex.Message));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { Error = ex.Message });
+            return BadRequest(ApiResponse<string>.Failure(ex.Message));
         }
     }
 }

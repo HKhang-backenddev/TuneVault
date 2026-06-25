@@ -1,15 +1,27 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>TuneVault - Spotify Clone</title>
+    <style>
+      /* Biện pháp mạnh: Ép nền đen ngay từ file HTML */
+      html, body { background-color: #000000 !important; margin: 0; padding: 0; }
+      #root { background-color: #000000 !important; min-height: 100vh; }
+    </style>
   </head>
-  <body>
+  <body class="bg-black text-white selection:bg-green-500 selection:text-black">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <noscript>Bạn cần bật JavaScript để chạy ứng dụng này.</noscript>
+    <script type="module" src="/main.tsx"></script>
+    <script>
+      // Kiểm tra xem root có nội dung không sau 3 giây
+      setTimeout(() => {
+        const root = document.getElementById('root');
+        if (root && root.innerHTML === "") {
+          console.warn("Cảnh báo: Root đang trống. Nếu màn hình vẫn đen, hãy kiểm tra lỗi đỏ trong tab Console (F12).");
+        }
+      }, 3000);
+    </script>
   </body>
 </html>

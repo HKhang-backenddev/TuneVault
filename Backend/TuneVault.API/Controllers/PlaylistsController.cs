@@ -20,7 +20,7 @@ public class PlaylistsController : ControllerBase
 
     private Guid GetUserId()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub") ?? User.FindFirst("id");
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             throw new UnauthorizedAccessException("Invalid user");
         return userId;
