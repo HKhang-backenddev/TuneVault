@@ -24,3 +24,4 @@ build/
 *.rtf
 cursor-agent-for-vscode/
 Backend/TuneVault.API/storage/media/
+Backend/TuneVault.API/storage/media/
