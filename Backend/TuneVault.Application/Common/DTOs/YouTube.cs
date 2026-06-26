@@ -47,14 +47,28 @@ public class SearchYouTubeHandler : IRequestHandler<SearchYouTubeQuery, List<You
                 foreach (var line in lines)
                 {
                     try
-                    {
-                        // Use JsonDocument for safer parsing, especially with dynamic content
-                        // This avoids CS8602 warning on 'video' if it's not fully handled.
-                        // If 'line' is empty or invalid JSON, JsonDocument.Parse will throw,
-                        // which is caught by the outer try-catch.
+                    {                        
                         using JsonDocument doc = JsonDocument.Parse(line);
+                        var root = doc.RootElement;
+
+                        // Bỏ qua nếu không có ID hoặc title
+                        if (!root.TryGetProperty("id", out var idElement) || idElement.ValueKind == JsonValueKind.Null) continue;
+                        if (!root.TryGetProperty("title", out var titleElement) || titleElement.ValueKind == JsonValueKind.Null) continue;
+
+                        var video = new YouTubeVideoDto(
+                            idElement.GetString() ?? string.Empty,
+                            titleElement.GetString() ?? "Unknown Title",
+                            root.TryGetProperty("channel", out var channelElement) ? channelElement.GetString() ?? "Unknown Channel" : "Unknown Channel",
+                            root.TryGetProperty("duration", out var durationElement) && durationElement.TryGetInt32(out var duration) ? duration : 0,
+                            root.TryGetProperty("thumbnail", out var thumbnailElement) ? thumbnailElement.GetString() ?? string.Empty : string.Empty
+                        );
+
+                        if (!string.IsNullOrEmpty(video.Id))
+                        {
+                            result.Add(video);
+                        }
                     }
-                    catch { }
+                    catch (JsonException) { /* Bỏ qua các dòng không phải JSON hợp lệ */ }
                 }
             }
         }
