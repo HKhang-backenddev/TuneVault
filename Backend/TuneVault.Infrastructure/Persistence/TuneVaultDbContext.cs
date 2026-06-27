@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using TuneVault.Domain;
@@ -44,6 +44,9 @@ public class TuneVaultDbContext : DbContext
 
         modelBuilder.Entity<MediaShare>()
             .HasOne(ms => ms.Receiver).WithMany().HasForeignKey(ms => ms.ReceiverId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MediaShare>()
+            .HasOne(ms => ms.MediaItem).WithMany().HasForeignKey(ms => ms.MediaItemId).OnDelete(DeleteBehavior.SetNull);
             
         // Cấu hình cho UserFollow
         modelBuilder.Entity<UserFollow>()

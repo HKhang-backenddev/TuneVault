@@ -11,7 +11,7 @@ export interface Track {
   isLiked?: boolean;
 }
 
-interface AudioContextType {
+export type AudioContextType = {
   currentTrack: Track | null;
   songForShare: Track | null; // Thêm state mới để lưu bài hát được chọn để chia sẻ
   selectSongForShare: (track: Track | null) => void; // Hàm để cập nhật bài hát chia sẻ
@@ -29,8 +29,8 @@ interface AudioContextType {
   playNext: () => void; // Thêm hàm mới
   playPrev: () => void; // Thêm hàm mới
   analyser: AnalyserNode | null; // Thêm AnalyserNode cho visualizer
-}
-const AudioContext = createContext<AudioContextType | undefined>(undefined);
+};
+export const AudioContext = createContext<AudioContextType | null>(null);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
@@ -48,21 +48,21 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     const audio = audioRef.current;
-    
+
     const handleError = () => {
       const err = audio.error;
       // Bỏ qua lỗi nếu src đang trống (do ta vừa reset src hoặc chưa nạp gì)
       if (!audio.src || audio.src === window.location.href) return;
-      
+
       console.error("!!! LỖI AUDIO THỰC TẾ:", {
         code: err?.code,
         message: err?.message,
         src: audio.src
       });
     };
-    
+
     const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime); 
+      setCurrentTime(audio.currentTime);
     };
 
     const handleDurationChange = () => {
@@ -128,7 +128,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const context = new (window.AudioContext || (window as any).webkitAudioContext)();
     const source = context.createMediaElementSource(audioRef.current);
     const analyserNode = context.createAnalyser();
-    
+
     analyserNode.fftSize = 256; // Số lượng mẫu để phân tích
     source.connect(analyserNode);
     analyserNode.connect(context.destination);
@@ -166,7 +166,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 1. Reset trạng thái UI và dừng nhạc cũ
     setCurrentTrack(track);
     setCurrentTime(0);
-    setDuration(track.durationSeconds || 0); 
+    setDuration(track.durationSeconds || 0);
     setIsPlaying(false);
 
     // Dừng nhạc cũ hoàn toàn
@@ -178,9 +178,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // 2. Chuẩn hóa đường dẫn stream (đảm bảo có /api/ ở đầu)
       // Giả sử track.url từ Backend đã là /api/media/{id}
       const streamUrl = track.url.startsWith('/api/') ? track.url : `/api/${track.url}`;
-      
+
       console.log(">>> AudioContext: Đang thiết lập nguồn nhạc trực tiếp:", streamUrl);
-      
+
       if (audioRef.current) {
         // Tạo một Promise để đợi nhạc sẵn sàng để phát (canplay)
         const readyToPlay = new Promise<void>((resolve, reject) => {
@@ -202,10 +202,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audioRef.current.load();
 
         // Đợi tối đa 10s để nạp nhạc, nếu không sẽ báo lỗi
-        const timeout = new Promise<void>((_, reject) => 
+        const timeout = new Promise<void>((_, reject) =>
           setTimeout(() => reject(new Error("Quá thời gian nạp nhạc (10s)")), 10000)
         );
-        
+
         await Promise.race([readyToPlay, timeout]);
 
         if (!audioApiContextRef.current) {
@@ -313,18 +313,18 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return ( // Cung cấp các trạng thái và hàm mới qua Context
-    <AudioContext.Provider value={{ 
-      currentTrack, songForShare, selectSongForShare, 
-      isPlaying, loading, 
-      playTrack, togglePlay, stopTrack, 
+    <AudioContext.Provider value={{
+      currentTrack, songForShare, selectSongForShare,
+      isPlaying, loading,
+      playTrack, togglePlay, stopTrack,
       playNext, playPrev, // Thêm hàm mới
       currentTime, duration, seek, analyser, // Thêm analyser
-      volume, setVolume, updateLikedStatus 
+      volume, setVolume, updateLikedStatus
     }}>
       {children}
-      <audio 
-        ref={audioRef} 
-        preload="auto" 
+      <audio
+        ref={audioRef}
+        preload="auto"
         style={{ display: 'none' }}
       />
     </AudioContext.Provider>

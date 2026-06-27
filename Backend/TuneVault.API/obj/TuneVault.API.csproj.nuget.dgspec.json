@@ -62,17 +62,13 @@
               "target": "Package",
               "version": "[10.0.8, )"
             },
-            "Microsoft.AspNetCore.OpenApi": {
-              "target": "Package",
-              "version": "[10.0.8, )"
-            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[10.0.8, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[10.2.1, )"
+              "version": "[10.1.5, )"
             }
           },
           "imports": [

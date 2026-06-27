@@ -15,6 +15,8 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       // Thêm alias cho thư mục Application để import dễ dàng hơn
       '@app': fileURLToPath(new URL('../Backend/TuneVault.Application', import.meta.url)),
+      // Shared typescript types between backend/frontend
+      '@shared-types': fileURLToPath(new URL('./src/shared-types', import.meta.url)),
       'react': fileURLToPath(new URL('../node_modules/react', import.meta.url)),
       'react-dom': fileURLToPath(new URL('../node_modules/react-dom', import.meta.url)),
     },
@@ -29,7 +31,7 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:5132', // Sử dụng IP thay cho localhost để ổn định hơn
         changeOrigin: true,
-        secure: false, 
+        secure: false,
         timeout: 300000, // Tăng timeout lên 5 phút để khớp với axios.ts
         proxyTimeout: 300000,
         configure: (proxy, _options) => {

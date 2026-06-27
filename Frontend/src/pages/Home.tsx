@@ -16,6 +16,7 @@ interface MediaItem {
   thumbnailUrl: string;
   genre?: string;
   isLiked?: boolean;
+  isOwner?: boolean;
 }
 
 interface UserResult {
@@ -74,9 +75,10 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         // Xóa khỏi kết quả tìm kiếm nếu có
         setSearchResults(prev => prev.filter(item => item.id !== songId));
 
-      } catch (err) {
+      } catch (err: any) {
         console.error("Lỗi khi xóa bài hát:", err);
-        alert("Không thể xóa bài hát. Vui lòng thử lại.");
+        const msg = err.response?.data?.message || "Không thể xóa bài hát. Vui lòng thử lại.";
+        alert(msg);
       }
     }
   };

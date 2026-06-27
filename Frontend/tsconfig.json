@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -15,10 +19,27 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
     "paths": {
-      "@app/*": ["../Backend/TuneVault.Application/*"]
-    },
+      "@app/*": [
+        "../Backend/TuneVault.Application/*"
+      ],
+      "@shared-types/*": [
+        "./src/shared-types/*"
+      ]
+    }
   },
-  "include": ["src", "../Backend/TuneVault.Application/**/*.ts", "../Backend/TuneVault.Application/**/*.tsx", "vite-env.d.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src",
+    "../Backend/TuneVault.Application/**/*.ts",
+    "../Backend/TuneVault.Application/**/*.tsx",
+    "../Backend/TuneVault.API/Notification/**/*.ts",
+    "vite-env.d.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

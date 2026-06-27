@@ -52,9 +52,10 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
       try {
         await api.delete(`/media/${id}`); // Gọi API DELETE từ MediaController
         fetchHistory(); // Tải lại lịch sử sau khi xóa thành công
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to delete song", error);
-        alert("Có lỗi xảy ra khi xóa bài hát.");
+        const msg = error.response?.data?.message || "Có lỗi xảy ra khi xóa bài hát.";
+        alert(msg);
       }
     }
   };

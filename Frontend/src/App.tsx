@@ -112,7 +112,35 @@ const BackgroundEffects = () => (
  * Layout chính cho các trang được bảo vệ, chứa Header, MainLayout và PlayerBar.
  * Component này sẽ render các trang con (Home, Profile, etc.) thông qua <Outlet />.
  */
-const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, toggleUserMenu, avatarInputRef, bannerInputRef, handleMenuUpload, navigate, location, searchQuery, setSearchQuery, lastRefreshTime, fetchProfile, onLogout }: any) => {
+interface ProtectedLayoutProps {
+  user: {
+    id: string;
+    displayName: string;
+    email: string;
+    username: string;
+    avatarUrl?: string; bannerUrl?: string; createdAt?: string; lastUpdatedAt?: string; bio?: string; location?: string; websiteUrl?: string; twitterUrl?: string; githubUrl?: string; gender?: string; dateOfBirth?: string;
+    followerCount?: number;
+    followingCount?: number;
+    isFollowing?: boolean;
+    hasUnreadNotifications?: boolean;
+  } | null;
+  handleLogout: () => void;
+  goHome: () => void;
+  showUserMenu: boolean;
+  setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
+  avatarInputRef: React.RefObject<HTMLInputElement>;
+  bannerInputRef: React.RefObject<HTMLInputElement>;
+  handleMenuUpload: (type: 'avatar' | 'banner', e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  navigate: ReturnType<typeof useNavigate>;
+  location: ReturnType<typeof useLocation>;
+  searchQuery: string;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  lastRefreshTime: number;
+  fetchProfile: (activeToken?: string) => Promise<void>;
+  onLogout: () => void;
+}
+
+const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, setShowUserMenu, avatarInputRef, bannerInputRef, handleMenuUpload, navigate, location, searchQuery, setSearchQuery, lastRefreshTime, fetchProfile, onLogout }: ProtectedLayoutProps) => {
   return (
     <div className="flex flex-col h-screen w-full bg-transparent text-white overflow-hidden font-sans">
       <AppHeader
@@ -120,7 +148,7 @@ const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, toggleUserM
         handleLogout={handleLogout}
         goHome={goHome}
         showUserMenu={showUserMenu}
-        toggleUserMenu={toggleUserMenu}
+        setShowUserMenu={setShowUserMenu}
         avatarInputRef={avatarInputRef}
         bannerInputRef={bannerInputRef}
         handleMenuUpload={handleMenuUpload}
@@ -164,7 +192,7 @@ function App() {
   const [user, setUser] = useState<{
     id: string;
     displayName: string;
-    email?: string;
+    email: string;
     username: string;
     avatarUrl?: string; bannerUrl?: string; createdAt?: string; lastUpdatedAt?: string; bio?: string; location?: string; websiteUrl?: string; twitterUrl?: string; githubUrl?: string; gender?: string; dateOfBirth?: string;
     // Thêm các thuộc tính mới để khớp với Profile.tsx
@@ -263,7 +291,7 @@ function App() {
         id: rawData.id,
         displayName: rawData.displayName || rawData.username, // Luôn có tên hiển thị
         username: rawData.username,
-        email: rawData.email, // Luôn tin tưởng dữ liệu từ server
+        email: rawData.email || '', // Luôn tin tưởng dữ liệu từ server, fallback về chuỗi rỗng
         avatarUrl: rawData.avatarUrl,
         bannerUrl: rawData.bannerUrl,
         bio: rawData.bio,
@@ -449,12 +477,6 @@ function App() {
     }
   };
 
-  // Hàm bật/tắt menu người dùng, có ngăn chặn sự kiện lan truyền
-  const toggleUserMenu = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Ngăn không cho sự kiện click lan ra window và đóng menu ngay lập tức
-    setShowUserMenu(prev => !prev);
-  };
-
   return (
     <AudioProvider>
       <BackgroundEffects />
@@ -529,7 +551,7 @@ function App() {
               handleLogout={handleLogout}
               goHome={goHome}
               showUserMenu={showUserMenu}
-              toggleUserMenu={toggleUserMenu}
+              setShowUserMenu={setShowUserMenu}
               avatarInputRef={avatarInputRef}
               bannerInputRef={bannerInputRef}
               handleMenuUpload={handleMenuUpload}

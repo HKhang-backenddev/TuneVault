@@ -1,3 +1,12 @@
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.csproj.AssemblyReference.cache
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.AssemblyInfoInputs.cache
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.AssemblyInfo.cs
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.csproj.CoreCompileInputs.cache
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.sourcelink.json
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\appsettings.Development.json
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\appsettings.json
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\TuneVault.API.staticwebassets.endpoints.json
@@ -14,7 +23,6 @@ C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\MediatR.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\MediatR.Contracts.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Microsoft.Build.Framework.dll
@@ -44,9 +52,6 @@ C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Microsoft.VisualStudio.SolutionPersistence.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Mono.TextTemplating.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Newtonsoft.Json.dll
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\System.ClientModel.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\System.CodeDom.dll
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\System.Composition.AttributedModel.dll
@@ -147,15 +152,6 @@ C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\TuneVault.Application.pdb
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\TuneVault.Domain.pdb
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\TuneVault.Infrastructure.pdb
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.csproj.AssemblyReference.cache
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\rpswa.dswa.cache.json
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.AssemblyInfoInputs.cache
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.AssemblyInfo.cs
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.csproj.CoreCompileInputs.cache
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.sourcelink.json
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
@@ -171,3 +167,6 @@ C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.pdb
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\TuneVault.API.genruntimeconfig.cache
 C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\obj\Debug\net10.0\ref\TuneVault.API.dll
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\Admin\OneDrive\Đính kèm\TUNEVAULT\Backend\TuneVault.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll

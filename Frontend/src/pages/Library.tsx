@@ -33,8 +33,7 @@ const Library = () => {
   const token = localStorage.getItem('token'); // Lấy token để theo dõi thay đổi người dùng
 
   const fetchSongs = () => {
-    // Yêu cầu nhiều kết quả hơn để hiển thị toàn bộ thư viện (mặc định backend phân trang)
-    api.get('/media?pageSize=1000').then(res => setMySongs(res.data?.items || []));
+    api.get('/media/library?pageSize=1000').then(res => setMySongs(res.data?.items || []));
   };
 
   useEffect(() => {
@@ -64,8 +63,10 @@ const Library = () => {
       try {
         await api.delete(`/media/${id}`);
         fetchSongs();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to delete song", error);
+        const msg = error.response?.data?.message || "Không thể xóa bài hát. Vui lòng thử lại.";
+        alert(msg);
       }
     }
   };

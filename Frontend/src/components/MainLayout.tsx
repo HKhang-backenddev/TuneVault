@@ -6,14 +6,15 @@ import { AppHeader } from './AppHeader';
 import PlayerBar from './PlayerBar';
 import { NowPlayingSidebar } from './NowPlayingSidebar'; // Import component mới
 import { ShareSidebar } from './ShareSidebar';
+import { User } from '@shared-types/user';
 
-const MenuBox = ({ user }: { user: any }) => {
+const MenuBox = ({ user }: { user: User | null }) => {
   const location = useLocation();
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
 
   const menuItems = [
     // Cập nhật path để nó là một hàm có thể tạo link động
-    { name: 'Hồ sơ', icon: UserIcon, path: (u: any) => u?.username ? `/app/profile/${u.username}` : '/login', color: '#8b5cf6' }, // Purple
+    { name: 'Hồ sơ', icon: UserIcon, path: (u: User | null) => u?.username ? `/app/profile/${u.username}` : '/login', color: '#8b5cf6' }, // Purple
     { name: 'Thư viện', icon: Library, path: '/app/library', color: '#f97316' }, // Orange
     { name: 'Lịch sử', icon: History, path: '/app/history', color: '#eab308' }, // Yellow
     { name: 'Bài hát đã thích', icon: Heart, path: '/app/liked', color: '#ec4899' }, // Pink
@@ -133,7 +134,7 @@ const MenuBox = ({ user }: { user: any }) => {
   );
 };
 
-const MainLayout = ({ user, children }: { user: any, children: React.ReactNode }) => {
+const MainLayout = ({ user, children }: { user: User | null, children: React.ReactNode }) => {
     return (
         <div className="flex-1 flex min-h-0" style={{ display: 'flex', gap: '24px', padding: '24px', color: 'white', height: '100%' }}>
             <MenuBox user={user} />

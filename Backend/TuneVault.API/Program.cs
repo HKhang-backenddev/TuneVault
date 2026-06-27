@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TuneVault.Application.Artists;
@@ -11,6 +12,7 @@ using TuneVault.Application.Playlists;
 using TuneVault.Application.Users;
 using TuneVault.Application.YouTube;
 using TuneVault.Infrastructure;
+using TuneVault.API.Filters;
 using TuneVault.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,7 +35,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ExceptionHandlingFilter>();
+});
 
 // JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -54,7 +59,7 @@ var key = Encoding.ASCII.GetBytes(secretKey);
 var signingKey = new SymmetricSecurityKey(key) { KeyId = "TuneVault-Key-2024" };
 
 
-builder.Services.AddSingleton<ITokenService>(sp => 
+builder.Services.AddSingleton<ITokenService>(sp =>
 {
     // Đảm bảo JwtTokenService sử dụng chính xác instance `signingKey` đã được tạo
     return new JwtTokenService(sp.GetRequiredService<IConfiguration>(), signingKey);
@@ -79,7 +84,7 @@ options.TokenValidationParameters = new TokenValidationParameters
         // If token was signed with a different secret, validation will fail with IDX10517.
 
         // Bảo đảm validate chữ ký bằng đúng Symmetric key từ SecretKey
-        
+
 // NameClaimType chưa import ClaimTypes nên tạm bỏ để tránh lỗi build
         // NameClaimType = ClaimTypes.NameIdentifier,
         RoleClaimType = "role",
@@ -101,7 +106,7 @@ options.TokenValidationParameters = new TokenValidationParameters
             // Ghi lại lý do Challenge được kích hoạt (ví dụ: token không có, token hết hạn)
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
             logger.LogWarning("Thử thách JWT: {Error} - {ErrorDescription}", context.Error, context.ErrorDescription);
-            
+
             // Ghi lại lỗi chi tiết hơn nếu có
             if (context.AuthenticateFailure != null)
                 logger.LogError(context.AuthenticateFailure, "Lỗi xác thực chi tiết dẫn đến Challenge.");
@@ -111,9 +116,9 @@ options.TokenValidationParameters = new TokenValidationParameters
         {
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
-            
+
             // Cho phép lấy Token từ Query String cho SignalR và các tệp Media Stream
-            if (!string.IsNullOrEmpty(accessToken) && 
+            if (!string.IsNullOrEmpty(accessToken) &&
                 (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/api/media/stream")))
             {
                 context.Token = accessToken;
@@ -155,7 +160,23 @@ builder.Services.AddSingleton<TuneVault.API.Services.ImportJobStore>();
 
 builder.Services.AddHttpContextAccessor(); // Thêm dòng này
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "TuneVault API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Nhập token JWT vào đây. Hệ thống sẽ tự thêm tiền tố 'Bearer '.",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
+});
 
 builder.Services.AddSignalR();
 builder.Services.AddInfrastructureServices(builder.Configuration);
@@ -190,11 +211,23 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/media" // Đường dẫn mà Frontend sẽ dùng để truy cập file (ví dụ: /media/abc.mp3)
 });
 
+var profileStoragePath = Path.Combine(builder.Environment.ContentRootPath, "storage", "profile");
+profileStoragePath = Path.GetFullPath(profileStoragePath);
+if (!Directory.Exists(profileStoragePath)) Directory.CreateDirectory(profileStoragePath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(profileStoragePath),
+    RequestPath = "/media/profile"
+});
+
 app.UseRouting();
 app.UseCors("AllowFrontend");
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,29 +1,35 @@
 import React, { useEffect, useRef, useState } from 'react';
 import api from '../axios';
-import { Music, Share2, X } from 'lucide-react';
-import { useAudio } from '../Contexts/AudioContext';
-
-interface MediaItem {
-  id: string;
-  title: string; 
-}
+import { Music, Share2, X, User as UserIcon, Loader2 } from 'lucide-react';
+import { useAudio, Track } from '../Contexts/AudioContext';
+import { User } from '@shared-types/user';
 
 type Status = {
   type: 'success' | 'error' | 'info';
   message: string;
 }
 
-export const ShareSidebar = ({ user }: { user: any }) => {
-  const { songForShare, selectSongForShare } = useAudio();
+interface ShareSidebarAudioContext {
+  songForShare: Track | null;
+  selectSongForShare: (song: Track | null) => void;
+}
+
+export const ShareSidebar = ({ user }: { user: User | null }) => {
+  const { songForShare, selectSongForShare } = useAudio() as ShareSidebarAudioContext;
   const [receiverUsername, setReceiverUsername] = useState('');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Focus vào input khi mở app
   useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 150);
-  }, []);
+    if (songForShare) {
+      // Reset state khi có bài hát mới được chọn
+      setReceiverUsername('');
+      setStatus(null);
+      setBusy(false);
+      setTimeout(() => inputRef.current?.focus(), 150);
+    }
+  }, [songForShare]);
 
   const handleShare = async () => {
     setStatus(null);
@@ -53,7 +59,7 @@ export const ShareSidebar = ({ user }: { user: any }) => {
       const timer = setTimeout(() => {
         selectSongForShare(null);
       }, 2000);
-    
+
     } catch (e: any) {
       // Hiển thị lỗi từ backend trả về
       const msg = e?.response?.data?.message || e?.message || 'Chia sẻ thất bại. Vui lòng thử lại.';
@@ -72,72 +78,120 @@ export const ShareSidebar = ({ user }: { user: any }) => {
     return null;
   }
 
+  // Giao diện được thiết kế lại để giống với các khung thông tin khác
   return (
-    <div 
-      className="animate-in fade-in-50 slide-in-from-top-4 duration-300"
-      style={{
-        backgroundColor: '#121212',
-        borderRadius: '12px',
-        padding: '16px',
-        border: '2px solid #3b82f6', // Làm viền dày hơn và có màu xanh
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        // Thêm hiệu ứng đổ bóng neon
-        boxShadow: '0 0 25px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.2)'
-      }}>
-        <div className="flex items-center gap-2 mb-2">
-          <Share2 size={18} className="text-blue-500 flex-shrink-0" />
-          <h3 className="text-white font-bold">Chia sẻ bài hát</h3>
-          <button onClick={() => selectSongForShare(null)} className="ml-auto text-neutral-500 hover:text-white">
+    <>
+      <style>{`
+        @keyframes animated-border-share {
+          0% { background-position: 0% center; }
+          100% { background-position: 200% center; }
+        }
+      `}</style>
+      <div
+        className="animate-in fade-in-50 slide-in-from-right-4 duration-300"
+        style={{
+          width: '280px', // Giảm nhẹ độ rộng để gọn hơn
+          flexShrink: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', // Nền trong suốt hơn
+          border: '2px solid transparent',
+          borderRadius: '16px', // Bo tròn ít hơn
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
+          backgroundOrigin: 'border-box',
+          backgroundClip: 'padding-box, border-box',
+          backgroundSize: '200% 100%',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(59, 130, 246, 0.15)', // Bóng đổ nhẹ hơn
+          animation: 'animated-border-share 8s linear infinite',
+          padding: '16px', // Giảm padding
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px', // Giảm khoảng cách giữa các phần
+          alignSelf: 'flex-start',
+          position: 'sticky',
+          top: '24px',
+        }}>
+        {/* --- Header --- */}
+        <div className="relative flex items-center justify-center pb-2 border-b border-white/10">
+          <h3 className="text-base font-bold tracking-tight text-white drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] flex items-center gap-2">
+            <Share2 size={18} className="text-blue-400" />
+            Chia sẻ bài hát
+          </h3>
+          <button
+            onClick={() => selectSongForShare(null)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1.5 rounded-full hover:bg-white/10 transition-colors"
+            title="Đóng"
+          >
             <X size={16} />
           </button>
         </div>
 
-        {songForShare ? (
-          <div className="text-neutral-400 text-xs mb-2">
-            Bài đang chọn: <span className="text-neutral-200 font-semibold">{songForShare.title}</span>
+        {/* --- Form Section --- */}
+        <div className="flex flex-col gap-3"> {/* Giảm khoảng cách giữa các section */}
+          {/* Song Info */}
+          <div className="flex flex-col gap-1">
+            <label className="text-neutral-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+              <Music size={14} />
+              Bài hát
+            </label>
+            <div className="bg-black/30 p-2 rounded-lg border border-white/10 shadow-inner"> {/* Nền và viền mới */}
+              <p className="text-white text-sm font-semibold truncate" title={songForShare.title}>
+                {songForShare.title}
+              </p>
+              <p className="text-neutral-400 text-xs truncate" title={songForShare.artist}>
+                {songForShare.artist || 'Nghệ sĩ không xác định'}
+              </p>
+            </div>
           </div>
-        ) : (
-          <div className="text-yellow-400/80 text-xs mb-2 p-2 bg-yellow-400/10 rounded-md border border-yellow-400/20">
-            Vui lòng nhấn vào biểu tượng chia sẻ <Share2 size={12} className="inline-block mx-1" /> trên một bài hát để chọn.
-          </div>
-        )}
 
-        {user && (
-          <div className="text-neutral-500 text-[11px] text-center mb-2">
-            Bạn đang chia sẻ với tư cách là <span className="font-bold text-neutral-400">@{user.username}</span>
-          </div>
-        )}
+          {/* Sender Info */}
+          {user && (
+            <div className="flex flex-col gap-1"> {/* Căn trái label */}
+              <label className="text-neutral-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                <UserIcon size={14} />
+                Từ
+              </label>
+              <div className="bg-black/30 p-2 rounded-lg border border-white/10 shadow-inner"> {/* Nền và viền mới */}
+                <p className="text-white font-semibold text-left">@{user.username}</p> {/* Căn trái nội dung */}
+              </div>
+            </div>
+          )}
 
-        <label className="text-neutral-500 text-xs font-bold uppercase tracking-wider">Gửi tới (Username hoặc Email)</label>
-        <input
-          ref={inputRef}
-          value={receiverUsername}
-          onChange={(e) => setReceiverUsername(e.target.value)}
-          placeholder="Nhập username hoặc email"
-          className="w-full mt-2 bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
-          disabled={busy}
-        />
+          {/* Receiver Input */}
+          <div className="flex flex-col gap-1">
+            <label htmlFor="receiverInput" className="text-neutral-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+              <UserIcon size={12} />
+              Gửi tới
+            </label>
+            <div className="flex items-center gap-2 bg-neutral-900/70 border border-neutral-700 rounded-lg px-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/50 transition-all"> {/* Nền và viền mới */}
+            <input
+              ref={inputRef}
+              value={receiverUsername}
+              id="receiverInput"
+              onChange={(e) => setReceiverUsername(e.target.value)}
+              placeholder="Username hoặc email"
+              className="w-full bg-transparent py-2 text-sm text-white outline-none text-left placeholder:text-left"
+              disabled={busy}
+            />
+          </div>
+        </div>
+        </div>
 
         {status && (
-           <div className={`mt-2 text-xs font-semibold p-2 rounded-md border ${
-            status.type === 'success' ? 'text-green-400 bg-green-500/10 border-green-500/20' :
-            status.type === 'error' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
-            'text-blue-400 bg-blue-500/10 border-blue-500/20'
-           }`}>
+          <div className={`text-xs font-semibold p-2.5 rounded-lg border ${status.type === 'success' ? 'text-green-300 bg-green-500/10 border-green-500/30' : 'text-red-300 bg-red-500/10 border-red-500/30'
+            }`}>
             {status.message}
-           </div>
+          </div>
         )}
 
+        {/* --- Nút bấm chính --- */}
         <button
           onClick={handleShare}
           disabled={busy || !songForShare}
-          className="mt-3 w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-md hover:shadow-blue-500/30 active:scale-95"
         >
-          <Music size={16} />
-          {busy ? 'Đang chia sẻ...' : 'Chia sẻ'}
+          {busy ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={12} />}
+          {busy ? 'Đang gửi...' : 'Gửi ngay'}
         </button>
-    </div>
+      </div>
+    </>
   );
 };
