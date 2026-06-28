@@ -42,7 +42,7 @@ public class GetSongsHandler : IRequestHandler<GetSongsQuery, GetSongsResponse>
                 m.Genre,
                 m.ThumbnailUrl,
                 m.CreatedAt,
-                $"/media/{m.FilePath}"
+                $"/api/media/stream/{m.Id}"
             ))
             .ToListAsync(cancellationToken);
 
@@ -119,7 +119,7 @@ public class GetArtistSongsHandler : IRequestHandler<GetArtistSongsQuery, GetSon
                 m.Genre,
                 m.ThumbnailUrl,
                 m.CreatedAt,
-                $"/media/{m.FilePath}"
+                $"/api/media/stream/{m.Id}"
             ))
             .ToListAsync(cancellationToken);
 
