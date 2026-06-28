@@ -588,18 +588,31 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     } else {
       // Tải dữ liệu cho các khung thể loại khác nhau(Cac khung the loai nhac trong Home)
       const loadHomeData = async () => {
-        const genres = ['YouTube', 'Lofi', 'Pop', 'Rock', 'EDM', 'Acoustic', 'Chill Music', 'Rap'];
-        const results = await Promise.all([
-          api.get('/media?pageSize=20'), // Mới nhất
-          ...genres.map(g => api.get(`/media?genre=${g}&pageSize=20`))
-        ]);
+        // Lấy bài hát của user đang đăng nhập (Thư viện cá nhân)
+        try {
+          const res = await api.get('/media/library?pageSize=50');
+          const items = res.data?.items || [];
+          
+          // Nhóm theo thể loại
+          const genres = ['YouTube', 'Lofi', 'Pop', 'Rock', 'EDM', 'Acoustic', 'Chill Music', 'Rap'];
+          const grouped: { [key: string]: any[] } = {};
+          
+          items.forEach((item: any) => {
+            const genre = item.genre || 'Khác';
+            if (!grouped[genre]) grouped[genre] = [];
+            grouped[genre].push(item);
+          });
 
-        const newSections = [
-          { title: 'Mới cập nhật', items: results[0].data?.items || [] },
-          ...genres.map((g, i) => ({ title: g, items: results[i+1].data?.items || [] }))
-        ].filter(s => s.items.length > 0);
+          const newSections = [
+            { title: 'Tất cả bài hát', items },
+            ...genres.filter(g => grouped[g]?.length > 0).map(g => ({ title: g, items: grouped[g] }))
+          ].filter(s => s.items.length > 0);
 
-        setSections(newSections);
+          setSections(newSections);
+        } catch (error) {
+          console.error("Lỗi khi tải thư viện:", error);
+          setSections([]);
+        }
       };
       loadHomeData();
     }
