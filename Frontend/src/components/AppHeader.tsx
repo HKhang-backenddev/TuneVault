@@ -105,14 +105,14 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
         )}
       </button>
 
-      <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <div className="relative user-menu-container" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={(e) => {
             e.stopPropagation(); // Ngăn không cho menu đóng ngay lập tức
             setShowUserMenu(!showUserMenu);
           }}
           style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid rgba(59, 130, 246, 0.7)' }}
-          className="bg-gradient-to-tr from-blue-600 to-blue-900 flex-shrink-0 flex items-center justify-center font-bold text-sm cursor-pointer transition-all text-white overflow-hidden neon-blue-profile-button neon-button-active-effect"
+          className="user-menu-button bg-gradient-to-tr from-blue-600 to-blue-900 flex-shrink-0 flex items-center justify-center font-bold text-sm cursor-pointer transition-all text-white overflow-hidden neon-blue-profile-button neon-button-active-effect"
           title="Xem hồ sơ của bạn"
         >
           {user?.avatarUrl ? (
@@ -130,7 +130,7 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
             boxShadow: '0 8px 32px rgba(59, 130, 246, 0.2)',
             overflow: 'hidden'
           }}
-            className="animate-in fade-in zoom-in-95 duration-200">
+            className="animate-in fade-in zoom-in-95 duration-200 user-menu-dropdown">
             <div style={{ padding: '20px', textAlign: 'center', borderBottom: '1px solid rgba(59, 130, 246, 0.15)' }}>
 
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', margin: '0 auto 12px', boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)' }}>

@@ -463,9 +463,22 @@ function App() {
   }, [fetchProfile]);
 
   useEffect(() => {
-    const closeMenu = () => setShowUserMenu(false);
-    if (showUserMenu) window.addEventListener('click', closeMenu);
-    return () => window.removeEventListener('click', closeMenu);
+    const closeMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Không đóng menu nếu click vào button hoặc menu
+      if (target.closest('.user-menu-button') || target.closest('.user-menu-dropdown')) {
+        return;
+      }
+      setShowUserMenu(false);
+    };
+    
+    if (showUserMenu) {
+      // Delay để tránh trigger ngay lập tức khi mở menu
+      setTimeout(() => {
+        document.addEventListener('click', closeMenu);
+      }, 0);
+    }
+    return () => document.removeEventListener('click', closeMenu);
   }, [showUserMenu]);
 
   // Hàm quay về trang chủ và xóa tìm kiếm
