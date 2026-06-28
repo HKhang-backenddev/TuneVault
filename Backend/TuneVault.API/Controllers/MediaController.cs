@@ -108,7 +108,19 @@ public class MediaController : BaseApiController
         if (!System.IO.File.Exists(filePath))
             return NotFound(new { message = "File nhạc không tồn tại trên máy chủ." });
 
-        return PhysicalFile(filePath, "audio/mpeg", enableRangeProcessing: true);
+        // Xác định MIME type dựa trên phần mở rộng thực tế của file
+        var extension = Path.GetExtension(filePath).ToLowerInvariant();
+        var contentType = extension switch
+        {
+            ".mp3" => "audio/mpeg",
+            ".webm" => "audio/webm",
+            ".m4a" => "audio/mp4",
+            ".ogg" => "audio/ogg",
+            ".wav" => "audio/wav",
+            _ => "application/octet-stream"
+        };
+
+        return PhysicalFile(filePath, contentType, enableRangeProcessing: true);
     }
 
     /// <summary>Tải file nhạc lên thư viện.</summary>
