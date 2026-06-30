@@ -155,6 +155,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setQueue(newQueue);
     }
 
+    // Ghi lịch sử nghe vào backend
+    try {
+      await api.post(`/media/history/${track.id}`);
+      console.log(">>> AudioContext: Đã ghi lịch sử nghe");
+    } catch (err) {
+      console.warn(">>> AudioContext: Không ghi được lịch sử:", err);
+    }
+
     // Kiểm tra xem bài hát hiện tại có nguồn hợp lệ (Blob URL) chưa
     const hasValidSource = audioRef.current.src && audioRef.current.src.includes(track.id); // Kiểm tra nguồn đã được thiết lập chưa
 
