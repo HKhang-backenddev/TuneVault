@@ -120,7 +120,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   const styles = {
     container: {
       position: "relative",
-      zIndex: 1, 
+      zIndex: 60 !important, 
       color: 'white',
       background: 'linear-gradient(180deg, #1a1a2e 0%, #121212 100%)',
       minHeight: '100vh',
@@ -130,6 +130,8 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       padding: '16px 32px 0 32px',
       background: 'linear-gradient(180deg, rgba(29, 185, 84, 0.15) 0%, transparent 100%)',
       marginBottom: '12px',
+      position: 'relative',
+      zIndex: 61,
     },
     greeting: { fontSize: '24px', fontWeight: 'bold', marginBottom: '12px' },
     quickPicks: {
@@ -139,7 +141,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       marginBottom: '16px',
       minHeight: "auto",
       position: "relative",
-      zIndex: 2,
+      zIndex: 61 !important,
     },
     quickCard: {
       display: 'flex',
@@ -152,7 +154,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       transition: 'all 0.2s ease',
       overflow: 'hidden',
       position: 'relative',
-      zIndex: 1,
+      zIndex: 60 !important,
     },
     quickCardText: { fontWeight: 'bold', fontSize: '14px', flex: 1, color: 'white' },
     section: { marginBottom: '20px', padding: '0 32px' },
