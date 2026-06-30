@@ -135,6 +135,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
       gap: '16px',
       marginBottom: '32px',
+      minHeight: '180px',
     },
     quickCard: {
       display: 'flex',
@@ -796,17 +797,13 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             </div>
           </div>
 
-          {/* Sections Container - Scrollable */}
+          {/* Sections - Scrollable if needed */}
           <div
             ref={frameRef}
             style={{
               padding: '0 32px',
               paddingBottom: '120px',
-              maxHeight: 'calc(100vh - 200px)',
-              overflowY: 'auto',
             }}
-            className="scrollbar-thin"
-            onScroll={checkFrameScroll}
           >
             {sections.map((section, idx) => <SectionRow key={idx} section={section} index={idx} />)}
           </div>
