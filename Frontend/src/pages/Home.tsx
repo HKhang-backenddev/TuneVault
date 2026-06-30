@@ -122,19 +122,19 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       color: 'white',
       background: 'linear-gradient(180deg, #1a1a2e 0%, #121212 100%)',
       minHeight: '100vh',
-      paddingBottom: '100px',
+      paddingBottom: '80px',
     },
     header: {
-      padding: '32px 32px 0 32px',
+      padding: '16px 32px 0 32px',
       background: 'linear-gradient(180deg, rgba(29, 185, 84, 0.15) 0%, transparent 100%)',
-      marginBottom: '24px',
+      marginBottom: '12px',
     },
-    greeting: { fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' },
+    greeting: { fontSize: '24px', fontWeight: 'bold', marginBottom: '12px' },
     quickPicks: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-      gap: '16px',
-      marginBottom: '32px',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+      gap: '12px',
+      marginBottom: '16px',
       minHeight: 'auto',
     },
     quickCard: {
@@ -149,8 +149,8 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       overflow: 'hidden',
     },
     quickCardText: { fontWeight: 'bold', fontSize: '14px', flex: 1 },
-    section: { marginBottom: '40px', padding: '0 32px' },
-    sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px' },
+    section: { marginBottom: '20px', padding: '0 32px' },
+    sectionTitle: { fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', letterSpacing: '-0.5px' },
     grid: {
       display: 'flex',
       gap: '24px',
@@ -228,7 +228,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     cardArtist: { fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
 
     sectionContainer: {
-    marginBottom: '40px',
+    marginBottom: '20px',
     padding: '24px',
     backgroundColor: 'rgba(10, 10, 10, 0.6)', // Màu nền tối cho khung
     borderRadius: '16px',
@@ -482,7 +482,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     return (
       <div
         style={{ 
-          marginBottom: '40px', 
+          marginBottom: '20px', 
           padding: '24px',
           borderRadius: '16px', 
           border: '1px solid rgba(29, 185, 84, 0.2)',
@@ -816,7 +816,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             style={{
               padding: '0 32px',
               paddingBottom: '120px',
-              maxHeight: 'calc(100vh - 280px)',
+              maxHeight: 'calc(100vh - 220px)',
               overflowY: 'auto',
             }}
             className="home-scrollbar"
