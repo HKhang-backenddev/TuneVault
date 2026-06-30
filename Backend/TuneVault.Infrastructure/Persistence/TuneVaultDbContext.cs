@@ -73,6 +73,58 @@ public class TuneVaultDbContext : DbContext
         modelBuilder.Entity<MediaItem>()
             .HasOne(m => m.Owner).WithMany(u => u.UploadedItems).HasForeignKey(m => m.OwnerId).OnDelete(DeleteBehavior.Restrict);
 
+        // Cấu hình cho PlaylistFollower
+        modelBuilder.Entity<PlaylistFollower>()
+            .HasOne(pf => pf.Playlist)
+            .WithMany(p => p.Followers)
+            .HasForeignKey(pf => pf.PlaylistId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlaylistFollower>()
+            .HasOne(pf => pf.User)
+            .WithMany()
+            .HasForeignKey(pf => pf.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cấu hình cho PlaylistCollaborator
+        modelBuilder.Entity<PlaylistCollaborator>()
+            .HasOne(pc => pc.Playlist)
+            .WithMany(p => p.Collaborators)
+            .HasForeignKey(pc => pc.PlaylistId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlaylistCollaborator>()
+            .HasOne(pc => pc.User)
+            .WithMany()
+            .HasForeignKey(pc => pc.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cấu hình cho MediaComment
+        modelBuilder.Entity<MediaComment>()
+            .HasOne(c => c.MediaItem)
+            .WithMany()
+            .HasForeignKey(c => c.MediaItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MediaComment>()
+            .HasOne(c => c.User)
+            .WithMany()
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cấu hình cho PlayHistory
+        modelBuilder.Entity<PlayHistory>()
+            .HasOne(ph => ph.MediaItem)
+            .WithMany()
+            .HasForeignKey(ph => ph.MediaItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlayHistory>()
+            .HasOne(ph => ph.User)
+            .WithMany()
+            .HasForeignKey(ph => ph.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Seed Data B2
         var userId = new Guid("3872327a-4302-4e5c-a58a-ca48edd2b108");
         modelBuilder.Entity<User>().HasData(new User 
