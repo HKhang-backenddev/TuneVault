@@ -21,7 +21,7 @@ public class ExceptionHandlingFilter : IExceptionFilter
             InvalidOperationException invalid => new BadRequestObjectResult(new { message = invalid.Message }),
             DbUpdateException dbUpdate => new BadRequestObjectResult(new
             {
-                message = "Không thể lưu thay đổi. Bài hát có thể đang được dùng ở nơi khác (playlist, chia sẻ, ...)."
+                message = $"DbUpdateException: {dbUpdate.InnerException?.Message ?? dbUpdate.Message}"
             }),
             _ => new ObjectResult(new { message = context.Exception.Message })
             {
