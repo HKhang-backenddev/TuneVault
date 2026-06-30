@@ -97,7 +97,7 @@ public class TuneVaultDbContext : DbContext
             .HasOne(pc => pc.User)
             .WithMany()
             .HasForeignKey(pc => pc.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Cấu hình cho MediaComment
         modelBuilder.Entity<MediaComment>()
