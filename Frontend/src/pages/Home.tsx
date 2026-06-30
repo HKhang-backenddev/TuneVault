@@ -119,8 +119,8 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
 
   const styles = {
     container: { color: 'white' },
-    section: { marginBottom: '40px' },
-    sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px' },
+    section: { marginBottom: '40px', paddingLeft: '16px' },
+    sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px', paddingLeft: '0px' },
     grid: {
       display: 'flex',
       gap: '24px',
