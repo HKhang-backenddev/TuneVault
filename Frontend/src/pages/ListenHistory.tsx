@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Play, Trash2, Clock, Loader2, Calendar, Headphones, RotateCcw, Sparkles, Music } from 'lucide-react';
 import api from '../axios';
 import { useAudio } from '../Contexts/AudioContext';
 
@@ -18,11 +17,8 @@ const ListenHistory = () => {
   const { playTrack } = useAudio();
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
+  useEffect(() => { fetchHistory(); }, []);
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -30,10 +26,9 @@ const ListenHistory = () => {
       const res = await api.get('/media/history?pageSize=100');
       setItems(res.data || []);
     } catch (error) {
-      console.error("Lỗi khi tải lịch sử:", error);
-    } finally {
-      setLoading(false);
+      console.error("Lỗi:", error);
     }
+    setLoading(false);
   };
 
   const formatTime = (seconds: number) => {
@@ -44,48 +39,42 @@ const ListenHistory = () => {
 
   const formatRelativeTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Vừa xong';
-    if (diffMins < 60) return `${diffMins} phút trước`;
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    if (diffDays < 7) return `${diffDays} ngày trước`;
+    const diff = Date.now() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 1) return 'Vừa xong';
+    if (mins < 60) return `${mins} phút`;
+    if (hours < 24) return `${hours} giờ`;
+    if (days < 7) return `${days} ngày`;
     return date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' });
-  };
-
-  const handlePlay = (item: HistoryItem, index: number) => {
-    const trackItems = items.map(i => ({
-      id: i.id,
-      title: i.title,
-      artist: i.artist,
-      url: i.url,
-      thumbnailUrl: i.thumbnailUrl,
-      durationSeconds: i.durationInSeconds
-    }));
-    playTrack(trackItems[index], trackItems);
-  };
-
-  const handleClearHistory = async () => {
-    if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử nghe?')) return;
-    try {
-      await api.delete('/media/history');
-      setItems([]);
-    } catch (error) {
-      console.error("Lỗi khi xóa lịch sử:", error);
-    }
   };
 
   const getTimeIcon = (dateStr: string) => {
     const date = new Date(dateStr);
     const hour = date.getHours();
     if (hour < 6) return { icon: '🌙', label: 'Đêm khuya' };
-    if (hour < 12) return { icon: '☀️', label: 'Buổi sáng' };
-    if (hour < 18) return { icon: '🌤️', label: 'Buổi chiều' };
-    return { icon: '🌆', label: 'Buổi tối' };
+    if (hour < 12) return { icon: '☀️', label: 'Sáng' };
+    if (hour < 18) return { icon: '🌤️', label: 'Chiều' };
+    return { icon: '🌆', label: 'Tối' };
+  };
+
+  const handlePlay = (item: HistoryItem, index: number) => {
+    const trackItems = items.map(i => ({
+      id: i.id, title: i.title, artist: i.artist,
+      url: i.url, thumbnailUrl: i.thumbnailUrl, durationSeconds: i.durationInSeconds
+    }));
+    playTrack(trackItems[index], trackItems);
+  };
+
+  const handleClearHistory = async () => {
+    if (!confirm('Xóa toàn bộ lịch sử?')) return;
+    try {
+      await api.delete('/media/history');
+      setItems([]);
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
   };
 
   // Group by date
@@ -93,225 +82,240 @@ const ListenHistory = () => {
     const date = new Date(item.playedAt);
     const today = new Date();
     const isToday = date.toDateString() === today.toDateString();
-    const dateKey = isToday ? 'Hôm nay' : date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
-    if (!acc[dateKey]) acc[dateKey] = { items: [], timestamp: date.getTime() };
-    acc[dateKey].items.push(item);
+    const dateKey = isToday ? 'Hôm nay' : date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(item);
     return acc;
-  }, {} as Record<string, { items: HistoryItem[], timestamp: number }>);
+  }, {} as Record<string, HistoryItem[]>);
 
-  const sortedDates = Object.entries(groupedItems).sort((a, b) => b[1].timestamp - a[1].timestamp);
+  const sortedDates = Object.entries(groupedItems).sort((a, b) => {
+    const dateA = new Date(a[1][0]?.playedAt || 0);
+    const dateB = new Date(b[1][0]?.playedAt || 0);
+    return dateB.getTime() - dateA.getTime();
+  });
 
-  // Stats
-  const totalListeningTime = items.reduce((acc, item) => acc + (item.durationInSeconds || 0), 0);
-  const uniqueArtists = new Set(items.map(i => i.artist)).size;
+  const totalTime = items.reduce((acc, item) => acc + (item.durationInSeconds || 0), 0);
+  const formatTotalTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins} phút`;
+  };
 
   return (
-    <div className="pb-24 min-h-screen">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-purple-900 to-fuchsia-950">
-          <div className="absolute inset-0">
-            {[...Array(15)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-1 h-1 bg-purple-400 rounded-full animate-ping"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${3 + Math.random() * 2}s`
-                }}
-              />
-            ))}
+    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+      
+      {/* Header */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        gap: '16px',
+        marginBottom: '20px',
+        padding: '20px 24px',
+        background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+        borderRadius: '12px',
+        boxShadow: '0 4px 20px rgba(139, 92, 246, 0.3)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ 
+            width: '60px', height: '60px', 
+            backgroundColor: 'rgba(255,255,255,0.2)', 
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '32px'
+          }}>
+            🎧
+          </div>
+          <div>
+            <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: 'white', margin: 0 }}>Lịch Sử Nghe</h1>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: '4px 0 0' }}>
+              {items.length} bài hát • {formatTotalTime(totalTime)}
+            </p>
           </div>
         </div>
-        <div className="absolute inset-0 backdrop-blur-xl" />
-        
-        {/* Content */}
-        <div className="relative pt-16 pb-12 px-8">
-          <div className="flex items-start gap-8">
-            {/* Icon with glow */}
-            <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 bg-purple-500 rounded-full blur-2xl opacity-50 animate-pulse" />
-              <div className="relative w-32 h-32 rounded-3xl bg-gradient-to-br from-purple-500 via-fuchsia-500 to-pink-500 flex items-center justify-center shadow-2xl transform -rotate-6 hover:rotate-0 transition-transform duration-500">
-                <Headphones size={60} className="text-white drop-shadow-2xl" />
-              </div>
-            </div>
-            
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-widest">
-                  ✨ Hoạt động của bạn
-                </span>
-              </div>
-              <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 mb-4 drop-shadow-lg">
-                Lịch Sử Nghe Nhạc
-              </h1>
-              
-              {/* Stats Cards */}
-              <div className="grid grid-cols-3 gap-4 mt-6">
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center">
-                      <Music size={24} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-black text-white">{items.length}</p>
-                      <p className="text-xs text-white/50">Bài hát đã nghe</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-                      <Clock size={24} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-black text-white">{Math.floor(totalListeningTime / 3600)}h {Math.floor((totalListeningTime % 3600) / 60)}m</p>
-                      <p className="text-xs text-white/50">Thời gian nghe</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                      <Sparkles size={24} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-black text-white">{uniqueArtists}</p>
-                      <p className="text-xs text-white/50">Nghệ sĩ đã nghe</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Wave decoration */}
-        <svg className="absolute bottom-0 w-full" viewBox="0 0 1440 100" preserveAspectRatio="none">
-          <path fill="currentColor" className="text-neutral-950" d="M0,50 C360,100 720,0 1080,50 C1260,75 1350,75 1440,50 L1440,100 L0,100 Z" />
-        </svg>
-      </div>
-
-      {/* Actions */}
-      <div className="px-8 py-6 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white">
-          {items.length} bài hát trong lịch sử
-        </h2>
         {items.length > 0 && (
           <button
             onClick={handleClearHistory}
-            className="group px-5 py-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center gap-2 font-semibold border border-red-500/20 hover:border-red-500"
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.3)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
           >
-            <Trash2 size={16} className="group-hover:animate-bounce" />
-            Xóa lịch sử
+            🗑 Xóa lịch sử
           </button>
         )}
       </div>
 
-      {/* Content */}
-      <div className="px-8">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="relative w-20 h-20">
-              <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full" />
-              <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 rounded-full animate-spin" />
-            </div>
-            <p className="mt-6 text-white/60 font-medium">Đang tải lịch sử nghe...</p>
+      {/* Loading */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#1e1e2e', borderRadius: '12px' }}>
+          <div style={{ 
+            width: '40px', height: '40px', 
+            border: '4px solid #8b5cf6', 
+            borderTopColor: 'transparent', 
+            borderRadius: '50%', 
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }} />
+          <p style={{ color: '#9ca3af' }}>Đang tải lịch sử...</p>
+        </div>
+      ) : items.length === 0 ? (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '60px', 
+          background: '#1e1e2e',
+          borderRadius: '12px',
+          border: '1px solid #3b3b5c'
+        }}>
+          <span style={{ fontSize: '64px', display: 'block', marginBottom: '16px' }}>🎵</span>
+          <p style={{ color: '#9ca3af', fontSize: '18px' }}>Chưa có lịch sử nghe</p>
+          <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '8px' }}>Hãy bắt đầu nghe nhạc!</p>
+        </div>
+      ) : (
+        <>
+          {/* Table Header */}
+          <div style={{ 
+            display: 'flex', 
+            padding: '14px 20px', 
+            background: 'linear-gradient(90deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%)',
+            borderRadius: '12px 12px 0 0',
+            color: 'white',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            textTransform: 'uppercase'
+          }}>
+            <div style={{ width: '50px', textAlign: 'center' }}>#</div>
+            <div style={{ width: '50px', textAlign: 'center' }}>Giờ</div>
+            <div style={{ flex: 1 }}>Bài hát</div>
+            <div style={{ width: '80px', textAlign: 'center' }}>Thời lượng</div>
+            <div style={{ width: '80px', textAlign: 'center' }}>Phát</div>
           </div>
-        ) : items.length === 0 ? (
-          <div className="text-center py-24 bg-gradient-to-b from-white/[0.03] to-transparent rounded-3xl border border-white/10">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-              <Headphones size={48} className="text-purple-400/50" />
-            </div>
-            <p className="text-2xl text-white/60 font-bold">Chưa có lịch sử nghe</p>
-            <p className="text-white/40 mt-2">Hãy bắt đầu khám phá và nghe nhạc!</p>
-            <button className="mt-6 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all">
-              Khám phá ngay
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {sortedDates.map(([date, { items: dateItems }]) => (
-              <div key={date}>
-                {/* Date Header */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                      <Calendar size={20} className="text-purple-400" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white capitalize">{date}</h3>
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-semibold">
-                    {dateItems.length} bài hát
-                  </span>
-                </div>
 
-                {/* Songs Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {dateItems.map((item, index) => {
-                    const timeInfo = getTimeIcon(item.playedAt);
-                    return (
-                      <div
-                        key={`${item.id}-${index}`}
-                        onClick={() => handlePlay(item, items.indexOf(item))}
-                        className="group relative bg-white/[0.03] hover:bg-white/[0.06] rounded-2xl p-4 border border-white/5 hover:border-purple-500/30 transition-all duration-300 cursor-pointer"
-                      >
-                        <div className="flex gap-4">
-                          {/* Thumbnail */}
-                          <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
-                            <img 
-                              src={item.thumbnailUrl} 
-                              alt={item.title} 
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
-                                <Play size={18} className="text-white ml-0.5" fill="currentColor" />
-                              </div>
-                            </div>
-                            {/* Time badge */}
-                            <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/70 text-white text-xs font-mono">
-                              {formatTime(item.durationInSeconds)}
-                            </div>
-                          </div>
-                          
-                          {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-white truncate group-hover:text-purple-400 transition-colors">
-                              {item.title}
-                            </p>
-                            <p className="text-sm text-white/50 truncate">{item.artist}</p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <span className="text-xs">{timeInfo.icon}</span>
-                              <span className="text-xs text-white/40">{timeInfo.label}</span>
-                              <span className="text-white/30">•</span>
-                              <span className="text-xs text-white/40">{formatRelativeTime(item.playedAt)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Play indicator */}
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handlePlay(item, items.indexOf(item)); }}
-                            className="p-2 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500 hover:text-white transition-all backdrop-blur-sm"
-                            title="Phát lại"
-                          >
-                            <RotateCcw size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+          {/* Grouped by Date */}
+          {sortedDates.map(([date, dateItems]) => (
+            <div key={date}>
+              {/* Date Header */}
+              <div style={{ 
+                padding: '12px 20px', 
+                backgroundColor: '#374151',
+                borderLeft: '4px solid #8b5cf6',
+                borderRight: '1px solid #3b3b5c',
+                color: '#e5e7eb',
+                fontSize: '13px',
+                fontWeight: 'bold'
+              }}>
+                📅 {date} • {dateItems.length} bài
               </div>
-            ))}
+
+              {/* Items */}
+              {dateItems.map((item, index) => {
+                const timeInfo = getTimeIcon(item.playedAt);
+                const globalIndex = items.indexOf(item);
+                const dateIndex = dateItems.indexOf(item);
+                const isLast = globalIndex === items.length - 1;
+                return (
+                  <div
+                    key={`${item.id}-${index}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '12px 20px',
+                      backgroundColor: dateIndex % 2 === 0 ? '#1e1e2e' : '#252536',
+                      borderLeft: '1px solid #3b3b5c',
+                      borderRight: '1px solid #3b3b5c',
+                      borderBottom: isLast ? '1px solid #3b3b5c' : 'none',
+                    }}
+                  >
+                    {/* Index */}
+                    <div style={{ width: '50px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                      {globalIndex + 1}
+                    </div>
+
+                    {/* Time Icon */}
+                    <div style={{ width: '50px', textAlign: 'center', fontSize: '18px' }}>
+                      {timeInfo.icon}
+                    </div>
+
+                    {/* Song Info */}
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img 
+                        src={item.thumbnailUrl} 
+                        alt={item.title}
+                        style={{ 
+                          width: '48px', height: '48px', 
+                          borderRadius: '8px', 
+                          objectFit: 'cover',
+                          border: '2px solid #3b3b5c'
+                        }} 
+                      />
+                      <div>
+                        <p style={{ color: '#f3f4f6', fontSize: '14px', fontWeight: '500', margin: 0 }}>{item.title}</p>
+                        <p style={{ color: '#9ca3af', fontSize: '12px', margin: '4px 0 0' }}>{item.artist}</p>
+                        <p style={{ color: '#8b5cf6', fontSize: '11px', margin: '4px 0 0' }}>{timeInfo.label} • {formatRelativeTime(item.playedAt)}</p>
+                      </div>
+                    </div>
+
+                    {/* Duration */}
+                    <div style={{ width: '80px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>
+                      {formatTime(item.durationInSeconds)}
+                    </div>
+
+                    {/* Play Button */}
+                    <div style={{ width: '80px', textAlign: 'center' }}>
+                      <button
+                        onClick={() => handlePlay(item, globalIndex)}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: '#8b5cf6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        ▶ Phát
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+
+          {/* Table Footer */}
+          <div style={{ 
+            padding: '16px 20px', 
+            background: 'linear-gradient(180deg, #252536 0%, #1e1e2e 100%)',
+            borderRadius: '0 0 12px 12px',
+            border: '1px solid #3b3b5c',
+            borderTop: 'none',
+            color: '#9ca3af',
+            fontSize: '13px'
+          }}>
+            <span>Đã nghe </span>
+            <strong style={{ color: '#8b5cf6' }}>{items.length}</strong>
+            <span> bài hát • Tổng thời gian: </span>
+            <strong style={{ color: '#10b981' }}>{formatTotalTime(totalTime)}</strong>
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

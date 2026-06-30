@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
-import { Trophy, Play, TrendingUp, Loader2, Flame, Music2, Zap, ChevronUp, Crown } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import api from '../axios';
 import { useAudio } from '../Contexts/AudioContext';
 
@@ -19,35 +18,27 @@ const TopCharts = () => {
   const [items, setItems] = useState<ChartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [genre, setGenre] = useState<string>('');
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   const genres = [
-    { name: 'Tất cả', icon: <Music2 size={14} /> },
-    { name: 'YouTube', icon: <Zap size={14} /> },
-    { name: 'Lofi', icon: <Flame size={14} /> },
-    { name: 'Pop', icon: <TrendingUp size={14} /> },
-    { name: 'Rock', icon: <Flame size={14} /> },
-    { name: 'EDM', icon: <Zap size={14} /> },
+    { key: '', label: 'Tất cả' },
+    { key: 'YouTube', label: 'YouTube' },
+    { key: 'Lofi', label: 'Lofi' },
+    { key: 'Pop', label: 'Pop' },
+    { key: 'Rock', label: 'Rock' },
   ];
 
-  useEffect(() => {
-    fetchCharts();
-  }, [genre]);
+  useEffect(() => { fetchCharts(); }, [genre]);
 
   const fetchCharts = async () => {
     setLoading(true);
     try {
-      const url = genre && genre !== 'Tất cả' 
-        ? `/media/top?limit=30&genre=${encodeURIComponent(genre)}`
-        : '/media/top?limit=30';
+      const url = genre ? `/media/top?limit=50&genre=${encodeURIComponent(genre)}` : '/media/top?limit=50';
       const res = await api.get(url);
       setItems(res.data || []);
     } catch (error) {
-      console.error("Lỗi khi tải Top Charts:", error);
-    } finally {
-      setLoading(false);
+      console.error("Lỗi:", error);
     }
+    setLoading(false);
   };
 
   const formatTime = (seconds: number) => {
@@ -64,256 +55,237 @@ const TopCharts = () => {
 
   const handlePlay = (item: ChartItem, index: number) => {
     const trackItems = items.map(i => ({
-      id: i.id,
-      title: i.title,
-      artist: i.artist,
-      url: i.url,
-      thumbnailUrl: i.thumbnailUrl,
-      durationSeconds: i.durationInSeconds
+      id: i.id, title: i.title, artist: i.artist,
+      url: i.url, thumbnailUrl: i.thumbnailUrl, durationSeconds: i.durationInSeconds
     }));
     playTrack(trackItems[index], trackItems);
   };
 
   const getRankStyle = (index: number) => {
-    if (index === 0) return 'from-amber-400 to-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.5)]';
-    if (index === 1) return 'from-slate-300 to-gray-400 shadow-[0_0_20px_rgba(156,163,175,0.4)]';
-    if (index === 2) return 'from-amber-600 to-amber-700 shadow-[0_0_20px_rgba(180,83,9,0.4)]';
-    return 'bg-gradient-to-br from-slate-800 to-slate-900';
-  };
-
-  const getRankIcon = (index: number) => {
-    if (index === 0) return <Crown size={20} className="text-amber-300" />;
-    if (index < 3) return null;
-    return null;
+    if (index === 0) return { bg: '#fbbf24', label: 'Vàng', border: '#fef3c7' };
+    if (index === 1) return { bg: '#94a3b8', label: 'Bạc', border: '#f1f5f9' };
+    if (index === 2) return { bg: '#d97706', label: 'Đồng', border: '#fef3c7' };
+    return { bg: '#4b5563', label: '', border: '#f3f4f6' };
   };
 
   return (
-    <div className="pb-24 min-h-screen">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-purple-900 to-indigo-950">
-          <div className="absolute inset-0 opacity-30">
-            {[...Array(20)].map((_, i) => (
+    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+      
+      {/* Header */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '16px',
+        marginBottom: '20px',
+        padding: '20px 24px',
+        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+        borderRadius: '12px',
+        boxShadow: '0 4px 20px rgba(245, 158, 11, 0.3)'
+      }}>
+        <div style={{ 
+          width: '60px', height: '60px', 
+          backgroundColor: 'rgba(255,255,255,0.2)', 
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '32px'
+        }}>
+          🏆
+        </div>
+        <div>
+          <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: 'white', margin: 0 }}>Top Bài Hát</h1>
+          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: '4px 0 0' }}>
+            {items.length} bài hát • Bảng xếp hạng
+          </p>
+        </div>
+      </div>
+
+      {/* Genre Filter */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        {genres.map(g => (
+          <button
+            key={g.key}
+            onClick={() => setGenre(g.key)}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: genre === g.key ? '#f59e0b' : '#374151',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: genre === g.key ? 'bold' : 'normal',
+              boxShadow: genre === g.key ? '0 2px 10px #f59e0b40' : 'none'
+            }}
+          >
+            {g.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Loading */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#1e1e2e', borderRadius: '12px' }}>
+          <div style={{ 
+            width: '40px', height: '40px', 
+            border: '4px solid #f59e0b', 
+            borderTopColor: 'transparent', 
+            borderRadius: '50%', 
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }} />
+          <p style={{ color: '#9ca3af' }}>Đang tải bảng xếp hạng...</p>
+        </div>
+      ) : items.length === 0 ? (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '60px', 
+          background: '#1e1e2e',
+          borderRadius: '12px',
+          border: '1px solid #3b3b5c'
+        }}>
+          <span style={{ fontSize: '64px', display: 'block', marginBottom: '16px' }}>📊</span>
+          <p style={{ color: '#9ca3af', fontSize: '18px' }}>Chưa có dữ liệu</p>
+        </div>
+      ) : (
+        <>
+          {/* Table Header */}
+          <div style={{ 
+            display: 'flex', 
+            padding: '14px 20px', 
+            background: 'linear-gradient(90deg, #f59e0b 0%, #f97316 100%)',
+            borderRadius: '12px 12px 0 0',
+            color: 'white',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            textTransform: 'uppercase'
+          }}>
+            <div style={{ width: '50px', textAlign: 'center' }}>#</div>
+            <div style={{ flex: 1 }}>Bài hát</div>
+            <div style={{ width: '100px', textAlign: 'center' }}>Lượt nghe</div>
+            <div style={{ width: '80px', textAlign: 'center' }}>Thời gian</div>
+            <div style={{ width: '80px', textAlign: 'center' }}>Phát</div>
+          </div>
+
+          {/* Table Body */}
+          {items.map((item, index) => {
+            const style = getRankStyle(index);
+            const isLast = index === items.length - 1;
+            return (
               <div
-                key={i}
-                className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-pulse"
+                key={item.id}
                 style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '12px 20px',
+                  backgroundColor: index % 2 === 0 ? '#1e1e2e' : '#252536',
+                  borderLeft: `4px solid ${style.bg}`,
+                  borderRight: '1px solid #3b3b5c',
+                  borderBottom: isLast ? '1px solid #3b3b5c' : 'none',
                 }}
-              />
-            ))}
-          </div>
-        </div>
-        
-        {/* Glass effect overlay */}
-        <div className="absolute inset-0 backdrop-blur-xl" />
-        
-        {/* Content */}
-        <div className="relative pt-16 pb-12 px-8">
-          <div className="flex items-center gap-6">
-            {/* Trophy with glow */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-yellow-500 rounded-full blur-2xl opacity-50 animate-pulse" />
-              <div className="relative w-36 h-36 rounded-3xl bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center shadow-2xl transform rotate-6 hover:rotate-0 transition-transform duration-500">
-                <Trophy size={72} className="text-white drop-shadow-2xl" />
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold uppercase tracking-widest">
-                  🔥 Hot Trending
-                </span>
-              </div>
-              <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 mb-3 drop-shadow-lg">
-                Bảng Xếp Hạng
-              </h1>
-              <p className="text-white/60 text-lg">Những bài hát thịnh hành nhất • Cập nhật liên tục</p>
-              
-              {/* Stats */}
-              <div className="flex gap-6 mt-4">
-                <div className="text-center">
-                  <p className="text-2xl font-black text-white">{items.length}</p>
-                  <p className="text-xs text-white/50 uppercase tracking-wider">Bài hát</p>
+              >
+                {/* Index + Rank */}
+                <div style={{ width: '50px', textAlign: 'center' }}>
+                  <span style={{ 
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '32px', 
+                    height: '32px', 
+                    backgroundColor: style.bg,
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    color: index < 3 ? '#1e1e2e' : '#fff'
+                  }}>
+                    {index + 1}
+                  </span>
                 </div>
-                <div className="w-px h-10 bg-white/20" />
-                <div className="text-center">
-                  <p className="text-2xl font-black text-yellow-400">{formatViews(items.reduce((a, b) => a + b.playCount, 0))}</p>
-                  <p className="text-xs text-white/50 uppercase tracking-wider">Tổng lượt nghe</p>
+
+                {/* Song Info */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img 
+                    src={item.thumbnailUrl} 
+                    alt={item.title}
+                    style={{ 
+                      width: '48px', height: '48px', 
+                      borderRadius: '8px', 
+                      objectFit: 'cover',
+                      border: '2px solid #3b3b5c'
+                    }} 
+                  />
+                  <div>
+                    <p style={{ color: '#f3f4f6', fontSize: '14px', fontWeight: '500', margin: 0 }}>{item.title}</p>
+                    <p style={{ color: '#9ca3af', fontSize: '12px', margin: '4px 0 0' }}>{item.artist}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Wave decoration */}
-        <svg className="absolute bottom-0 w-full" viewBox="0 0 1440 100" preserveAspectRatio="none">
-          <path fill="currentColor" className="text-neutral-950" d="M0,50 C360,100 720,0 1080,50 C1260,75 1350,75 1440,50 L1440,100 L0,100 Z" />
-        </svg>
-      </div>
 
-      {/* Genre Filter - Modern Pills */}
-      <div className="px-8 py-6">
-        <div className="flex gap-3 flex-wrap">
-          {genres.map((g, i) => (
-            <button
-              key={g.name}
-              onClick={() => setGenre(g.name === 'Tất cả' ? '' : g.name)}
-              className={`group relative px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all duration-300 ${
-                (g.name === 'Tất cả' ? '' : g.name) === genre
-                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-[0_4px_20px_rgba(249,115,22,0.4)] scale-105'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10 hover:border-white/20'
-              }`}
-            >
-              {g.icon}
-              {g.name}
-              {(g.name === 'Tất cả' ? '' : g.name) === genre && (
-                <span className="absolute -inset-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl blur opacity-30 -z-10" />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+                {/* Views */}
+                <div style={{ 
+                  width: '100px', 
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px'
+                }}>
+                  <span style={{ fontSize: '14px' }}>👁</span>
+                  <span style={{ color: '#10b981', fontSize: '13px', fontWeight: 'bold' }}>
+                    {formatViews(item.playCount)}
+                  </span>
+                </div>
 
-      {/* Chart Content */}
-      <div className="px-8">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="relative w-20 h-20">
-              <div className="absolute inset-0 border-4 border-yellow-500/30 rounded-full" />
-              <div className="absolute inset-0 border-4 border-transparent border-t-yellow-500 rounded-full animate-spin" />
-            </div>
-            <p className="mt-6 text-white/60 font-medium">Đang tải bảng xếp hạng...</p>
-          </div>
-        ) : items.length === 0 ? (
-          <div className="text-center py-24 bg-white/5 rounded-3xl border border-white/10">
-            <TrendingUp size={80} className="mx-auto mb-4 text-white/20" />
-            <p className="text-xl text-white/60 font-medium">Chưa có dữ liệu</p>
-            <p className="text-white/40 mt-2">Hãy nghe nhiều bài hát hơn để xuất hiện trên bảng xếp hạng!</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {/* Top 3 Highlight */}
-            {items.slice(0, 3).length > 0 && (
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                {items.slice(0, 3).map((item, index) => (
-                  <div
-                    key={item.id}
+                {/* Duration */}
+                <div style={{ width: '80px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>
+                  {formatTime(item.durationInSeconds)}
+                </div>
+
+                {/* Play Button */}
+                <div style={{ width: '80px', textAlign: 'center' }}>
+                  <button
                     onClick={() => handlePlay(item, index)}
-                    className={`group relative cursor-pointer rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] ${
-                      index === 0 ? 'col-span-2 row-span-2' : ''
-                    } ${getRankStyle(index)}`}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontWeight: 'bold'
+                    }}
                   >
-                    {/* Rank Badge */}
-                    <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        index === 0 ? 'bg-gradient-to-br from-amber-400 to-yellow-500' :
-                        index === 1 ? 'bg-gradient-to-br from-slate-300 to-gray-400' :
-                        'bg-gradient-to-br from-amber-600 to-amber-700'
-                      }`}>
-                        <span className="text-white font-black text-lg">{index + 1}</span>
-                      </div>
-                      {getRankIcon(index)}
-                    </div>
-                    
-                    {/* Image */}
-                    <img
-                      src={item.thumbnailUrl}
-                      alt={item.title}
-                      className={`w-full object-cover ${index === 0 ? 'h-64' : 'h-32'}`}
-                    />
-                    
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                    
-                    {/* Content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className={`font-bold text-white mb-1 ${index === 0 ? 'text-xl' : 'text-sm'}`}>
-                        {item.title}
-                      </h3>
-                      <p className="text-white/70 text-xs mb-2">{item.artist}</p>
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1 text-yellow-400 text-xs font-semibold">
-                          <TrendingUp size={12} />
-                          {formatViews(item.playCount)}
-                        </span>
-                        <span className="text-white/50 text-xs">{formatTime(item.durationInSeconds)}</span>
-                      </div>
-                    </div>
-                    
-                    {/* Play Button */}
-                    <div className={`absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity ${index === 0 ? '' : ''}`}>
-                      <div className="w-16 h-16 rounded-full bg-yellow-500 flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform">
-                        <Play size={28} className="text-black ml-1" fill="currentColor" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Rest of the list */}
-            <div className="bg-gradient-to-b from-white/[0.03] to-transparent rounded-2xl border border-white/5 overflow-hidden">
-              <div className="grid grid-cols-12 gap-4 p-4 text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/5">
-                <div className="col-span-1 text-center">#</div>
-                <div className="col-span-6">Bài hát</div>
-                <div className="col-span-2">Album</div>
-                <div className="col-span-2 text-center">Lượt nghe</div>
-                <div className="col-span-1"></div>
-              </div>
-
-              {items.slice(3).map((item, index) => (
-                <div
-                  key={item.id}
-                  className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-white/[0.03] transition-all group cursor-pointer"
-                  onMouseEnter={() => setHoveredIndex(index + 3)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  onClick={() => handlePlay(item, index + 3)}
-                >
-                  <div className="col-span-1 text-center">
-                    <span className="text-lg font-black text-white/30 group-hover:text-yellow-500 transition-colors">
-                      {index + 4}
-                    </span>
-                  </div>
-                  <div className="col-span-6 flex items-center gap-3">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
-                      <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-cover" />
-                      <div className={`absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity ${hoveredIndex === index + 3 ? 'opacity-100' : 'opacity-0'}`}>
-                        <Play size={18} className="text-white ml-0.5" fill="currentColor" />
-                      </div>
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="font-semibold text-white truncate group-hover:text-yellow-400 transition-colors">{item.title}</p>
-                      <p className="text-sm text-white/50 truncate">{item.artist}</p>
-                    </div>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-neutral-500 text-sm truncate block">{item.genre || 'Single'}</span>
-                  </div>
-                  <div className="col-span-2 text-center">
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold">
-                      <TrendingUp size={10} />
-                      {formatViews(item.playCount)}
-                    </span>
-                  </div>
-                  <div className="col-span-1 flex justify-end">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handlePlay(item, index + 3); }}
-                      className="p-2 rounded-full bg-white/5 text-white/50 hover:bg-yellow-500 hover:text-black transition-all opacity-0 group-hover:opacity-100"
-                    >
-                      <Play size={14} fill="currentColor" />
-                    </button>
-                  </div>
+                    ▶ Phát
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            );
+          })}
+
+          {/* Table Footer */}
+          <div style={{ 
+            padding: '16px 20px', 
+            background: 'linear-gradient(180deg, #252536 0%, #1e1e2e 100%)',
+            borderRadius: '0 0 12px 12px',
+            border: '1px solid #3b3b5c',
+            borderTop: 'none',
+            color: '#9ca3af',
+            fontSize: '13px'
+          }}>
+            <span>Hiển thị </span>
+            <strong style={{ color: '#f59e0b' }}>{items.length}</strong>
+            <span> bài hát trong bảng xếp hạng</span>
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
