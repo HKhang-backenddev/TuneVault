@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Library, History, Heart, ChevronsLeft, ChevronsRight, User as UserIcon, Share2, Users, Trophy, Headphones } from 'lucide-react';
+import { Library, History, Heart, ChevronsLeft, ChevronsRight, User as UserIcon, Share2, Users, Trophy, Headphones, Music } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
 import { AppHeader } from './AppHeader';
 import PlayerBar from './PlayerBar';
@@ -107,6 +107,55 @@ const MenuBox = ({ user }: { user: User | null }) => {
           );
         })}
       </div>
+      {/* Quick Actions */}
+      <div style={{ marginTop: 'auto', paddingTop: '12px' }}>
+        {!isMenuCollapsed && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(29, 185, 84, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '12px',
+            border: '1px solid rgba(29, 185, 84, 0.2)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                width: '40px', height: '40px',
+                background: 'linear-gradient(135deg, #1db954, #10b981)',
+                borderRadius: '10px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Music size={20} style={{ color: 'white' }} />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: 'white' }}>Tạo Playlist</p>
+                <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Sáng tạo danh sách mới</p>
+              </div>
+            </div>
+            <div style={{
+              display: 'flex', gap: '8px',
+              padding: '8px',
+              background: 'rgba(0,0,0,0.3)',
+              borderRadius: '8px',
+            }}>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#1db954' }}>12</p>
+                <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Playlist</p>
+              </div>
+              <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ec4899' }}>48</p>
+                <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Yêu thích</p>
+              </div>
+              <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#8b5cf6' }}>156</p>
+                <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Đã nghe</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Nút chia sẻ mới */}
       <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '12px', marginTop: '12px' }}>
         <button
