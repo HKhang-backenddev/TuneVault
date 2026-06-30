@@ -154,9 +154,9 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       borderRadius: '9999px', // full circle
       transition: 'all 0.3s ease',
       boxShadow: '0 0 15px rgba(59, 130, 246, 0.5), inset 0 0 5px rgba(59, 130, 246, 0.3)',
-      color: '#3b82f6',
+      color: '#1db954',
       cursor: 'pointer',
-      border: '2px solid #3b82f6',
+      border: '2px solid #1db954',
       backdropFilter: 'blur(10px)',
       display: 'flex',
       alignItems: 'center',
@@ -188,7 +188,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       bottom: '8px',
       width: '48px',
       height: '48px',
-      backgroundColor: '#3b82f6', // TuneVault Neon Blue
+      backgroundColor: '#1db954', // TuneVault Neon Blue
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
@@ -644,7 +644,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           text-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
         }
         .neon-card:hover {
-          border-color: #3b82f6 !important;
+          border-color: #1db954 !important;
           box-shadow: 0 0 20px rgba(59, 130, 246, 0.5) !important;
           transform: translateY(-8px) scale(1.02);
         }
@@ -655,11 +655,11 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         .neon-title-blue {
           background: linear-gradient(
             90deg, 
-            #3b82f6 0%, 
+            #1db954 0%, 
             #93c5fd 25%, 
-            #3b82f6 50%, 
+            #1db954 50%, 
             #93c5fd 75%, 
-            #3b82f6 100%
+            #1db954 100%
           );
           background-size: 200% auto;
           -webkit-background-clip: text;
@@ -669,9 +669,9 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           display: inline-block;
         }
         .neon-button:hover {
-          background-color: #3b82f6 !important;
+          background-color: #1db954 !important;
           color: white !important;
-          box-shadow: 0 0 25px #3b82f6, 0 0 50px rgba(59, 130, 246, 0.5) !important;
+          box-shadow: 0 0 25px #1db954, 0 0 50px rgba(59, 130, 246, 0.5) !important;
           border-color: #93c5fd !important;
           /* Kết hợp scale với transform hiện tại của inline style */
           filter: brightness(1.2);
@@ -752,7 +752,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
               borderRadius: '24px', 
               border: '2px solid transparent',
               backgroundColor: 'rgba(0, 0, 0, 0.6)', // Tăng độ trong suốt
-              backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #3b82f6, #10b981, #c084fc)',
+              backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #1db954, #10b981, #c084fc)',
               backgroundOrigin: 'border-box',
               backgroundClip: 'padding-box, border-box',
               backgroundSize: '200% 100%',
@@ -785,7 +785,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                 justifyContent: 'center',
                 backgroundColor: canScrollUp && isFrameHovered ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
                 border: 'none',
-                color: canScrollUp && isFrameHovered ? '#3b82f6' : 'transparent',
+                color: canScrollUp && isFrameHovered ? '#1db954' : 'transparent',
                 cursor: canScrollUp ? 'pointer' : 'default',
                 transition: 'all 0.25s ease',
                 opacity: canScrollUp && isFrameHovered ? 1 : 0,
@@ -818,7 +818,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                 justifyContent: 'center',
                 backgroundColor: canScrollDown && isFrameHovered ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
                 border: 'none',
-                color: canScrollDown && isFrameHovered ? '#3b82f6' : 'transparent',
+                color: canScrollDown && isFrameHovered ? '#1db954' : 'transparent',
                 cursor: canScrollDown ? 'pointer' : 'default',
                 transition: 'all 0.25s ease',
                 opacity: canScrollDown && isFrameHovered ? 1 : 0,
