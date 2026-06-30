@@ -38,9 +38,11 @@ const MenuBox = ({ user }: { user: User | null }) => {
       borderRadius: '12px',
       padding: '16px',
       border: '1px solid rgba(59, 130, 246, 0.15)',
-      alignSelf: 'flex-start',
+      alignSelf: 'stretch',
       transition: 'width 0.3s ease',
       position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
     })}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '12px', marginBottom: '12px' }}>
         {!isMenuCollapsed && (
@@ -69,7 +71,7 @@ const MenuBox = ({ user }: { user: User | null }) => {
           {isMenuCollapsed ? <ChevronsRight size={20} /> : <ChevronsLeft size={20} />}
         </button>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
         {menuItems.map(item => {
           const isActive = location.pathname === item.path;
           // Tạo đường dẫn dựa trên việc path là chuỗi hay hàm
