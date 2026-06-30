@@ -402,6 +402,14 @@ public class MediaController : BaseApiController
     public async Task<IActionResult> RecordPlay(Guid mediaId, [FromBody] RecordPlayRequest? request)
     {
         var userId = RequireUserId();
+        
+        // Kiểm tra xem MediaItem có tồn tại không
+        var mediaExists = await _context.MediaItems.AnyAsync(m => m.Id == mediaId);
+        if (!mediaExists)
+        {
+            return BadRequest(new { message = $"MediaItem {mediaId} không tồn tại" });
+        }
+        
         var history = new PlayHistory
         {
             Id = Guid.NewGuid(),
