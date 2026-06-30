@@ -401,26 +401,28 @@ public class MediaController : BaseApiController
     [Authorize]
     public async Task<IActionResult> RecordPlay(Guid mediaId, [FromBody] RecordPlayRequest? request)
     {
-        var userId = RequireUserId();
-        
-        // Kiểm tra xem MediaItem có tồn tại không
-        var mediaExists = await _context.MediaItems.AnyAsync(m => m.Id == mediaId);
-        if (!mediaExists)
+        try
         {
-            return BadRequest(new { message = $"MediaItem {mediaId} không tồn tại" });
+            var userId = RequireUserId();
+            
+            var history = new PlayHistory
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                MediaItemId = mediaId,
+                PlayedAt = DateTime.UtcNow,
+                PlayDurationSeconds = request?.durationSeconds ?? 0
+            };
+            _context.PlayHistories.Add(history);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã ghi nhận." });
         }
-        
-        var history = new PlayHistory
+        catch (Exception ex)
         {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            MediaItemId = mediaId,
-            PlayedAt = DateTime.UtcNow,
-            PlayDurationSeconds = request?.durationSeconds ?? 0
-        };
-        _context.PlayHistories.Add(history);
-        await _context.SaveChangesAsync();
-        return Ok(new { message = "Đã ghi nhận." });
+            // Log lỗi nhưng vẫn trả về OK để không ảnh hưởng việc phát nhạc
+            Console.WriteLine($"Lỗi ghi lịch sử: {ex.Message}");
+            return Ok(new { message = "Đã ghi nhận (có lỗi)." });
+        }
     }
 
     /// <summary>Xóa lịch sử nghe.</summary>
