@@ -440,17 +440,37 @@ public class MediaController : BaseApiController
     [AllowAnonymous]
     public async Task<IActionResult> GetTopMedia([FromQuery] int limit = 20, [FromQuery] string? genre = null)
     {
-        var query = _context.PlayHistories
+        // Lấy top media items dựa trên số lượt nghe
+        var topPlays = await _context.PlayHistories
             .GroupBy(h => h.MediaItemId)
-            .Select(g => new
-            {
-                MediaItemId = g.Key,
-                PlayCount = g.Count()
-            })
+            .Select(g => new { MediaItemId = g.Key, PlayCount = g.Count() })
             .OrderByDescending(x => x.PlayCount)
-            .Take(limit);
+            .Take(limit)
+            .ToListAsync();
 
-        var topIds = await query.Select(x => x.MediaItemId).ToListAsync();
+        if (!topPlays.Any())
+        {
+            // Nếu không có lịch sử nghe, trả về bài hát mới nhất
+            var recentItems = await _context.MediaItems
+                .Include(m => m.Artist)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(limit)
+                .Select(m => new
+                {
+                    id = m.Id,
+                    title = m.Title,
+                    artist = m.Artist != null ? m.Artist.Name : "Nghệ sĩ không xác định",
+                    url = $"/api/media/stream/{m.Id}",
+                    thumbnailUrl = m.ThumbnailUrl ?? "",
+                    durationInSeconds = m.DurationInSeconds,
+                    genre = m.Genre,
+                    playCount = 0
+                })
+                .ToListAsync();
+            return Ok(recentItems);
+        }
+
+        var topIds = topPlays.Select(x => x.MediaItemId).ToList();
 
         var mediaQuery = _context.MediaItems
             .Include(m => m.Artist)
@@ -462,7 +482,6 @@ public class MediaController : BaseApiController
         }
 
         var items = await mediaQuery
-            .Take(limit)
             .Select(m => new
             {
                 id = m.Id,
@@ -472,7 +491,7 @@ public class MediaController : BaseApiController
                 thumbnailUrl = m.ThumbnailUrl ?? "",
                 durationInSeconds = m.DurationInSeconds,
                 genre = m.Genre,
-                playCount = query.First(x => x.MediaItemId == m.Id).PlayCount
+                playCount = topPlays.First(x => x.MediaItemId == m.Id).PlayCount
             })
             .ToListAsync();
 
