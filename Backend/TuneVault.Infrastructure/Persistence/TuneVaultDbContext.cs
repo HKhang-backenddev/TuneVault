@@ -84,7 +84,7 @@ public class TuneVaultDbContext : DbContext
             .HasOne(pf => pf.User)
             .WithMany()
             .HasForeignKey(pf => pf.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Cấu hình cho PlaylistCollaborator
         modelBuilder.Entity<PlaylistCollaborator>()
