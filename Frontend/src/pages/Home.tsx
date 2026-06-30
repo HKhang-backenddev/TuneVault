@@ -129,26 +129,26 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       background: 'linear-gradient(180deg, rgba(29, 185, 84, 0.15) 0%, transparent 100%)',
       marginBottom: '24px',
     },
-    greeting: { fontSize: '36px', fontWeight: 'bold', marginBottom: '24px' },
+    greeting: { fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' },
     quickPicks: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
       gap: '16px',
       marginBottom: '32px',
-      minHeight: '180px',
+      minHeight: 'auto',
     },
     quickCard: {
       display: 'flex',
       alignItems: 'center',
-      gap: '16px',
+      gap: '12px',
       background: 'rgba(255, 255, 255, 0.07)',
-      borderRadius: '8px',
-      padding: '16px',
+      borderRadius: '6px',
+      padding: '10px 14px',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
       overflow: 'hidden',
     },
-    quickCardText: { fontWeight: 'bold', fontSize: '15px', flex: 1 },
+    quickCardText: { fontWeight: 'bold', fontSize: '14px', flex: 1 },
     section: { marginBottom: '40px', padding: '0 32px' },
     sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px' },
     grid: {
@@ -268,7 +268,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             style={styles.playButton}
             className="group-hover:opacity-100 group-hover:translate-y-0"
           >
-            {isCurrent && isPlaying ? <Pause size={24} fill="black" /> : <Play size={24} fill="black" className="ml-1" />}
+            {isCurrent && isPlaying ? <Pause size={24} fill="black" /> : <Play size={20} fill="black" className="ml-1" />}
           </button>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -780,19 +780,19 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             {/* Quick Picks */}
           <div style={styles.quickPicks}>
             <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #2a4a6d 0%, #1a1a2e 100%)' }} onClick={() => sections[0]?.items && playAll(sections[0].items)}>
-              <Disc3 size={56} style={{ color: '#1db954' }} />
+              <Disc3 size={36} style={{ color: '#1db954' }} />
               <span style={styles.quickCardText}>Dành cho {user?.displayName || 'bạn'}</span>
-              <Play size={24} style={{ color: '#1db954' }} />
+              <Play size={20} style={{ color: '#1db954' }} />
             </div>
               <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #4a1942 0%, #1a1a2e 100%)' }} onClick={() => sections.find(s => s.title.includes('Thích'))?.items && playAll(sections.find(s => s.title.includes('Thích'))!.items)}>
-                <Heart size={56} style={{ color: '#e91e63' }} />
+                <Heart size={36} style={{ color: '#e91e63' }} />
                 <span style={styles.quickCardText}>Bài hát đã thích</span>
-                <Play size={24} style={{ color: '#e91e63' }} />
+                <Play size={20} style={{ color: '#e91e63' }} />
               </div>
               <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #1a3a1a 0%, #1a1a2e 100%)' }} onClick={() => sections.find(s => s.title.includes('Gần'))?.items && playAll(sections.find(s => s.title.includes('Gần'))!.items)}>
-                <Clock size={56} style={{ color: '#1db954' }} />
+                <Clock size={36} style={{ color: '#1db954' }} />
                 <span style={styles.quickCardText}>Nghe gần đây</span>
-                <Play size={24} style={{ color: '#1db954' }} />
+                <Play size={20} style={{ color: '#1db954' }} />
               </div>
             </div>
           </div>
