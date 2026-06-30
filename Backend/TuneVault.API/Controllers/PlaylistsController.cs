@@ -97,8 +97,8 @@ public class PlaylistsController : BaseApiController
 
         playlist.Title = request.Title ?? playlist.Title;
         playlist.Description = request.Description ?? playlist.Description;
-        playlist.IsPrivate = request.IsPrivate;
-        playlist.IsCollaborative = request.IsCollaborative;
+        if (request.IsPrivate.HasValue) playlist.IsPrivate = request.IsPrivate.Value;
+        if (request.IsCollaborative.HasValue) playlist.IsCollaborative = request.IsCollaborative.Value;
         playlist.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
         return Ok(new { message = "Cập nhật playlist thành công." });
