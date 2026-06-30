@@ -758,13 +758,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         </div>
       ) : (
         <>
-          <h1 
-            style={{ ...styles.sectionTitle, fontSize: '32px', marginBottom: '32px' }}
-            className="neon-title-blue"
-          >
-            {greeting}{user ? `, ${user.displayName}` : ''}!
-          </h1>
-
           {/* Header - Spotify Style */}
           <div style={styles.header}>
             <h1 style={styles.greeting}>
@@ -772,12 +765,12 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             </h1>
 
             {/* Quick Picks */}
-            <div style={styles.quickPicks}>
-              <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #2a4a6d 0%, #1a1a2e 100%)' }} onClick={() => sections[0]?.items && playAll(sections[0].items)}>
-                <Disc3 size={56} style={{ color: '#1db954' }} />
-                <span style={styles.quickCardText}>Dành cho {user?.displayName || 'bạn'}</span>
-                <Play size={24} style={{ color: '#1db954' }} />
-              </div>
+          <div style={styles.quickPicks}>
+            <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #2a4a6d 0%, #1a1a2e 100%)' }} onClick={() => sections[0]?.items && playAll(sections[0].items)}>
+              <Disc3 size={56} style={{ color: '#1db954' }} />
+              <span style={styles.quickCardText}>Dành cho {user?.displayName || 'bạn'}</span>
+              <Play size={24} style={{ color: '#1db954' }} />
+            </div>
               <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #4a1942 0%, #1a1a2e 100%)' }} onClick={() => sections.find(s => s.title.includes('Thích'))?.items && playAll(sections.find(s => s.title.includes('Thích'))!.items)}>
                 <Heart size={56} style={{ color: '#e91e63' }} />
                 <span style={styles.quickCardText}>Bài hát đã thích</span>
