@@ -147,7 +147,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const playTrack = async (track: Track, newQueue?: Track[]) => {
-    console.log(">>> AudioContext: Nhận lệnh phát bài:", track.title);
+    console.log(">>> AudioContext: 🟢 Nhận lệnh phát bài:", track.title, "ID:", track.id);
 
     // Nếu có hàng đợi mới được cung cấp, cập nhật nó
     if (newQueue && newQueue.length > 0) {
@@ -157,7 +157,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Ghi lịch sử nghe vào backend
     try {
-      console.log(">>> AudioContext: Gọi POST /api/media/history/" + track.id);
+      console.log(">>> AudioContext: 📝 Bắt đầu ghi lịch sử...");
       const res = await api.post(`/media/history/${track.id}`);
       console.log(">>> AudioContext: ✅ Ghi lịch sử OK:", res.data);
     } catch (err: any) {
