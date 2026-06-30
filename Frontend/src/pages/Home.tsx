@@ -670,6 +670,19 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
           background: rgba(255, 255, 255, 0.5);
         }
+        .home-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .home-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .home-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 3px;
+        }
+        .home-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.4);
+        }
         .section-title-neon {
           transition: all 0.4s ease;
         }
@@ -797,13 +810,16 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             </div>
           </div>
 
-          {/* Sections - Scrollable if needed */}
+          {/* Sections - Scrollable */}
           <div
             ref={frameRef}
             style={{
               padding: '0 32px',
               paddingBottom: '120px',
+              maxHeight: 'calc(100vh - 280px)',
+              overflowY: 'auto',
             }}
+            className="home-scrollbar"
           >
             {sections.map((section, idx) => <SectionRow key={idx} section={section} index={idx} />)}
           </div>
