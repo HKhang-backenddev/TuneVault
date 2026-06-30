@@ -479,7 +479,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         }}
         tabIndex={-1}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px', paddingLeft: '16px', paddingRight: '16px' }}>
           <h2 style={{ ...styles.sectionTitle, marginBottom: 0 }} className="section-title-neon">{section.title}</h2>
           <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#b3b3b3', cursor: 'pointer' }} className="hover:underline">HIỆN TẤT CẢ</span>
         </div>
@@ -515,7 +515,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
 
           <div
             ref={scrollRef}
-            style={{ ...styles.grid, overflowX: 'hidden' }}
+            style={{ ...styles.grid, overflowX: 'hidden', paddingLeft: '16px', paddingRight: '16px' }}
             className="no-scrollbar"
             onScroll={checkScroll}
           >
