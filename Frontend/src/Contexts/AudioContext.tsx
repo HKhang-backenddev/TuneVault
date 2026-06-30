@@ -157,10 +157,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Ghi lịch sử nghe vào backend
     try {
-      await api.post(`/media/history/${track.id}`);
-      console.log(">>> AudioContext: Đã ghi lịch sử nghe");
-    } catch (err) {
-      console.warn(">>> AudioContext: Không ghi được lịch sử:", err);
+      const token = localStorage.getItem('token');
+      console.log(">>> AudioContext: Token:", token ? "Có" : "Không có");
+      console.log(">>> AudioContext: Gọi POST /api/media/history/" + track.id);
+      const res = await api.post(`/media/history/${track.id}`);
+      console.log(">>> AudioContext: Ghi lịch sử OK:", res.data);
+    } catch (err: any) {
+      console.error(">>> AudioContext: Lỗi ghi lịch sử:", err?.response?.status, err?.message);
     }
 
     // Kiểm tra xem bài hát hiện tại có nguồn hợp lệ (Blob URL) chưa
