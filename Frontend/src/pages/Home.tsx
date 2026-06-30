@@ -233,7 +233,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         role="button"
         tabIndex={0}
         aria-label={`Phát ${song.title} - ${song.artist || 'Nghệ sĩ không xác định'}`}
-        onClick={() => { playTrack(song, searchResults.length > 0 ? searchResults : sections.flatMap(s => s.items)); api.post(`/media/history/${song.id}`).catch(err => console.log("Lỗi ghi lịch sử:", err?.response?.status)); }}
+        onClick={() => { playTrack(song, searchResults.length > 0 ? searchResults : sections.flatMap(s => s.items)); api.post(`/media/history/${song.id}`).catch(err => console.log("Lỗi ghi lịch sử:", err?.response?.status, "song.id:", song.id, "data:", JSON.stringify(err?.response?.data))); }}
         onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playTrack(song); } }}
       >
         <div style={styles.thumbnailWrapper}>
