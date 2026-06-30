@@ -22,6 +22,9 @@ public class TuneVaultDbContext : DbContext
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<PlayHistory> PlayHistories => Set<PlayHistory>();
     public DbSet<Follow> Follows => Set<Follow>();
+    public DbSet<PlaylistFollower> PlaylistFollowers => Set<PlaylistFollower>();
+    public DbSet<PlaylistCollaborator> PlaylistCollaborators => Set<PlaylistCollaborator>();
+    public DbSet<MediaComment> MediaComments => Set<MediaComment>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -35,6 +38,8 @@ public class TuneVaultDbContext : DbContext
         modelBuilder.Entity<PlaylistTrack>().HasKey(pt => new { pt.PlaylistId, pt.MediaItemId });
         modelBuilder.Entity<Favorite>().HasKey(f => new { f.UserId, f.MediaItemId });
         modelBuilder.Entity<Follow>().HasKey(f => new { f.FollowerId, f.TargetUserId });
+        modelBuilder.Entity<PlaylistFollower>().HasKey(pf => new { pf.PlaylistId, pf.UserId });
+        modelBuilder.Entity<PlaylistCollaborator>().HasKey(pc => new { pc.PlaylistId, pc.UserId });
 
         // Cấu hình các mối quan hệ và tránh lỗi loop cascade dính chùm
         modelBuilder.Entity<MediaShare>()
