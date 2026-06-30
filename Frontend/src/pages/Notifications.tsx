@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import api from '../axios';
-import { Trash2, Check, UserPlus, Download, Share2, Bell, FileText } from 'lucide-react';
 
 interface NotificationItem {
   id: string;
@@ -8,26 +7,13 @@ interface NotificationItem {
   isRead: boolean;
   createdAt: string;
   message: string;
-  payloadJson?: string;
 }
-
-const getIcon = (type: string) => {
-  switch (type.toLowerCase()) {
-    case 'follow': return { icon: <UserPlus size={16} />, bg: 'bg-green-500', text: 'text-green-500' };
-    case 'download_success': return { icon: <Download size={16} />, bg: 'bg-blue-500', text: 'text-blue-500' };
-    case 'share': return { icon: <Share2 size={16} />, bg: 'bg-purple-500', text: 'text-purple-500' };
-    case 'comment': return { icon: <FileText size={16} />, bg: 'bg-yellow-500', text: 'text-yellow-500' };
-    default: return { icon: <Bell size={16} />, bg: 'bg-gray-500', text: 'text-gray-500' };
-  }
-};
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
+  useEffect(() => { fetchNotifications(); }, []);
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -36,37 +22,30 @@ const Notifications = () => {
       setNotifications(res.data || []);
     } catch (error) {
       console.error("Lỗi:", error);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const markAsRead = async (id: string) => {
     try {
       await api.put(`/notifications/${id}/read`);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    } catch (error) {
-      console.error("Lỗi:", error);
-    }
+    } catch (error) { console.error("Lỗi:", error); }
   };
 
   const deleteNotification = async (id: string) => {
-    if (!confirm('Xóa thông báo này?')) return;
+    if (!confirm('Xóa thông báo?')) return;
     try {
       await api.delete(`/notifications/${id}`);
       setNotifications(prev => prev.filter(n => n.id !== id));
-    } catch (error) {
-      console.error("Lỗi:", error);
-    }
+    } catch (error) { console.error("Lỗi:", error); }
   };
 
   const markAllRead = async () => {
     try {
       await api.put('/notifications/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    } catch (error) {
-      console.error("Lỗi:", error);
-    }
+    } catch (error) { console.error("Lỗi:", error); }
   };
 
   const formatTime = (dateStr: string) => {
@@ -76,21 +55,28 @@ const Notifications = () => {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
     if (mins < 1) return 'Bây giờ';
-    if (mins < 60) return `${mins} phút trước`;
-    if (hours < 24) return `${hours} giờ trước`;
-    if (days < 7) return `${days} ngày trước`;
+    if (mins < 60) return `${mins} phút`;
+    if (hours < 24) return `${hours} giờ`;
+    if (days < 7) return `${days} ngày`;
     return date.toLocaleDateString('vi-VN');
   };
 
+  const getTypeIcon = (type: string) => {
+    const icons: Record<string, string> = {
+      follow: '👤', share: '📤', download_success: '📥', comment: '💬', like: '❤️', error: '⚠️'
+    };
+    return icons[type.toLowerCase()] || '🔔';
+  };
+
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      {/* Title */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-100">Thông báo</h1>
+    <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#e5e7eb', margin: 0 }}>Thông báo</h1>
         {notifications.some(n => !n.isRead) && (
-          <button 
-            onClick={markAllRead} 
-            className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          <button
+            onClick={markAllRead}
+            style={{ padding: '8px 16px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' }}
           >
             Đọc tất cả
           </button>
@@ -99,59 +85,85 @@ const Notifications = () => {
 
       {/* Loading */}
       {loading ? (
-        <div className="text-center py-12">
-          <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>Đang tải...</div>
       ) : notifications.length === 0 ? (
-        /* Empty State */
-        <div className="bg-gray-800 rounded-xl p-12 text-center border border-gray-700">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center">
-            <Bell size={32} className="text-gray-500" />
-          </div>
-          <p className="text-gray-400 text-lg">Không có thông báo nào</p>
+        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#1f2937', borderRadius: '8px', border: '1px solid #374151' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔔</div>
+          <p style={{ color: '#9ca3af', fontSize: '16px', margin: 0 }}>Không có thông báo nào</p>
         </div>
       ) : (
-        /* List */
-        <div className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700">
-          {notifications.map((item, index) => {
-            const iconInfo = getIcon(item.type);
-            return (
-              <div 
-                key={item.id}
-                className={`flex items-center gap-4 p-4 hover:bg-gray-750 transition-colors cursor-pointer ${
-                  index !== 0 ? 'border-t border-gray-700' : ''
-                } ${!item.isRead ? 'bg-blue-500/5' : ''}`}
-                onClick={() => !item.isRead && markAsRead(item.id)}
-              >
-                {/* Icon */}
-                <div className={`w-10 h-10 ${iconInfo.bg} rounded-full flex items-center justify-center text-white flex-shrink-0`}>
-                  {iconInfo.icon}
-                </div>
+        /* Table Header */
+        <div style={{ display: 'flex', padding: '12px 16px', backgroundColor: '#374151', borderRadius: '8px 8px 0 0', color: '#9ca3af', fontSize: '13px', fontWeight: '600' }}>
+          <div style={{ width: '50px', textAlign: 'center' }}>#</div>
+          <div style={{ width: '60px', textAlign: 'center' }}>Loại</div>
+          <div style={{ flex: 1 }}>Nội dung</div>
+          <div style={{ width: '100px' }}>Thời gian</div>
+          <div style={{ width: '80px', textAlign: 'center' }}>Hành động</div>
+        </div>
+      )}
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${item.isRead ? 'text-gray-400' : 'text-gray-200'}`}>
-                    {item.message}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">{formatTime(item.createdAt)}</p>
-                </div>
+      {/* Table Body */}
+      {!loading && notifications.length > 0 && notifications.map((item, index) => (
+        <div
+          key={item.id}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px 16px',
+            borderBottom: index < notifications.length - 1 ? '1px solid #374151' : 'none',
+            borderLeft: '1px solid #374151',
+            borderRight: '1px solid #374151',
+            backgroundColor: item.isRead ? '#1a1a2e' : '#1f2937',
+          }}
+        >
+          {/* Index */}
+          <div style={{ width: '50px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+            {index + 1}
+          </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  {!item.isRead && (
-                    <span className="w-2 h-2 bg-blue-500 rounded-full" />
-                  )}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); deleteNotification(item.id); }}
-                    className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title="Xóa"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+          {/* Icon */}
+          <div style={{ width: '60px', textAlign: 'center', fontSize: '20px' }}>
+            {getTypeIcon(item.type)}
+          </div>
+
+          {/* Message */}
+          <div style={{ flex: 1, color: item.isRead ? '#9ca3af' : '#e5e7eb', fontSize: '14px' }}>
+            {item.message}
+          </div>
+
+          {/* Time */}
+          <div style={{ width: '100px', color: '#6b7280', fontSize: '13px' }}>
+            {formatTime(item.createdAt)}
+          </div>
+
+          {/* Actions */}
+          <div style={{ width: '80px', display: 'flex', justifyContent: 'center', gap: '8px' }}>
+            {!item.isRead && (
+              <span style={{ width: '8px', height: '8px', backgroundColor: '#3b82f6', borderRadius: '50%', display: 'inline-block' }} />
+            )}
+            <button
+              onClick={() => markAsRead(item.id)}
+              style={{ padding: '4px 8px', backgroundColor: '#374151', color: '#9ca3af', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+              title="Đánh dấu đã đọc"
+            >
+              ✓
+            </button>
+            <button
+              onClick={() => deleteNotification(item.id)}
+              style={{ padding: '4px 8px', backgroundColor: '#374151', color: '#ef4444', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+              title="Xóa"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {/* Table Footer */}
+      {!loading && notifications.length > 0 && (
+        <div style={{ display: 'flex', padding: '12px 16px', backgroundColor: '#374151', borderRadius: '0 0 8px 8px', borderTop: '1px solid #4b5563', color: '#9ca3af', fontSize: '13px' }}>
+          <span>Tổng cộng: <strong style={{ color: '#e5e7eb' }}>{notifications.length}</strong> thông báo</span>
+          <span style={{ marginLeft: '24px' }}>Chưa đọc: <strong style={{ color: '#3b82f6' }}>{notifications.filter(n => !n.isRead).length}</strong></span>
         </div>
       )}
     </div>
