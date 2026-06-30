@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../axios';
-import { Play, Pause, Music, ChevronLeft, ChevronRight, Heart, Search as SearchIcon, Share2, Trash2, User } from 'lucide-react';
+import { Play, Pause, Music, ChevronLeft, ChevronRight, Heart, Search as SearchIcon, Share2, Trash2, User, Clock, Disc3 } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -118,9 +118,38 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   };
 
   const styles = {
-    container: { color: 'white' },
-    section: { marginBottom: '40px', paddingLeft: '16px' },
-    sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px', paddingLeft: '0px' },
+    container: { 
+      color: 'white',
+      background: 'linear-gradient(180deg, #1a1a2e 0%, #121212 100%)',
+      minHeight: '100vh',
+      paddingBottom: '100px',
+    },
+    header: {
+      padding: '32px 32px 0 32px',
+      background: 'linear-gradient(180deg, rgba(29, 185, 84, 0.15) 0%, transparent 100%)',
+      marginBottom: '24px',
+    },
+    greeting: { fontSize: '36px', fontWeight: 'bold', marginBottom: '24px' },
+    quickPicks: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+      gap: '16px',
+      marginBottom: '32px',
+    },
+    quickCard: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '16px',
+      background: 'rgba(255, 255, 255, 0.07)',
+      borderRadius: '8px',
+      padding: '16px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      overflow: 'hidden',
+    },
+    quickCardText: { fontWeight: 'bold', fontSize: '15px', flex: 1 },
+    section: { marginBottom: '40px', padding: '0 32px' },
+    sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px' },
     grid: {
       display: 'flex',
       gap: '24px',
@@ -130,7 +159,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       scrollbarWidth: 'none' as const,
     },
     card: {
-      backgroundColor: 'rgba(18, 18, 18, 0.7)',
+      backgroundColor: '#181818',
       padding: '16px',
       borderRadius: '8px',
       cursor: 'pointer',
@@ -138,39 +167,33 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       minWidth: '200px',
       flexShrink: 0,
       position: 'relative' as const,
-      backdropFilter: 'blur(5px)',
-      zIndex: 1,
-      border: '1px solid rgba(59, 130, 246, 0.1)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.3s ease',
     },
     // Styles cho nút cuộn trái/phải
     buttonScroll: {
       position: 'absolute' as const,
-      top: '40%',
-      transform: 'translateY(-50%)', // Base transform
+      top: '45%',
+      transform: 'translateY(-50%)',
       zIndex: 50,
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      backgroundColor: '#1db954',
       padding: '12px',
-      borderRadius: '9999px', // full circle
+      borderRadius: '9999px',
       transition: 'all 0.3s ease',
-      boxShadow: '0 0 15px rgba(59, 130, 246, 0.5), inset 0 0 5px rgba(59, 130, 246, 0.3)',
-      color: '#1db954',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+      color: 'black',
       cursor: 'pointer',
-      border: '2px solid #1db954',
-      backdropFilter: 'blur(10px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      // ensure buttons are visible even if parent stacking context is weird
       visibility: 'visible' as const,
     },
     buttonScrollLeft: {
       left: '16px',
-      transform: 'translateY(-50%) translateX(8px)', // translate-x-2
+      transform: 'translateY(-50%) translateX(8px)',
     },
     buttonScrollRight: {
       right: '16px',
-      transform: 'translateY(-50%) translateX(-8px)', // -translate-x-2
+      transform: 'translateY(-50%) translateX(-8px)',
     },
     thumbnailWrapper: {
       position: 'relative' as const,
@@ -178,7 +201,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       aspectRatio: '1/1',
       marginBottom: '16px',
       boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-      borderRadius: '4px',
+      borderRadius: '8px',
       overflow: 'hidden',
     },
     thumbnail: { width: '100%', height: '100%', objectFit: 'cover' as const },
@@ -188,23 +211,20 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       bottom: '8px',
       width: '48px',
       height: '48px',
-      backgroundColor: '#1db954', // TuneVault Neon Blue
+      backgroundColor: '#1db954',
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      boxShadow: '0 0 20px rgba(59, 130, 246, 0.7)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
       opacity: 0,
-      // Sửa lại transform để khi isCurrent, nó không bị giật
-      transform: 'translateY(10px)',
-      // Thêm zIndex để nút play không bị đè bởi các hiệu ứng khác
+      transform: 'translateY(8px)',
       zIndex: 10,
       transition: 'all 0.3s ease',
-      color: 'white',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
+      color: 'black',
     },
     cardTitle: { fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
-    cardArtist: { fontSize: '14px', color: '#a7a7a7', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
+    cardArtist: { fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
 
     sectionContainer: {
     marginBottom: '40px',
@@ -479,7 +499,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         }}
         tabIndex={-1}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px', paddingLeft: '16px', paddingRight: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px' }}>
           <h2 style={{ ...styles.sectionTitle, marginBottom: 0 }} className="section-title-neon">{section.title}</h2>
           <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#b3b3b3', cursor: 'pointer' }} className="hover:underline">HIỆN TẤT CẢ</span>
         </div>
@@ -744,97 +764,35 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           >
             {greeting}{user ? `, ${user.displayName}` : ''}!
           </h1>
-          
-          <div
-            ref={frameRef}
-            style={{ 
-              marginLeft: '4px',
-              marginRight: '4px',
-              padding: '28px', 
-              borderRadius: '24px', 
-              border: '2px solid transparent',
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #1db954, #10b981, #c084fc)',
-              backgroundOrigin: 'border-box',
-              backgroundClip: 'padding-box, border-box',
-              backgroundSize: '200% 100%',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(29, 185, 84, 0.2)',
-              animation: 'animated-border-home 8s linear infinite',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              maxHeight: '70vh',
-              overflowY: 'auto',
-              paddingBottom: '120px', // Thêm khoảng đệm dưới để không bị PlayerBar che
-            }}
-            className="song-list-frame"
-            onScroll={checkFrameScroll}
-            onMouseEnter={() => { setIsFrameHovered(true); setTimeout(checkFrameScroll, 50); }}
-            onMouseLeave={() => setIsFrameHovered(false)}
-          >
-            {/* Nút cuộn lên */}
-            <button
-              type="button"
-              onClick={() => scrollFrame('up')}
-              disabled={!canScrollUp}
-              style={{
-                position: 'sticky',
-                top: '0px',
-                zIndex: 40,
-                width: '100%',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: canScrollUp && isFrameHovered ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                border: 'none',
-                color: canScrollUp && isFrameHovered ? '#1db954' : 'transparent',
-                cursor: canScrollUp ? 'pointer' : 'default',
-                transition: 'all 0.25s ease',
-                opacity: canScrollUp && isFrameHovered ? 1 : 0,
-                pointerEvents: canScrollUp && isFrameHovered ? 'auto' : 'none',
-                backdropFilter: 'blur(4px)',
-                borderRadius: '12px 12px 0 0',
-                marginBottom: '4px',
-              }}
-              className="neon-button"
-              title="Cuộn lên"
-            >
-              <ChevronLeft size={20} style={{ transform: 'rotate(90deg)' }} />
-            </button>
 
-            {sections.map((section, idx) => <SectionRow key={idx} section={section} index={idx} />)}
+          {/* Header - Spotify Style */}
+          <div style={styles.header}>
+            <h1 style={styles.greeting}>
+              {greeting}{user ? `, ${user.displayName}` : ''}!
+            </h1>
 
-            {/* Nút cuộn xuống */}
-            <button
-              type="button"
-              onClick={() => scrollFrame('down')}
-              disabled={!canScrollDown}
-              style={{
-                position: 'sticky',
-                bottom: '0px',
-                zIndex: 40,
-                width: '100%',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: canScrollDown && isFrameHovered ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                border: 'none',
-                color: canScrollDown && isFrameHovered ? '#1db954' : 'transparent',
-                cursor: canScrollDown ? 'pointer' : 'default',
-                transition: 'all 0.25s ease',
-                opacity: canScrollDown && isFrameHovered ? 1 : 0,
-                pointerEvents: canScrollDown && isFrameHovered ? 'auto' : 'none',
-                backdropFilter: 'blur(4px)',
-                borderRadius: '0 0 12px 12px',
-                marginTop: '4px',
-              }}
-              className="neon-button"
-              title="Cuộn xuống"
-            >
-              <ChevronLeft size={20} style={{ transform: 'rotate(-90deg)' }} />
-            </button>
+            {/* Quick Picks */}
+            <div style={styles.quickPicks}>
+              <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #2a4a6d 0%, #1a1a2e 100%)' }} onClick={() => sections[0]?.items && playAll(sections[0].items)}>
+                <Disc3 size={56} style={{ color: '#1db954' }} />
+                <span style={styles.quickCardText}>Dành cho {user?.displayName || 'bạn'}</span>
+                <Play size={24} style={{ color: '#1db954' }} />
+              </div>
+              <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #4a1942 0%, #1a1a2e 100%)' }} onClick={() => sections.find(s => s.title.includes('Thích'))?.items && playAll(sections.find(s => s.title.includes('Thích'))!.items)}>
+                <Heart size={56} style={{ color: '#e91e63' }} />
+                <span style={styles.quickCardText}>Bài hát đã thích</span>
+                <Play size={24} style={{ color: '#e91e63' }} />
+              </div>
+              <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #1a3a1a 0%, #1a1a2e 100%)' }} onClick={() => sections.find(s => s.title.includes('Gần'))?.items && playAll(sections.find(s => s.title.includes('Gần'))!.items)}>
+                <Clock size={56} style={{ color: '#1db954' }} />
+                <span style={styles.quickCardText}>Nghe gần đây</span>
+                <Play size={24} style={{ color: '#1db954' }} />
+              </div>
+            </div>
           </div>
+
+          {/* Sections */}
+          {sections.map((section, idx) => <SectionRow key={idx} section={section} index={idx} />)}
 
           {sections.length === 0 && (
              <div style={{ textAlign: 'center', padding: '100px 0' }}>
