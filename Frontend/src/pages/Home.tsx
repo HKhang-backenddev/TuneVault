@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../axios';
-import { Play, Pause, Music, ChevronLeft, ChevronRight, Heart, Search as SearchIcon, Share2, Trash2, User, Disc3, Clock } from 'lucide-react';
+import { Play, Pause, Music, ChevronLeft, ChevronRight, Heart, Search as SearchIcon, Share2, Trash2, User } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -40,68 +40,11 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   const [userResults, setUserResults] = useState<UserResult[]>([]);
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [hearts, setHearts] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
+  const [greeting, setGreeting] = useState('Chào bạn');
   const frameRef = useRef<HTMLDivElement>(null);
   const [canScrollUp, setCanScrollUp] = useState(false);
   const [canScrollDown, setCanScrollDown] = useState(false);
   const [isFrameHovered, setIsFrameHovered] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Chào buổi sáng';
-    if (hour < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [lastRefreshTime]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [libraryRes, likedRes] = await Promise.allSettled([
-        api.get('/media/library?pageSize=30'),
-        api.get('/favorites')
-      ]);
-
-      const newSections: { title: string, items: MediaItem[] }[] = [];
-
-      if (libraryRes.status === 'fulfilled') {
-        const data = libraryRes.value.data?.items || libraryRes.value.data || [];
-        if (data.length > 0) {
-          newSections.push({ title: 'Thư Viện Của Bạn', items: data });
-        }
-      }
-
-      if (likedRes.status === 'fulfilled') {
-        const liked = likedRes.value.data?.items || likedRes.value.data || [];
-        if (liked.length > 0) {
-          newSections.push({ title: 'Bài Hát Đã Thích', items: liked });
-        }
-      }
-
-      if (newSections.length === 0) {
-        const allRes = await api.get('/media?pageSize=50');
-        const allData = allRes.data?.items || allRes.data || [];
-        if (allData.length > 0) {
-          newSections.push({ title: 'Khám Phá', items: allData });
-        }
-      }
-
-      setSections(newSections);
-    } catch (err) {
-      console.error('Lỗi load data:', err);
-    }
-    setLoading(false);
-  };
-
-  const playAll = (items: MediaItem[]) => {
-    if (items.length > 0) {
-      playTrack(items[0], items);
-      api.post(`/media/history/${items[0].id}`).catch(() => {});
-    }
-  };
 
   const checkFrameScroll = () => {
     const el = frameRef.current;
@@ -175,48 +118,8 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   };
 
   const styles = {
-    container: { 
-      color: 'white',
-      minHeight: '100%',
-      background: 'linear-gradient(180deg, #1a1a2e 0%, #121212 100%)',
-      paddingBottom: '100px',
-    },
-    // Header gradient
-    header: {
-      padding: '32px',
-      background: 'linear-gradient(180deg, rgba(29, 185, 84, 0.15) 0%, transparent 100%)',
-      marginBottom: '16px',
-    },
-    greeting: {
-      fontSize: '36px',
-      fontWeight: 'bold',
-      marginBottom: '24px',
-      color: 'white',
-    },
-    // Quick picks
-    quickPicks: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-      gap: '16px',
-      marginBottom: '32px',
-    },
-    quickCard: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '16px',
-      background: 'rgba(255, 255, 255, 0.07)',
-      borderRadius: '8px',
-      padding: '16px',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      overflow: 'hidden',
-    },
-    quickCardText: {
-      fontWeight: 'bold',
-      fontSize: '15px',
-      color: 'white',
-    },
-    section: { marginBottom: '40px', padding: '0 32px' },
+    container: { color: 'white' },
+    section: { marginBottom: '40px' },
     sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px' },
     grid: {
       display: 'flex',
@@ -237,7 +140,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       position: 'relative' as const,
       backdropFilter: 'blur(5px)',
       zIndex: 1,
-      border: '1px solid rgba(29, 185, 84, 0.1)',
+      border: '1px solid rgba(59, 130, 246, 0.1)',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     },
     // Styles cho nút cuộn trái/phải
@@ -250,7 +153,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       padding: '12px',
       borderRadius: '9999px', // full circle
       transition: 'all 0.3s ease',
-      boxShadow: '0 0 15px rgba(29, 185, 84, 0.5), inset 0 0 5px rgba(29, 185, 84, 0.3)',
+      boxShadow: '0 0 15px rgba(59, 130, 246, 0.5), inset 0 0 5px rgba(59, 130, 246, 0.3)',
       color: '#1db954',
       cursor: 'pointer',
       border: '2px solid #1db954',
@@ -726,10 +629,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   return (
     <div style={styles.container}>
       <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
         .group:hover .play-button-trigger {
           opacity: 1;
           transform: translateY(0);
@@ -741,7 +640,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           transition: all 0.4s ease;
         }
         .section-title-neon:hover {
-          color: #93c5fd;
+          color: #1db954;
           text-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
         }
         .neon-card:hover {
@@ -757,9 +656,9 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           background: linear-gradient(
             90deg, 
             #1db954 0%, 
-            #93c5fd 25%, 
+            #1db954 25%, 
             #1db954 50%, 
-            #93c5fd 75%, 
+            #1db954 75%, 
             #1db954 100%
           );
           background-size: 200% auto;
@@ -773,7 +672,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           background-color: #1db954 !important;
           color: white !important;
           box-shadow: 0 0 25px #1db954, 0 0 50px rgba(59, 130, 246, 0.5) !important;
-          border-color: #93c5fd !important;
+          border-color: #1db954 !important;
           /* Kết hợp scale với transform hiện tại của inline style */
           filter: brightness(1.2);
           z-index: 60;
@@ -843,45 +742,9 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             style={{ ...styles.sectionTitle, fontSize: '32px', marginBottom: '32px' }}
             className="neon-title-blue"
           >
-            {getGreeting()}{user ? `, ${user.displayName}` : ''}!
+            {greeting}{user ? `, ${user.displayName}` : ''}!
           </h1>
           
-          {/* Header với gradient */}
-          <div style={styles.header}>
-            {/* Quick Picks - Spotify style */}
-            <div style={styles.quickPicks}>
-              <div 
-                style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}
-                onClick={() => sections[0]?.items && playAll(sections[0].items)}
-              >
-                <Disc3 size={48} style={{ color: '#1db954' }} />
-                <span style={styles.quickCardText}>Dành cho {user?.displayName || 'bạn'}</span>
-              </div>
-              <div 
-                style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #4a1942 0%, #1a1a2e 100%)' }}
-                onClick={() => sections.find(s => s.title.includes('Thích'))?.items && playAll(sections.find(s => s.title.includes('Thích'))!.items)}
-              >
-                <Heart size={48} style={{ color: '#e91e63' }} />
-                <span style={styles.quickCardText}>Bài hát đã thích</span>
-              </div>
-              <div 
-                style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #1a3a1a 0%, #0a0a0a 100%)' }}
-                onClick={() => sections.find(s => s.title.includes('Gần'))?.items && playAll(sections.find(s => s.title.includes('Gần'))!.items)}
-              >
-                <Clock size={48} style={{ color: '#1db954' }} />
-                <span style={styles.quickCardText}>Nghe gần đây</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Loading */}
-          {loading && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px', flexDirection: 'column', gap: '16px' }}>
-              <Disc3 size={48} style={{ color: '#1db954', animation: 'spin 1s linear infinite' }} />
-              <p style={{ color: '#b3b3b3' }}>Đang tải...</p>
-            </div>
-          )}
-
           <div
             ref={frameRef}
             style={{ 
