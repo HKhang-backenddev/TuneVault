@@ -27,10 +27,18 @@ const ListenHistory = () => {
     setLoading(true);
     setError('');
     try {
+      console.log('🎧 ListenHistory: Đang gọi API...');
+      const token = localStorage.getItem('token');
+      console.log('🎧 ListenHistory: Token:', token ? 'Có token' : 'Không có token');
+      
       const res = await api.get('/media/history?pageSize=50');
+      console.log('🎧 ListenHistory: Response:', res.data);
+      
       let data = res.data;
       if (data?.items) data = data.items;
       if (data?.data) data = data.data;
+
+      console.log('🎧 ListenHistory: Data sau xử lý:', data);
 
       if (Array.isArray(data) && data.length > 0) {
         setItems(data.map((item: any) => ({
@@ -46,7 +54,12 @@ const ListenHistory = () => {
         setItems([]);
       }
     } catch (err: any) {
-      setError(err.message || 'Lỗi kết nối');
+      console.error('🎧 ListenHistory: Lỗi:', err?.response?.status, err?.response?.data);
+      if (err?.response?.status === 401) {
+        setError('Vui lòng đăng nhập để xem lịch sử nghe');
+      } else {
+        setError(err.message || 'Lỗi kết nối');
+      }
     }
     setLoading(false);
   };
