@@ -8,6 +8,7 @@ public class PlayHistory
     public Guid UserId { get; set; }
     public Guid MediaItemId { get; set; }
     public DateTime PlayedAt { get; set; } = DateTime.UtcNow;
+    public int PlayDurationSeconds { get; set; } = 0;
 
     public User? User { get; set; }
     public MediaItem? MediaItem { get; set; }

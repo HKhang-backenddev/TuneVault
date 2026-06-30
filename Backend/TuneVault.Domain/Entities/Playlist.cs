@@ -52,14 +52,3 @@ public class MediaComment
     public User? User { get; set; }
 }
 
-// Lịch sử nghe nhạc
-public class PlayHistory
-{
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public Guid MediaItemId { get; set; }
-    public DateTime PlayedAt { get; set; } = DateTime.UtcNow;
-    public int PlayDurationSeconds { get; set; } = 0;
-    public MediaItem? MediaItem { get; set; }
-    public User? User { get; set; }
-}
