@@ -159,12 +159,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const token = localStorage.getItem('token');
       console.log(">>> AudioContext: Token:", token ? "Có" : "Không có");
-      console.log(">>> AudioContext: track.id:", track.id, "| isGuid:", /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(track.id));
+      console.log(">>> AudioContext: track.id:", track.id);
       console.log(">>> AudioContext: Gọi POST /api/media/history/" + track.id);
       const res = await api.post(`/media/history/${track.id}`);
       console.log(">>> AudioContext: Ghi lịch sử OK:", res.data);
     } catch (err: any) {
-      console.error(">>> AudioContext: Lỗi ghi lịch sử:", err?.response?.status, err?.message, err?.response?.data);
+      console.error(">>> AudioContext: Lỗi ghi lịch sử:", err?.response?.status);
+      console.error(">>> AudioContext: Response data:", JSON.stringify(err?.response?.data));
     }
 
     // Kiểm tra xem bài hát hiện tại có nguồn hợp lệ (Blob URL) chưa
