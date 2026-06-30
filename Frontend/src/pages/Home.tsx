@@ -753,7 +753,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
               padding: '28px', 
               borderRadius: '24px', 
               border: '2px solid transparent',
-              backgroundColor: 'rgba(0, 0, 0, 0.6)'
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
               backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #1db954, #10b981, #c084fc)',
               backgroundOrigin: 'border-box',
               backgroundClip: 'padding-box, border-box',
