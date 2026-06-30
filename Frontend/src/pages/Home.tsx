@@ -656,12 +656,24 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 8px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.5);
+        }
         .section-title-neon {
           transition: all 0.4s ease;
         }
         .section-title-neon:hover {
           color: #1db954;
-          text-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
         }
         .neon-card:hover {
           border-color: #1db954 !important;
@@ -784,8 +796,20 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             </div>
           </div>
 
-          {/* Sections */}
-          {sections.map((section, idx) => <SectionRow key={idx} section={section} index={idx} />)}
+          {/* Sections Container - Scrollable */}
+          <div
+            ref={frameRef}
+            style={{
+              padding: '0 32px',
+              paddingBottom: '120px',
+              maxHeight: 'calc(100vh - 200px)',
+              overflowY: 'auto',
+            }}
+            className="scrollbar-thin"
+            onScroll={checkFrameScroll}
+          >
+            {sections.map((section, idx) => <SectionRow key={idx} section={section} index={idx} />)}
+          </div>
 
           {sections.length === 0 && (
              <div style={{ textAlign: 'center', padding: '100px 0' }}>
