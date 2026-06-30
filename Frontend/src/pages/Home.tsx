@@ -120,7 +120,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   const styles = {
     container: {
       position: "relative",
-      zIndex: 60 !important, 
+      zIndex: 60,
       color: 'white',
       background: 'linear-gradient(180deg, #1a1a2e 0%, #121212 100%)',
       minHeight: '100vh',
@@ -141,7 +141,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       marginBottom: '16px',
       minHeight: "auto",
       position: "relative",
-      zIndex: 61 !important,
+      zIndex: 61,
     },
     quickCard: {
       display: 'flex',
@@ -154,7 +154,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       transition: 'all 0.2s ease',
       overflow: 'hidden',
       position: 'relative',
-      zIndex: 60 !important,
+      zIndex: 70,
     },
     quickCardText: { fontWeight: 'bold', fontSize: '14px', flex: 1, color: 'white' },
     section: { marginBottom: '20px', padding: '0 32px' },
