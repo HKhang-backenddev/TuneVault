@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Library, History, Heart, ChevronsLeft, ChevronsRight, User as UserIcon, Share2, Users } from 'lucide-react';
+import { Library, History, Heart, ChevronsLeft, ChevronsRight, User as UserIcon, Share2, Users, Trophy, Headphones } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
 import { AppHeader } from './AppHeader';
 import PlayerBar from './PlayerBar';
-import { NowPlayingSidebar } from './NowPlayingSidebar'; // Import component mới
+import { NowPlayingSidebar } from './NowPlayingSidebar';
 import { ShareSidebar } from './ShareSidebar';
 import { User } from '@shared-types/user';
 
@@ -16,6 +16,8 @@ const MenuBox = ({ user }: { user: User | null }) => {
     // Cập nhật path để nó là một hàm có thể tạo link động
     { name: 'Hồ sơ', icon: UserIcon, path: (u: User | null) => u?.username ? `/app/profile/${u.username}` : '/login', color: '#8b5cf6' }, // Purple
     { name: 'Thư viện', icon: Library, path: '/app/library', color: '#f97316' }, // Orange
+    { name: 'Top Charts', icon: Trophy, path: '/app/top-charts', color: '#f59e0b' }, // Amber
+    { name: 'Lịch sử nghe', icon: Headphones, path: '/app/listen-history', color: '#a855f7' }, // Purple
     { name: 'Lịch sử', icon: History, path: '/app/history', color: '#eab308' }, // Yellow
     { name: 'Bài hát đã thích', icon: Heart, path: '/app/liked', color: '#ec4899' }, // Pink
     { name: 'Được chia sẻ', icon: Users, path: '/app/shared-with-me', color: '#10b981' }, // Green

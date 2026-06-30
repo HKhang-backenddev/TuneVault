@@ -1,9 +1,10 @@
 import React from 'react';
 import { Location, NavigateFunction } from 'react-router-dom';
 import {
-  Search as SearchIcon, Plus, Home as HomeIcon, Bell, LogOut, User as UserIcon, Camera, Image as ImageIcon
+  Search as SearchIcon, Plus, Home as HomeIcon, Bell, LogOut, User as UserIcon, Camera, Image as ImageIcon, Moon, Sun
 } from 'lucide-react';
 import { User } from '@shared-types/user';
+import { useTheme } from '../Contexts/ThemeContext';
 
 interface AppHeaderProps {
   user: User | null;
@@ -20,7 +21,9 @@ interface AppHeaderProps {
   setSearchQuery: (query: string) => void;
 }
 
-export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUserMenu, avatarInputRef, bannerInputRef, handleMenuUpload, navigate, location, searchQuery, setSearchQuery }: AppHeaderProps) => (
+export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUserMenu, avatarInputRef, bannerInputRef, handleMenuUpload, navigate, location, searchQuery, setSearchQuery }: AppHeaderProps) => {
+  const { theme, toggleTheme } = useTheme();
+  return (
   <header style={{
     zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     height: '64px', padding: '0 24px', backgroundColor: 'rgba(0, 0, 0, 0.9)',
@@ -103,6 +106,19 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
             animation: 'pulse-red 2s infinite'
           }}></span>
         )}
+      </button>
+
+      <button
+        onClick={toggleTheme}
+        style={{
+          width: '40px', height: '40px', borderRadius: '50%',
+          backgroundColor: 'transparent', color: '#a855f7',
+          border: '1px solid #a855f7'
+        }}
+        className="flex items-center justify-center transition shadow-lg shadow-purple-500/20"
+        title={theme === 'dark' ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
+      >
+        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
       </button>
 
       <div className="relative user-menu-container" onClick={(e) => e.stopPropagation()}>
@@ -189,4 +205,5 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
       </div>
     </div>
   </header>
-);
+  );
+};
