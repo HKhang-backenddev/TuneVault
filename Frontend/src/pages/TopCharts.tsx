@@ -32,11 +32,31 @@ const TopCharts = () => {
   const fetchCharts = async () => {
     setLoading(true);
     try {
-      const url = genre ? `/media/top?limit=50&genre=${encodeURIComponent(genre)}` : '/media/top?limit=50';
+      // Thử nhiều format response khác nhau
+      let url = genre ? `/media/top?limit=50&genre=${encodeURIComponent(genre)}` : '/media/top?limit=50';
       const res = await api.get(url);
-      setItems(res.data || []);
+      
+      // Backend có thể trả về: data, items, hoặc trực tiếp array
+      let data = res.data;
+      if (data?.items) data = data.items;
+      if (data?.data) data = data.data;
+      
+      // Map playCount nếu có
+      const mapped = (Array.isArray(data) ? data : []).map((item: any, index: number) => ({
+        id: item.id || item.mediaItemId || item.MediaItemId,
+        title: item.title || item.Title,
+        artist: item.artist?.name || item.Artist?.Name || item.artist || 'Nghệ sĩ',
+        url: item.url || item.Url,
+        thumbnailUrl: item.thumbnailUrl || item.ThumbnailUrl || '',
+        durationInSeconds: item.durationInSeconds || item.DurationInSeconds || 0,
+        genre: item.genre || item.Genre || '',
+        playCount: item.playCount || item.PlayCount || (item.playHistory?.playCount) || (data.length - index)
+      }));
+      
+      setItems(mapped);
     } catch (error) {
       console.error("Lỗi:", error);
+      setItems([]);
     }
     setLoading(false);
   };

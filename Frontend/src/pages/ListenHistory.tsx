@@ -24,9 +24,28 @@ const ListenHistory = () => {
     setLoading(true);
     try {
       const res = await api.get('/media/history?pageSize=100');
-      setItems(res.data || []);
+      
+      // Backend trả về: data, items, hoặc trực tiếp array
+      let data = res.data;
+      if (data?.items) data = data.items;
+      if (data?.data) data = data.data;
+      
+      // Map dữ liệu
+      const mapped = (Array.isArray(data) ? data : []).map((item: any) => ({
+        id: item.id || item.mediaItemId || item.mediaItem?.id,
+        title: item.title || item.mediaItem?.title || item.mediaItem?.Title,
+        artist: item.artist?.name || item.Artist?.Name || item.artist || item.mediaItem?.artist?.Name || 'Nghệ sĩ',
+        url: item.url || item.mediaItem?.url || '',
+        thumbnailUrl: item.thumbnailUrl || item.ThumbnailUrl || item.mediaItem?.thumbnailUrl || item.mediaItem?.ThumbnailUrl || '',
+        durationInSeconds: item.durationInSeconds || item.DurationInSeconds || item.mediaItem?.durationInSeconds || 0,
+        genre: item.genre || item.Genre || item.mediaItem?.genre || '',
+        playedAt: item.playedAt || item.PlayedAt || item.createdAt || item.created_at || new Date().toISOString()
+      }));
+      
+      setItems(mapped);
     } catch (error) {
       console.error("Lỗi:", error);
+      setItems([]);
     }
     setLoading(false);
   };
