@@ -464,7 +464,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           marginBottom: '40px', 
           padding: '24px',
           borderRadius: '16px', 
-          border: '1px solid rgba(59, 130, 246, 0.2)',
+          border: '1px solid rgba(29, 185, 84, 0.2)',
           backgroundColor: 'transparent',
           transition: 'all 0.3s ease',
           position: 'relative',
@@ -748,15 +748,17 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           <div
             ref={frameRef}
             style={{ 
+              marginLeft: '4px',
+              marginRight: '4px',
               padding: '28px', 
               borderRadius: '24px', 
               border: '2px solid transparent',
-              backgroundColor: 'rgba(0, 0, 0, 0.6)', // Tăng độ trong suốt
+              backgroundColor: 'rgba(0, 0, 0, 0.6)'
               backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #1db954, #10b981, #c084fc)',
               backgroundOrigin: 'border-box',
               backgroundClip: 'padding-box, border-box',
               backgroundSize: '200% 100%',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(29, 185, 84, 0.2)',
               animation: 'animated-border-home 8s linear infinite',
               transition: 'all 0.3s ease',
               position: 'relative',
