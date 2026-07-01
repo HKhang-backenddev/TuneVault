@@ -411,7 +411,7 @@ public class MediaController : BaseApiController
                 UserId = userId,
                 MediaItemId = mediaId,
                 PlayedAt = DateTime.UtcNow,
-                PlayDurationSeconds = request?.durationSeconds ?? 0
+                
             };
             _context.PlayHistories.Add(history);
             await _context.SaveChangesAsync();
