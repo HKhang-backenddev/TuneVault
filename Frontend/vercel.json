@@ -1,0 +1,18 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://tunevault-api.vercel.app/api/$1"
+    },
+    {
+      "source": "/media/(.*)",
+      "destination": "https://tunevault-api.vercel.app/media/$1"
+    },
+    {
+      "source": "/notificationHub",
+      "destination": "https://tunevault-api.vercel.app/notificationHub"
+    }
+  ]
+}
