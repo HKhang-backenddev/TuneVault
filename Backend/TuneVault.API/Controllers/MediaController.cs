@@ -420,7 +420,7 @@ public class MediaController : BaseApiController
         catch (Exception ex)
         {
             // Log lỗi nhưng vẫn trả về OK để không ảnh hưởng việc phát nhạc
-            Console.WriteLine($"Lỗi ghi lịch sử: {ex.Message}");
+            Console.WriteLine($"LOI: {ex.Message} | {ex.InnerException?.Message} | {ex.StackTrace}");
             return Ok(new { message = "Đã ghi nhận (có lỗi)." });
         }
     }
