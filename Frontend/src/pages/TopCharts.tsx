@@ -72,16 +72,16 @@ const TopCharts = () => {
 
   const styles = {
     container: {
-      padding: '24px 32px',
-      maxWidth: '900px',
+      padding: '16px 20px',
+      maxWidth: '100%',
       margin: '0 auto',
     },
     header: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: '24px',
-      padding: '20px 24px',
+      marginBottom: '12px',
+      padding: '12px 16px',
       background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%)',
       borderRadius: '16px',
       border: '1px solid rgba(251, 191, 36, 0.2)',
@@ -92,8 +92,8 @@ const TopCharts = () => {
       gap: '12px',
     },
     iconBox: {
-      width: '48px',
-      height: '48px',
+      width: '40px',
+      height: '40px',
       background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
       borderRadius: '12px',
       display: 'flex',
@@ -101,7 +101,7 @@ const TopCharts = () => {
       justifyContent: 'center',
     },
     title: {
-      fontSize: '24px',
+      fontSize: '18px',
       fontWeight: 'bold',
       color: 'white',
       margin: 0,
@@ -121,7 +121,7 @@ const TopCharts = () => {
       borderRadius: '25px',
       color: 'white',
       fontWeight: '600',
-      fontSize: '14px',
+      fontSize: '13px',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
     },
@@ -136,7 +136,7 @@ const TopCharts = () => {
       border: '1px solid rgba(255,255,255,0.05)',
     },
     errorBox: {
-      padding: '20px 24px',
+      padding: '12px 16px',
       backgroundColor: 'rgba(239, 68, 68, 0.1)',
       borderRadius: '12px',
       border: '1px solid rgba(239, 68, 68, 0.2)',
@@ -164,7 +164,7 @@ const TopCharts = () => {
     listHeader: {
       display: 'grid',
       gridTemplateColumns: '50px 1fr 100px 100px 60px',
-      padding: '12px 20px',
+      padding: '8px 12px',
       backgroundColor: 'rgba(255,255,255,0.03)',
       borderBottom: '1px solid rgba(255,255,255,0.05)',
       fontSize: '11px',
@@ -176,7 +176,7 @@ const TopCharts = () => {
     songRow: {
       display: 'grid',
       gridTemplateColumns: '50px 1fr 100px 100px 60px',
-      padding: '12px 20px',
+      padding: '8px 12px',
       alignItems: 'center',
       borderBottom: '1px solid rgba(255,255,255,0.03)',
       transition: 'all 0.2s ease',
@@ -197,8 +197,8 @@ const TopCharts = () => {
       minWidth: 0,
     },
     thumbnail: {
-      width: '48px',
-      height: '48px',
+      width: '40px',
+      height: '40px',
       borderRadius: '8px',
       objectFit: 'cover' as const,
       backgroundColor: '#2a2a3e',
@@ -207,7 +207,7 @@ const TopCharts = () => {
       minWidth: 0,
     },
     songTitle: {
-      fontSize: '14px',
+      fontSize: '13px',
       fontWeight: '600',
       color: 'white',
       margin: 0,

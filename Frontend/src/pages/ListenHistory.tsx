@@ -93,16 +93,16 @@ const ListenHistory = () => {
 
   const styles = {
     container: {
-      padding: '24px 32px',
-      maxWidth: '900px',
+      padding: '16px 20px',
+      maxWidth: '100%',
       margin: '0 auto',
     },
     header: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: '24px',
-      padding: '20px 24px',
+      marginBottom: '12px',
+      padding: '12px 16px',
       background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%)',
       borderRadius: '16px',
       border: '1px solid rgba(168, 85, 247, 0.2)',
@@ -113,8 +113,8 @@ const ListenHistory = () => {
       gap: '12px',
     },
     iconBox: {
-      width: '48px',
-      height: '48px',
+      width: '40px',
+      height: '40px',
       background: 'linear-gradient(135deg, #a855f7, #8b5cf6)',
       borderRadius: '12px',
       display: 'flex',
@@ -122,7 +122,7 @@ const ListenHistory = () => {
       justifyContent: 'center',
     },
     title: {
-      fontSize: '24px',
+      fontSize: '18px',
       fontWeight: 'bold',
       color: 'white',
       margin: 0,
@@ -142,7 +142,7 @@ const ListenHistory = () => {
       borderRadius: '25px',
       color: 'white',
       fontWeight: '600',
-      fontSize: '14px',
+      fontSize: '13px',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
     },
@@ -157,7 +157,7 @@ const ListenHistory = () => {
       border: '1px solid rgba(255,255,255,0.05)',
     },
     errorBox: {
-      padding: '20px 24px',
+      padding: '12px 16px',
       backgroundColor: 'rgba(239, 68, 68, 0.1)',
       borderRadius: '12px',
       border: '1px solid rgba(239, 68, 68, 0.2)',
@@ -185,7 +185,7 @@ const ListenHistory = () => {
     listHeader: {
       display: 'grid',
       gridTemplateColumns: '50px 1fr 120px 100px 60px',
-      padding: '12px 20px',
+      padding: '8px 12px',
       backgroundColor: 'rgba(255,255,255,0.03)',
       borderBottom: '1px solid rgba(255,255,255,0.05)',
       fontSize: '11px',
@@ -197,14 +197,14 @@ const ListenHistory = () => {
     songRow: {
       display: 'grid',
       gridTemplateColumns: '50px 1fr 120px 100px 60px',
-      padding: '12px 20px',
+      padding: '8px 12px',
       alignItems: 'center',
       borderBottom: '1px solid rgba(255,255,255,0.03)',
       transition: 'all 0.2s ease',
       cursor: 'pointer',
     },
     rank: {
-      fontSize: '14px',
+      fontSize: '13px',
       fontWeight: '500',
       color: 'rgba(255,255,255,0.3)',
     },
@@ -215,8 +215,8 @@ const ListenHistory = () => {
       minWidth: 0,
     },
     thumbnail: {
-      width: '48px',
-      height: '48px',
+      width: '40px',
+      height: '40px',
       borderRadius: '8px',
       objectFit: 'cover' as const,
       backgroundColor: '#2a2a3e',
@@ -225,7 +225,7 @@ const ListenHistory = () => {
       minWidth: 0,
     },
     songTitle: {
-      fontSize: '14px',
+      fontSize: '13px',
       fontWeight: '600',
       color: 'white',
       margin: 0,
