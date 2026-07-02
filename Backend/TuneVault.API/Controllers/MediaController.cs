@@ -108,7 +108,19 @@ public class MediaController : BaseApiController
         if (!System.IO.File.Exists(filePath))
             return NotFound(new { message = "File nhạc không tồn tại trên máy chủ." });
 
-        return PhysicalFile(filePath, "audio/mpeg", enableRangeProcessing: true);
+        // Xác định MIME type dựa trên phần mở rộng thực tế của file
+        var extension = Path.GetExtension(filePath).ToLowerInvariant();
+        var contentType = extension switch
+        {
+            ".mp3" => "audio/mpeg",
+            ".webm" => "audio/webm",
+            ".m4a" => "audio/mp4",
+            ".ogg" => "audio/ogg",
+            ".wav" => "audio/wav",
+            _ => "application/octet-stream"
+        };
+
+        return PhysicalFile(filePath, contentType, enableRangeProcessing: true);
     }
 
     /// <summary>Tải file nhạc lên thư viện.</summary>
@@ -326,7 +338,7 @@ public class MediaController : BaseApiController
                 id = m.Id,
                 title = m.Title,
                 artist = m.Artist?.Name ?? "Nghệ sĩ không xác định",
-                url = $"/api/media/stream/{m.Id}`",
+                url = $"/api/media/stream/{m.Id}",
                 thumbnailUrl = m.ThumbnailUrl ?? "",
                 durationInSeconds = m.DurationInSeconds,
                 genre = m.Genre,
@@ -355,4 +367,136 @@ public class MediaController : BaseApiController
         await _context.SaveChangesAsync();
         return artist;
     }
+
+    /// <summary>Lịch sử nghe nhạc của user.</summary>
+    [HttpGet("history")]
+    [Authorize]
+    public async Task<IActionResult> GetPlayHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    {
+        var userId = RequireUserId();
+        var history = await _context.PlayHistories
+            .Where(h => h.UserId == userId)
+            .Include(h => h.MediaItem)
+            .ThenInclude(m => m!.Artist)
+            .OrderByDescending(h => h.PlayedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(h => new
+            {
+                id = h.MediaItem!.Id,
+                title = h.MediaItem.Title,
+                artist = h.MediaItem.Artist != null ? h.MediaItem.Artist.Name : "Nghệ sĩ không xác định",
+                url = $"/api/media/stream/{h.MediaItem.Id}",
+                thumbnailUrl = h.MediaItem.ThumbnailUrl ?? "",
+                durationInSeconds = h.MediaItem.DurationInSeconds,
+                genre = h.MediaItem.Genre,
+                playedAt = h.PlayedAt
+            })
+            .ToListAsync();
+        return Ok(history);
+    }
+
+    /// <summary>Ghi nhận đã nghe bài hát.</summary>
+    [HttpPost("history/{mediaId:guid}")]
+    [Authorize]
+    public async Task<IActionResult> RecordPlay(Guid mediaId, [FromBody] RecordPlayRequest? request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            
+            var history = new PlayHistory
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                MediaItemId = mediaId,
+                PlayedAt = DateTime.UtcNow,
+                
+            };
+            _context.PlayHistories.Add(history);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã ghi nhận." });
+        }
+        catch (Exception ex)
+        {
+            // Log lỗi nhưng vẫn trả về OK để không ảnh hưởng việc phát nhạc
+            Console.WriteLine($"LOI: {ex.Message} | {ex.InnerException?.Message} | {ex.StackTrace}");
+            return Ok(new { message = "Đã ghi nhận (có lỗi)." });
+        }
+    }
+
+    /// <summary>Xóa lịch sử nghe.</summary>
+    [HttpDelete("history")]
+    [Authorize]
+    public async Task<IActionResult> ClearPlayHistory()
+    {
+        var userId = RequireUserId();
+        await _context.PlayHistories.Where(h => h.UserId == userId).ExecuteDeleteAsync();
+        return Ok(new { message = "Đã xóa lịch sử." });
+    }
+
+    /// <summary>Top bài hát phổ biến.</summary>
+    [HttpGet("top")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetTopMedia([FromQuery] int limit = 20, [FromQuery] string? genre = null)
+    {
+        // Lấy top media items dựa trên số lượt nghe
+        var topPlays = await _context.PlayHistories
+            .GroupBy(h => h.MediaItemId)
+            .Select(g => new { MediaItemId = g.Key, PlayCount = g.Count() })
+            .OrderByDescending(x => x.PlayCount)
+            .Take(limit)
+            .ToListAsync();
+
+        if (!topPlays.Any())
+        {
+            // Nếu không có lịch sử nghe, trả về bài hát mới nhất
+            var recentItems = await _context.MediaItems
+                .Include(m => m.Artist)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(limit)
+                .Select(m => new
+                {
+                    id = m.Id,
+                    title = m.Title,
+                    artist = m.Artist != null ? m.Artist.Name : "Nghệ sĩ không xác định",
+                    url = $"/api/media/stream/{m.Id}",
+                    thumbnailUrl = m.ThumbnailUrl ?? "",
+                    durationInSeconds = m.DurationInSeconds,
+                    genre = m.Genre,
+                    playCount = 0
+                })
+                .ToListAsync();
+            return Ok(recentItems);
+        }
+
+        var topIds = topPlays.Select(x => x.MediaItemId).ToList();
+
+        var mediaQuery = _context.MediaItems
+            .Include(m => m.Artist)
+            .Where(m => topIds.Contains(m.Id));
+
+        if (!string.IsNullOrWhiteSpace(genre))
+        {
+            mediaQuery = mediaQuery.Where(m => m.Genre == genre);
+        }
+
+        var items = await mediaQuery
+            .Select(m => new
+            {
+                id = m.Id,
+                title = m.Title,
+                artist = m.Artist != null ? m.Artist.Name : "Nghệ sĩ không xác định",
+                url = $"/api/media/stream/{m.Id}",
+                thumbnailUrl = m.ThumbnailUrl ?? "",
+                durationInSeconds = m.DurationInSeconds,
+                genre = m.Genre,
+                playCount = topPlays.First(x => x.MediaItemId == m.Id).PlayCount
+            })
+            .ToListAsync();
+
+        return Ok(items.OrderByDescending(x => x.playCount));
+    }
 }
+
+public record RecordPlayRequest(int? durationSeconds = null);

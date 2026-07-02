@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Backend/">
+    <Project Path="Backend/TuneVault.API/TuneVault.API.csproj" Id="a1111111-1111-1111-1111-111111111111" />
     <Project Path="Backend/TuneVault.Application/TuneVault.Application.csproj" Id="b040e6eb-3f31-4a09-9ffe-ee7fe08ba121" />
     <Project Path="Backend/TuneVault.Domain/TuneVault.Domain.csproj" Id="81793569-7d08-4709-9e6a-64e367df9cee" />
     <Project Path="Backend/TuneVault.Infrastructure/TuneVault.Infrastructure.csproj" Id="a744869c-9ca0-4f2a-9da0-7c97ba72cbbd" />

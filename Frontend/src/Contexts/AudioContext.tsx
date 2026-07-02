@@ -13,10 +13,10 @@ export interface Track {
 
 export type AudioContextType = {
   currentTrack: Track | null;
-  songForShare: Track | null; // Thêm state mới để lưu bài hát được chọn để chia sẻ
-  selectSongForShare: (track: Track | null) => void; // Hàm để cập nhật bài hát chia sẻ
+  songForShare: Track | null;
+  selectSongForShare: (track: Track | null) => void;
   isPlaying: boolean;
-  playTrack: (track: Track, queue?: Track[]) => void; // Thêm hàng đợi tùy chọn
+  playTrack: (track: Track, queue?: Track[]) => void;
   togglePlay: () => void;
   stopTrack: () => void;
   currentTime: number;
@@ -26,23 +26,32 @@ export type AudioContextType = {
   setVolume: (v: number) => void;
   loading: boolean;
   updateLikedStatus: (liked: boolean) => void;
-  playNext: () => void; // Thêm hàm mới
-  playPrev: () => void; // Thêm hàm mới
-  analyser: AnalyserNode | null; // Thêm AnalyserNode cho visualizer
+  playNext: () => void;
+  playPrev: () => void;
+  analyser: AnalyserNode | null;
+  queue: Track[];
+  addToQueue: (track: Track) => void;
+  removeFromQueue: (index: number) => void;
+  clearQueue: () => void;
+  sleepTimer: number;
+  setSleepTimer: (minutes: number | null) => void;
+  sleepTimeRemaining: number | null;
 };
 export const AudioContext = createContext<AudioContextType | null>(null);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
-  const [songForShare, setSongForShare] = useState<Track | null>(null); // State cho bài hát sẽ chia sẻ
+  const [songForShare, setSongForShare] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [queue, setQueue] = useState<Track[]>([]); // State cho hàng đợi
+  const [queue, setQueue] = useState<Track[]>([]);
+  const [sleepTimer, setSleepTimer] = useState(0);
+  const [sleepTimeRemaining, setSleepTimeRemaining] = useState<number | null>(null);
+  const sleepTimerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null!);
-  // State cho Web Audio API
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const audioApiContextRef = useRef<AudioContext | null>(null);
 
@@ -138,12 +147,21 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const playTrack = async (track: Track, newQueue?: Track[]) => {
-    console.log(">>> AudioContext: Nhận lệnh phát bài:", track.title);
+    console.log(">>> AudioContext: 🟢 Nhận lệnh phát bài:", track.title, "ID:", track.id);
 
     // Nếu có hàng đợi mới được cung cấp, cập nhật nó
     if (newQueue && newQueue.length > 0) {
       console.log(`>>> AudioContext: Đã đặt hàng đợi mới với ${newQueue.length} bài hát.`);
       setQueue(newQueue);
+    }
+
+    // Ghi lịch sử nghe vào backend
+    try {
+      console.log(">>> AudioContext: 📝 Bắt đầu ghi lịch sử...");
+      const res = await api.post(`/media/history/${track.id}`);
+      console.log(">>> AudioContext: ✅ Ghi lịch sử OK:", res.data);
+    } catch (err: any) {
+      console.error(">>> AudioContext: ❌ Lỗi ghi lịch sử:", err?.response?.status, err?.response?.data);
     }
 
     // Kiểm tra xem bài hát hiện tại có nguồn hợp lệ (Blob URL) chưa
@@ -307,19 +325,57 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       playTrack(queue[0], queue);
       return;
     }
-    // Nếu đang ở đầu, quay về cuối danh sách
     const prevIndex = (currentIndex - 1 + queue.length) % queue.length;
     playTrack(queue[prevIndex], queue);
   };
 
-  return ( // Cung cấp các trạng thái và hàm mới qua Context
+  const addToQueue = (track: Track) => {
+    setQueue(prev => [...prev, track]);
+  };
+
+  const removeFromQueue = (index: number) => {
+    setQueue(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const clearQueue = () => {
+    setQueue([]);
+  };
+
+  const handleSetSleepTimer = (minutes: number | null) => {
+    if (sleepTimerRef.current) {
+      clearInterval(sleepTimerRef.current);
+      sleepTimerRef.current = null;
+    }
+    if (minutes === null || minutes <= 0) {
+      setSleepTimer(0);
+      setSleepTimeRemaining(null);
+      return;
+    }
+    setSleepTimer(minutes);
+    setSleepTimeRemaining(minutes * 60);
+    sleepTimerRef.current = setInterval(() => {
+      setSleepTimeRemaining(prev => {
+        if (prev === null || prev <= 1) {
+          if (sleepTimerRef.current) clearInterval(sleepTimerRef.current);
+          setSleepTimer(0);
+          if (audioRef.current) audioRef.current.pause();
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  return (
     <AudioContext.Provider value={{
       currentTrack, songForShare, selectSongForShare,
       isPlaying, loading,
       playTrack, togglePlay, stopTrack,
-      playNext, playPrev, // Thêm hàm mới
-      currentTime, duration, seek, analyser, // Thêm analyser
-      volume, setVolume, updateLikedStatus
+      playNext, playPrev,
+      currentTime, duration, seek, analyser,
+      volume, setVolume, updateLikedStatus,
+      queue, addToQueue, removeFromQueue, clearQueue,
+      sleepTimer, setSleepTimer: handleSetSleepTimer, sleepTimeRemaining
     }}>
       {children}
       <audio

@@ -5,7 +5,7 @@ using TuneVault.Infrastructure;
 
 namespace TuneVault.Application.Playlists;
 
-public record CreatePlaylistCommand(string Title, string? Description, Guid UserId) : IRequest<Guid>;
+public record CreatePlaylistCommand(string Title, string? Description, Guid UserId, bool IsPrivate = false, bool IsCollaborative = false) : IRequest<Guid>;
 
 public class CreatePlaylistHandler : IRequestHandler<CreatePlaylistCommand, Guid>
 {
@@ -24,6 +24,8 @@ public class CreatePlaylistHandler : IRequestHandler<CreatePlaylistCommand, Guid
             Title = request.Title,
             Description = request.Description,
             UserId = request.UserId,
+            IsPrivate = request.IsPrivate,
+            IsCollaborative = request.IsCollaborative,
             CreatedAt = DateTime.UtcNow
         };
 

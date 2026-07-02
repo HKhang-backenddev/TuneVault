@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../axios';
-import { Play, Pause, Music, ChevronLeft, ChevronRight, Heart, Search as SearchIcon, Share2, Trash2, User } from 'lucide-react';
+import { Play, Pause, Music, ChevronLeft, ChevronRight, Heart, Search as SearchIcon, Share2, Trash2, User, Clock, Disc3 } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-
 declare global {
   interface Window { runScrollDiagnostics?: () => void; }
 }
-
 interface MediaItem {
   id: string;
   title: string;
@@ -18,14 +16,12 @@ interface MediaItem {
   isLiked?: boolean;
   isOwner?: boolean;
 }
-
 interface UserResult {
   id: string;
   username: string;
   displayName: string;
   avatarUrl?: string;
 }
-
 interface HomeProps {
   user: {
     displayName: string;
@@ -33,7 +29,6 @@ interface HomeProps {
   searchQuery: string;
   lastRefreshTime: number;
 }
-
 const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   const { playTrack, togglePlay, currentTrack, isPlaying, updateLikedStatus, selectSongForShare } = useAudio();
   const [sections, setSections] = useState<{ title: string, items: MediaItem[] }[]>([]);
@@ -45,36 +40,30 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   const [canScrollUp, setCanScrollUp] = useState(false);
   const [canScrollDown, setCanScrollDown] = useState(false);
   const [isFrameHovered, setIsFrameHovered] = useState(false);
-
   const checkFrameScroll = () => {
     const el = frameRef.current;
     if (!el) return;
     setCanScrollUp(el.scrollTop > 10);
     setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 10);
   };
-
   const scrollFrame = (direction: 'up' | 'down') => {
     const el = frameRef.current;
     if (!el) return;
     const amount = Math.max(200, el.clientHeight * 0.6);
     el.scrollBy({ top: direction === 'down' ? amount : -amount, behavior: 'smooth' });
   };
-
   const handleDelete = async (e: React.MouseEvent, songId: string, songTitle: string) => {
     e.stopPropagation(); // Ngăn không cho sự kiện click của card cha được kích hoạt
     if (window.confirm(`Bạn có chắc chắn muốn xóa bài hát "${songTitle}" không?`)) {
       try {
         await api.delete(`/media/${songId}`);
-        
         // Xóa bài hát khỏi tất cả các section trên giao diện
         setSections(prev => prev.map(sec => ({
           ...sec,
           items: sec.items.filter(item => item.id !== songId)
         })).filter(sec => sec.items.length > 0)); // Xóa luôn section nếu nó rỗng
-
         // Xóa khỏi kết quả tìm kiếm nếu có
         setSearchResults(prev => prev.filter(item => item.id !== songId));
-
       } catch (err: any) {
         console.error("Lỗi khi xóa bài hát:", err);
         const msg = err.response?.data?.message || "Không thể xóa bài hát. Vui lòng thử lại.";
@@ -90,22 +79,18 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       // Tạo hiệu ứng trái tim bay lên tại vị trí click
       const newHeart = { id: Date.now(), x: e.clientX, y: e.clientY, color: randomColor };
       setHearts(prev => [...prev, newHeart]);
-      
       // Xóa trái tim sau khi hoàn thành animation (1s)
       setTimeout(() => {
         setHearts(prev => prev.filter(h => h.id !== newHeart.id));
       }, 1000);
-
       const res = await api.post(`/favorites/toggle/${id}`);
       const liked = res.data.isLiked;
-      
       // Cập nhật trạng thái trong các danh sách hiện có trên trang Home
       setSections(prev => prev.map(sec => ({
         ...sec,
         items: sec.items.map(item => item.id === id ? { ...item, isLiked: liked } : item)
       })));
       setSearchResults(prev => prev.map(item => item.id === id ? { ...item, isLiked: liked } : item));
-
       // Nếu bài đang thả tim là bài đang phát, cập nhật luôn thanh PlayerBar
       if (currentTrack?.id === id) {
         updateLikedStatus(liked);
@@ -116,11 +101,42 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       console.error("Lỗi khi thả tim:", err);
     }
   };
-
   const styles = {
-    container: { color: 'white' },
-    section: { marginBottom: '40px' },
-    sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px' },
+    container: {
+      color: 'white',
+      background: 'linear-gradient(180deg, #1a1a2e 0%, #121212 100%)',
+      minHeight: '100vh',
+      paddingBottom: '80px',
+    },
+    header: {
+      padding: '16px 32px 0 32px',
+      background: 'linear-gradient(180deg, rgba(29, 185, 84, 0.15) 0%, transparent 100%)',
+      marginBottom: '12px',
+      position: 'relative',
+    },
+    greeting: { fontSize: '24px', fontWeight: 'bold', marginBottom: '12px' },
+    quickPicks: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+      gap: '12px',
+      marginBottom: '16px',
+      minHeight: "auto",
+    },
+    quickCard: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      background: 'rgba(255, 255, 255, 0.07)',
+      borderRadius: '6px',
+      padding: '10px 14px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    quickCardText: { fontWeight: 'bold', fontSize: '14px', flex: 1, color: 'white' },
+    section: { marginBottom: '20px', padding: '0 32px' },
+    sectionTitle: { fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', letterSpacing: '-0.5px' },
     grid: {
       display: 'flex',
       gap: '24px',
@@ -130,7 +146,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       scrollbarWidth: 'none' as const,
     },
     card: {
-      backgroundColor: 'rgba(18, 18, 18, 0.7)',
+      backgroundColor: '#181818',
       padding: '16px',
       borderRadius: '8px',
       cursor: 'pointer',
@@ -138,39 +154,33 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       minWidth: '200px',
       flexShrink: 0,
       position: 'relative' as const,
-      backdropFilter: 'blur(5px)',
-      zIndex: 1,
-      border: '1px solid rgba(59, 130, 246, 0.1)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.3s ease',
     },
     // Styles cho nút cuộn trái/phải
     buttonScroll: {
       position: 'absolute' as const,
-      top: '40%',
-      transform: 'translateY(-50%)', // Base transform
+      top: '45%',
+      transform: 'translateY(-50%)',
       zIndex: 50,
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      backgroundColor: '#1db954',
       padding: '12px',
-      borderRadius: '9999px', // full circle
+      borderRadius: '9999px',
       transition: 'all 0.3s ease',
-      boxShadow: '0 0 15px rgba(59, 130, 246, 0.5), inset 0 0 5px rgba(59, 130, 246, 0.3)',
-      color: '#3b82f6',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+      color: 'black',
       cursor: 'pointer',
-      border: '2px solid #3b82f6',
-      backdropFilter: 'blur(10px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      // ensure buttons are visible even if parent stacking context is weird
       visibility: 'visible' as const,
     },
     buttonScrollLeft: {
       left: '16px',
-      transform: 'translateY(-50%) translateX(8px)', // translate-x-2
+      transform: 'translateY(-50%) translateX(8px)',
     },
     buttonScrollRight: {
       right: '16px',
-      transform: 'translateY(-50%) translateX(-8px)', // -translate-x-2
+      transform: 'translateY(-50%) translateX(-8px)',
     },
     thumbnailWrapper: {
       position: 'relative' as const,
@@ -178,7 +188,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       aspectRatio: '1/1',
       marginBottom: '16px',
       boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-      borderRadius: '4px',
+      borderRadius: '8px',
       overflow: 'hidden',
     },
     thumbnail: { width: '100%', height: '100%', objectFit: 'cover' as const },
@@ -188,42 +198,35 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       bottom: '8px',
       width: '48px',
       height: '48px',
-      backgroundColor: '#3b82f6', // TuneVault Neon Blue
+      backgroundColor: '#1db954',
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      boxShadow: '0 0 20px rgba(59, 130, 246, 0.7)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
       opacity: 0,
-      // Sửa lại transform để khi isCurrent, nó không bị giật
-      transform: 'translateY(10px)',
-      // Thêm zIndex để nút play không bị đè bởi các hiệu ứng khác
+      transform: 'translateY(8px)',
       zIndex: 10,
       transition: 'all 0.3s ease',
-      color: 'white',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
+      color: 'black',
     },
     cardTitle: { fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
-    cardArtist: { fontSize: '14px', color: '#a7a7a7', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
-
+    cardArtist: { fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
     sectionContainer: {
-    marginBottom: '40px',
+    marginBottom: '20px',
     padding: '24px',
     backgroundColor: 'rgba(10, 10, 10, 0.6)', // Màu nền tối cho khung
     borderRadius: '16px',
     border: '1px solid rgba(255, 255, 255, 0.08)', // Viền mờ bao quanh
     transition: 'all 0.3s ease',
   },
-    
   sectionTitleRow: {
     display: 'flex', 
     justifyContent: 'space-between', 
     alignItems: 'center', 
     marginBottom: '20px' 
   },
-
   };
-
   const SongCard = ({ song }: { song: MediaItem }) => {
     const isCurrent = currentTrack?.id === song.id;
     return (
@@ -233,7 +236,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         role="button"
         tabIndex={0}
         aria-label={`Phát ${song.title} - ${song.artist || 'Nghệ sĩ không xác định'}`}
-        onClick={() => playTrack(song, searchResults.length > 0 ? searchResults : sections.flatMap(s => s.items))}
+        onClick={() => { playTrack(song, searchResults.length > 0 ? searchResults : sections.flatMap(s => s.items)); api.post(`/media/history/${song.id}`).catch(err => console.log("Lỗi ghi lịch sử:", err?.response?.status, "song.id:", song.id, "data:", JSON.stringify(err?.response?.data))); }}
         onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playTrack(song); } }}
       >
         <div style={styles.thumbnailWrapper}>
@@ -247,7 +250,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             style={styles.playButton}
             className="group-hover:opacity-100 group-hover:translate-y-0"
           >
-            {isCurrent && isPlaying ? <Pause size={24} fill="black" /> : <Play size={24} fill="black" className="ml-1" />}
+            {isCurrent && isPlaying ? <Pause size={24} fill="black" /> : <Play size={20} fill="black" className="ml-1" />}
           </button>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -286,7 +289,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       </div>
     );
   };
-
   const UserCard = ({ user }: { user: UserResult }) => {
     const navigate = useNavigate();
     return (
@@ -316,7 +318,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       </div>
     );
   };
-
   // Component con để xử lý cuộn cho từng Section
   const SectionRow = ({ section, index }: { section: { title: string, items: MediaItem[] }, index: number }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -324,7 +325,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     const [isHovered, setIsHovered] = useState(false);
     const [canScroll, setCanScroll] = useState({ left: false, right: false });
     const [translate, setTranslate] = useState(0);
-
     // Kiểm tra có thể cuộn
     const checkScroll = () => {
       if (!scrollRef.current || !contentRef.current) return;
@@ -340,14 +340,12 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         right: scrollLeft + clientWidth < scrollWidth - eps
       });
     };
-
     useEffect(() => {
       // Run several delayed checks to catch late image loads/layout changes
       const t1 = setTimeout(checkScroll, 50);
       const t2 = setTimeout(checkScroll, 200);
       const t3 = setTimeout(checkScroll, 500);
       window.addEventListener('resize', checkScroll);
-
       let roOuter: ResizeObserver | null = null;
       let roInner: ResizeObserver | null = null;
       if (typeof ResizeObserver !== 'undefined') {
@@ -364,7 +362,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           }
         } catch {}
       }
-
       // If images in the row load after render, trigger checkScroll when they finish
       const imgs: HTMLImageElement[] = contentRef.current ? Array.from(contentRef.current.querySelectorAll('img')) as HTMLImageElement[] : [];
       const onImgLoad = () => setTimeout(checkScroll, 30);
@@ -373,7 +370,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         img.addEventListener('load', onImgLoad);
         img.addEventListener('error', onImgLoad);
       });
-
       return () => {
         clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
         window.removeEventListener('resize', checkScroll);
@@ -384,23 +380,19 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         });
       };
     }, [section.items]);
-
     // Core scroll performer used by mouse and keyboard handlers
     const performScroll = async (direction: 'left' | 'right', outerEl?: HTMLElement | null) => {
       const outer = outerEl ?? scrollRef.current;
       const inner = contentRef.current;
       if (!outer || !inner) return;
-
       const scrollAmount = Math.max(120, outer.clientWidth * 0.8);
       const maxTranslate = Math.max(0, inner.scrollWidth - outer.clientWidth);
       let newTranslate = translate + (direction === 'right' ? scrollAmount : -scrollAmount);
       newTranslate = Math.max(0, Math.min(maxTranslate, newTranslate));
-
       if (inner.scrollWidth <= outer.clientWidth) {
         setCanScroll({ left: false, right: false });
         return;
       }
-
       setTranslate(newTranslate);
       try {
         const eps = 5;
@@ -409,7 +401,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           right: newTranslate + outer.clientWidth < inner.scrollWidth - eps
         });
       } catch {}
-
       // If inner still had no overflow, attempt temporary debug clones to allow movement (very rare)
       try {
         const scrollBefore = inner.scrollWidth;
@@ -433,17 +424,14 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             }
             await awaitTick(40);
           }
-
           // cleanup clones shortly after
           window.setTimeout(() => {
             try { Array.from(inner.querySelectorAll('[data-debug-clone]')).forEach(c => c.remove()); setTimeout(checkScroll, 50); } catch {}
           }, 800);
         }
       } catch (err) { console.debug('performScroll debug clone error', err); }
-
       setTimeout(checkScroll, 400);
     };
-
     const handleScroll = (e: React.MouseEvent, direction: 'left' | 'right') => {
       e.preventDefault();
       e.stopPropagation();
@@ -454,17 +442,15 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       if (!targetRow) targetRow = scrollRef.current;
       performScroll(direction, targetRow);
     };
-
     // small helper to await a layout tick
     const awaitTick = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
-
     return (
       <div
         style={{ 
-          marginBottom: '40px', 
+          marginBottom: '20px', 
           padding: '24px',
           borderRadius: '16px', 
-          border: '1px solid rgba(59, 130, 246, 0.2)',
+          border: '1px solid rgba(29, 185, 84, 0.2)',
           backgroundColor: 'transparent',
           transition: 'all 0.3s ease',
           position: 'relative',
@@ -483,7 +469,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           <h2 style={{ ...styles.sectionTitle, marginBottom: 0 }} className="section-title-neon">{section.title}</h2>
           <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#b3b3b3', cursor: 'pointer' }} className="hover:underline">HIỆN TẤT CẢ</span>
         </div>
-
         <div
           className="relative"
           role="group"
@@ -512,10 +497,9 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           >
             <ChevronLeft size={24} />
           </button>
-
           <div
             ref={scrollRef}
-            style={{ ...styles.grid, overflowX: 'hidden' }}
+            style={{ ...styles.grid, overflowX: 'hidden', paddingLeft: '16px', paddingRight: '16px' }}
             className="no-scrollbar"
             onScroll={checkScroll}
           >
@@ -533,7 +517,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
               {section.items.map(song => <SongCard key={song.id} song={song} />)}
             </div>
           </div>
-
           {/* Nút cuộn phải */}
           <button
             type="button"
@@ -558,7 +541,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       </div>
     );
   };
-
   // Khi có sự kiện share mới, reload Home để người nhận thấy thay đổi ngay trên route '/'
   useEffect(() => {
     const handler = () => {
@@ -572,7 +554,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     window.addEventListener('sharedListUpdated', handler as EventListener);
     return () => window.removeEventListener('sharedListUpdated', handler as EventListener);
   }, []);
-
   useEffect(() => {
     if (searchQuery) {
       // Tìm kiếm cả bài hát và người dùng
@@ -593,18 +574,15 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           api.get('/media?pageSize=20'), // Mới nhất
           ...genres.map(g => api.get(`/media?genre=${g}&pageSize=20`))
         ]);
-
         const newSections = [
           { title: 'Mới cập nhật', items: results[0].data?.items || [] },
           ...genres.map((g, i) => ({ title: g, items: results[i+1].data?.items || [] }))
         ].filter(s => s.items.length > 0);
-
         setSections(newSections);
       };
       loadHomeData();
     }
   }, [searchQuery, lastRefreshTime]);
-
   useEffect(() => {
     const getGreeting = () => {
       const hour = new Date().getHours();
@@ -620,12 +598,8 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     };
     setGreeting(getGreeting());
   }, []);
-
   // Debug listeners removed for production; diagnostics were used during development.
-
   // Debug UI removed after verification
-
-
   return (
     <div style={styles.container}>
       <style>{`
@@ -636,15 +610,40 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 8px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.5);
+        }
+        .home-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .home-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .home-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 3px;
+        }
+        .home-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.4);
+        }
         .section-title-neon {
           transition: all 0.4s ease;
         }
         .section-title-neon:hover {
-          color: #93c5fd;
-          text-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
+          color: #1db954;
         }
         .neon-card:hover {
-          border-color: #3b82f6 !important;
+          border-color: #1db954 !important;
           box-shadow: 0 0 20px rgba(59, 130, 246, 0.5) !important;
           transform: translateY(-8px) scale(1.02);
         }
@@ -655,11 +654,11 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         .neon-title-blue {
           background: linear-gradient(
             90deg, 
-            #3b82f6 0%, 
-            #93c5fd 25%, 
-            #3b82f6 50%, 
-            #93c5fd 75%, 
-            #3b82f6 100%
+            #1db954 0%, 
+            #1db954 25%, 
+            #1db954 50%, 
+            #1db954 75%, 
+            #1db954 100%
           );
           background-size: 200% auto;
           -webkit-background-clip: text;
@@ -669,10 +668,10 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           display: inline-block;
         }
         .neon-button:hover {
-          background-color: #3b82f6 !important;
+          background-color: #1db954 !important;
           color: white !important;
-          box-shadow: 0 0 25px #3b82f6, 0 0 50px rgba(59, 130, 246, 0.5) !important;
-          border-color: #93c5fd !important;
+          box-shadow: 0 0 25px #1db954, 0 0 50px rgba(59, 130, 246, 0.5) !important;
+          border-color: #1db954 !important;
           /* Kết hợp scale với transform hiện tại của inline style */
           filter: brightness(1.2);
           z-index: 60;
@@ -712,7 +711,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           100% { background-position: 200% center; }
         }
       `}</style>
-
       {searchQuery ? (
         <div className="flex flex-col gap-10">
           {/* Kết quả tìm kiếm người dùng */}
@@ -738,102 +736,43 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         </div>
       ) : (
         <>
-          <h1 
-            style={{ ...styles.sectionTitle, fontSize: '32px', marginBottom: '32px' }}
-            className="neon-title-blue"
-          >
-            {greeting}{user ? `, ${user.displayName}` : ''}!
-          </h1>
-          
+          {/* Header - Spotify Style */}
+          <div style={styles.header}>
+            <h1 style={styles.greeting}>
+              {greeting}{user ? `, ${user.displayName}` : ''}!
+            </h1>
+            {/* Quick Picks */}
+          <div style={styles.quickPicks}>
+            <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #2a4a6d 0%, #1a1a2e 100%)' }} onClick={() => sections[0]?.items && playAll(sections[0].items)}>
+              <Disc3 size={36} style={{ color: '#1db954' }} />
+              <span style={styles.quickCardText}>Dành cho {user?.displayName || 'bạn'}</span>
+              <Play size={20} style={{ color: '#1db954' }} />
+            </div>
+              <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #4a1942 0%, #1a1a2e 100%)' }} onClick={() => sections.find(s => s.title.includes('Thích'))?.items && playAll(sections.find(s => s.title.includes('Thích'))!.items)}>
+                <Heart size={36} style={{ color: '#e91e63' }} />
+                <span style={styles.quickCardText}>Bài hát đã thích</span>
+                <Play size={20} style={{ color: '#e91e63' }} />
+              </div>
+              <div style={{ ...styles.quickCard, background: 'linear-gradient(135deg, #1a3a1a 0%, #1a1a2e 100%)' }} onClick={() => sections.find(s => s.title.includes('Gần'))?.items && playAll(sections.find(s => s.title.includes('Gần'))!.items)}>
+                <Clock size={36} style={{ color: '#1db954' }} />
+                <span style={styles.quickCardText}>Nghe gần đây</span>
+                <Play size={20} style={{ color: '#1db954' }} />
+              </div>
+            </div>
+          </div>
+          {/* Sections - Scrollable */}
           <div
             ref={frameRef}
-            style={{ 
-              padding: '28px', 
-              borderRadius: '24px', 
-              border: '2px solid transparent',
-              backgroundColor: 'rgba(0, 0, 0, 0.6)', // Tăng độ trong suốt
-              backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-              backgroundOrigin: 'border-box',
-              backgroundClip: 'padding-box, border-box',
-              backgroundSize: '200% 100%',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-              animation: 'animated-border-home 8s linear infinite',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              maxHeight: '70vh',
+            style={{
+              padding: '0 32px',
+              paddingBottom: '120px',
+              maxHeight: 'calc(100vh - 220px)',
               overflowY: 'auto',
-              paddingBottom: '120px', // Thêm khoảng đệm dưới để không bị PlayerBar che
             }}
-            className="song-list-frame"
-            onScroll={checkFrameScroll}
-            onMouseEnter={() => { setIsFrameHovered(true); setTimeout(checkFrameScroll, 50); }}
-            onMouseLeave={() => setIsFrameHovered(false)}
+            className="home-scrollbar"
           >
-            {/* Nút cuộn lên */}
-            <button
-              type="button"
-              onClick={() => scrollFrame('up')}
-              disabled={!canScrollUp}
-              style={{
-                position: 'sticky',
-                top: '0px',
-                zIndex: 40,
-                width: '100%',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: canScrollUp && isFrameHovered ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                border: 'none',
-                color: canScrollUp && isFrameHovered ? '#3b82f6' : 'transparent',
-                cursor: canScrollUp ? 'pointer' : 'default',
-                transition: 'all 0.25s ease',
-                opacity: canScrollUp && isFrameHovered ? 1 : 0,
-                pointerEvents: canScrollUp && isFrameHovered ? 'auto' : 'none',
-                backdropFilter: 'blur(4px)',
-                borderRadius: '12px 12px 0 0',
-                marginBottom: '4px',
-              }}
-              className="neon-button"
-              title="Cuộn lên"
-            >
-              <ChevronLeft size={20} style={{ transform: 'rotate(90deg)' }} />
-            </button>
-
             {sections.map((section, idx) => <SectionRow key={idx} section={section} index={idx} />)}
-
-            {/* Nút cuộn xuống */}
-            <button
-              type="button"
-              onClick={() => scrollFrame('down')}
-              disabled={!canScrollDown}
-              style={{
-                position: 'sticky',
-                bottom: '0px',
-                zIndex: 40,
-                width: '100%',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: canScrollDown && isFrameHovered ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                border: 'none',
-                color: canScrollDown && isFrameHovered ? '#3b82f6' : 'transparent',
-                cursor: canScrollDown ? 'pointer' : 'default',
-                transition: 'all 0.25s ease',
-                opacity: canScrollDown && isFrameHovered ? 1 : 0,
-                pointerEvents: canScrollDown && isFrameHovered ? 'auto' : 'none',
-                backdropFilter: 'blur(4px)',
-                borderRadius: '0 0 12px 12px',
-                marginTop: '4px',
-              }}
-              className="neon-button"
-              title="Cuộn xuống"
-            >
-              <ChevronLeft size={20} style={{ transform: 'rotate(-90deg)' }} />
-            </button>
           </div>
-
           {sections.length === 0 && (
              <div style={{ textAlign: 'center', padding: '100px 0' }}>
                 <Music size={64} style={{ color: '#282828', marginBottom: '24px' }} />
@@ -843,7 +782,6 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           )}
         </>
       )}
-
       {/* Render các trái tim đang bay */}
       {hearts.map(h => (
         <Heart 
@@ -857,5 +795,4 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     </div>
   );
 };
-
 export default Home;

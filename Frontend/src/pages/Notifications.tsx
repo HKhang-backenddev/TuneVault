@@ -1,8 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import api from '../axios';
-import { Bell, UserPlus, Download, Check, Trash2, Loader2, Share2, Play, Save, ChevronUp, ChevronDown } from 'lucide-react';
-import { useAudio } from '../Contexts/AudioContext';
 
 interface NotificationItem {
   id: string;
@@ -10,426 +7,334 @@ interface NotificationItem {
   isRead: boolean;
   createdAt: string;
   message: string;
-  payloadJson?: string;
 }
 
-const getIconForType = (type: string, isRead: boolean) => {
-  const baseClasses = { width: '24px', height: '24px', transition: 'all 0.3s ease' };
-  const colorClass = isRead ? '#737373' : 'white';
-
-  switch (type.toLowerCase()) {
-    case 'follow':
-      return { icon: <UserPlus style={{ ...baseClasses, color: '#f472b6' }} />, text: "Theo dõi mới", color: '#f472b6' }; // Đổi sang màu hồng
-    case 'download_success':
-      return { icon: <Download style={{ ...baseClasses, color: '#22c55e' }} />, text: "Tải xuống thành công", color: '#22c55e' }; // Đổi sang tông xanh lá khác
-    case 'share':
-      return { icon: <Share2 style={{ ...baseClasses, color: '#22d3ee' }} />, text: "Chia sẻ bài hát", color: '#22d3ee' }; // Đổi sang màu xanh lam
-    case 'error':
-      return { icon: <Bell style={{ ...baseClasses, color: '#ef4444' }} />, text: "Lỗi hệ thống", color: '#ef4444' }; // Đổi sang tông đỏ khác
-    default:
-      return { icon: <Bell style={{ ...baseClasses, color: colorClass }} />, text: "Thông báo chung", color: '#a3a3a3' };
-  }
-};
-
-const formatRelativeTime = (dateString: string) => {
-  // Đảm bảo chuỗi thời gian được hiểu là UTC bằng cách thêm 'Z' nếu thiếu.
-  const utcDateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
-  const date = new Date(utcDateString);
-  const now = new Date();
-  const seconds = Math.round((now.getTime() - date.getTime()) / 1000);
-  const minutes = Math.round(seconds / 60);
-  const hours = Math.round(minutes / 60);
-  const days = Math.round(hours / 24);
-
-  if (seconds < 5) return "vừa xong";
-  if (seconds < 60) return `${seconds} giây trước`;
-  if (minutes < 60) return `${minutes} phút trước`;
-  if (hours < 24) return `${hours} giờ trước`;
-  if (days === 1) return `hôm qua lúc ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
-  if (days < 7) return `${days} ngày trước`;
-
-  return date.toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-};
-
-
 const Notifications = () => {
-  const navigate = useNavigate();
-  const { playTrack } = useAudio();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-  const [canScroll, setCanScroll] = useState({ up: false, down: false });
-  const [isListHovered, setIsListHovered] = useState(false);
+
+  useEffect(() => { fetchNotifications(); }, []);
 
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/notifications'); 
-      setNotifications(response.data);
-      // Kiểm tra cuộn sau khi dữ liệu được tải
-      setTimeout(checkScroll, 100);
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-    } finally {
-      setLoading(false);
-    }
+      const res = await api.get('/notifications');
+      setNotifications(res.data || []);
+    } catch (error) { console.error("Lỗi:", error); }
+    setLoading(false);
   };
-
-  useEffect(() => {
-    fetchNotifications();
-    window.addEventListener('mediaShared', fetchNotifications);
-    return () => window.removeEventListener('mediaShared', fetchNotifications);
-  }, []);
 
   const markAsRead = async (id: string) => {
     try {
       await api.put(`/notifications/${id}/read`);
-      setNotifications(prev => 
-        prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-      );
-    } catch (error) {
-      console.error("Failed to mark as read:", error);
-    }
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch (error) { console.error("Lỗi:", error); }
   };
 
   const deleteNotification = async (id: string) => {
-    setDeletingId(id);
+    if (!confirm('Xóa thông báo?')) return;
     try {
       await api.delete(`/notifications/${id}`);
       setNotifications(prev => prev.filter(n => n.id !== id));
-    } catch (error) {
-      console.error("Failed to delete notification:", error);
-      alert("Không thể xóa thông báo. Vui lòng thử lại.");
-    } finally {
-      setDeletingId(null);
-    }
+    } catch (error) { console.error("Lỗi:", error); }
   };
 
-  const handlePlaySharedSong = async (notification: NotificationItem) => {
-    if (!notification.payloadJson) return;
-
-    let mediaId: string | null = null;
+  const markAllRead = async () => {
     try {
-      const payload = JSON.parse(notification.payloadJson);
-      mediaId = payload?.mediaId;
-    } catch (e) {
-      console.error("Lỗi parse JSON từ payload thông báo:", e);
-      return;
-    }
-
-    if (!mediaId) return;
-
-    try {
-      // SỬA LỖI: Dùng API endpoint MediaItems/{id} thay vì /media?id=...
-      const response = await api.get(`/MediaItems/${mediaId}`);
-      // API /MediaItems/{id} trả về ApiResponse chứa SongDetailDto
-      const songData = response.data?.data || response.data;
-      if (songData) {
-        playTrack({
-          id: songData.id,
-          title: songData.title,
-          artist: songData.artist || 'Nghệ sĩ không xác định',
-          url: songData.url || `/api/media/stream/${songData.id}`,
-          thumbnailUrl: songData.thumbnailUrl || '',
-          durationSeconds: songData.durationInSeconds,
-          isLiked: songData.isLiked
-        });
-      } else {
-        throw new Error("Không tìm thấy dữ liệu bài hát.");
-      }
-    } catch (error) {
-      console.error("Không thể phát bài hát được chia sẻ:", error);
-      alert("Không tìm thấy bài hát này. Có thể nó đã bị xóa.");
-    }
-    markAsRead(notification.id);
+      await api.put('/notifications/read-all');
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (error) { console.error("Lỗi:", error); }
   };
 
-  const handleSaveSharedSong = async (notification: NotificationItem) => {
-    if (!notification.payloadJson) return;
-
-    let mediaId: string | null = null;
-    try {
-      mediaId = JSON.parse(notification.payloadJson).mediaId;
-    } catch (e) {
-      console.error("Lỗi parse JSON từ payload thông báo:", e);
-      return;
-    }
-
-    if (!mediaId) return;
-
-    try {
-      await api.post(`/media/save/${mediaId}`);
-      alert('Đã lưu bài hát vào thư viện của bạn!');
-      navigate('/'); // Chuyển hướng về trang chủ
-    } catch (error) {
-      console.error("Không thể lưu bài hát:", error);
-      alert("Không thể lưu bài hát này. Có thể nó đã có trong thư viện của bạn.");
-    }
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const diff = Date.now() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 1) return 'Bây giờ';
+    if (mins < 60) return `${mins} phút`;
+    if (hours < 24) return `${hours} giờ`;
+    if (days < 7) return `${days} ngày`;
+    return date.toLocaleDateString('vi-VN');
   };
 
-  const checkScroll = () => {
-    const el = listRef.current;
-    if (!el) return;
-    setCanScroll({
-      up: el.scrollTop > 10,
-      down: el.scrollTop + el.clientHeight < el.scrollHeight - 10,
-    });
+  const getTypeStyle = (type: string) => {
+    const styles: Record<string, { bg: string; icon: string; label: string }> = {
+      follow: { bg: '#10b981', icon: '👤', label: 'Theo dõi' },
+      share: { bg: '#8b5cf6', icon: '📤', label: 'Chia sẻ' },
+      download_success: { bg: '#3b82f6', icon: '📥', label: 'Tải xuống' },
+      comment: { bg: '#f59e0b', icon: '💬', label: 'Bình luận' },
+      like: { bg: '#ec4899', icon: '❤️', label: 'Thích' },
+      error: { bg: '#ef4444', icon: '⚠️', label: 'Lỗi' },
+    };
+    return styles[type.toLowerCase()] || { bg: '#6b7280', icon: '🔔', label: 'Khác' };
   };
 
-  const scrollList = (direction: 'up' | 'down') => {
-    const el = listRef.current;
-    if (!el) return;
-    el.scrollBy({ top: direction === 'down' ? 300 : -300, behavior: 'smooth' });
-  };
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div style={{
-      maxWidth: '60rem',
-      margin: '2rem auto',
-      padding: '2rem',
-      paddingBottom: '6rem',
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      borderRadius: '24px',
-      border: '2px solid transparent', // Giữ nguyên để tạo không gian cho viền gradient
-      backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #ef4444, #c084fc, #3b82f6, #c084fc, #ef4444)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      backgroundSize: '200% 100%', // Tăng kích thước nền để có không gian di chuyển
-      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-      backdropFilter: 'blur(10px)',
-      animation: 'animated-border 8s linear infinite', // Áp dụng animation
-    }}>
-       <style>{`
-        @keyframes slide-up-fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-        .notification-card-clip {
-          clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
-        }
-      `}</style>
-      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2.5rem', letterSpacing: '-0.05em', color: 'white', textAlign: 'center', textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #3b82f6, 0 0 40px #3b82f6' }}>
-        Hộp thư đến
-      </h1>
+    <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
+      
+      {/* Header */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '20px',
+        padding: '20px 24px',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderRadius: '12px',
+        boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '28px' }}>🔔</span>
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white', margin: 0 }}>Thông báo</h1>
+          {unreadCount > 0 && (
+            <span style={{ 
+              backgroundColor: '#ef4444', 
+              color: 'white', 
+              padding: '2px 10px', 
+              borderRadius: '12px', 
+              fontSize: '12px', 
+              fontWeight: 'bold' 
+            }}>
+              {unreadCount} mới
+            </span>
+          )}
+        </div>
+        {unreadCount > 0 && (
+          <button
+            onClick={markAllRead}
+            style={{ 
+              padding: '10px 20px', 
+              backgroundColor: 'white', 
+              color: '#667eea', 
+              border: 'none', 
+              borderRadius: '8px', 
+              cursor: 'pointer', 
+              fontSize: '14px',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+            }}
+          >
+            Đọc tất cả ✓
+          </button>
+        )}
+      </div>
+
+      {/* Loading */}
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5rem 0' }}>
-          <Loader2 style={{ width: '2.5rem', height: '2.5rem', color: '#3b82f6' }} className="animate-spin" />
+        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#1e1e2e', borderRadius: '12px' }}>
+          <div style={{ 
+            width: '40px', height: '40px', 
+            border: '4px solid #667eea', 
+            borderTopColor: 'transparent', 
+            borderRadius: '50%', 
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }} />
+          <p style={{ color: '#9ca3af' }}>Đang tải thông báo...</p>
         </div>
       ) : notifications.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '5rem 0', backgroundColor: 'rgba(10, 10, 10, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '1rem', border: '1px solid #262626', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <Bell size={48} style={{ color: '#404040' }} />
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#a3a3a3' }}>Hộp thư của bạn trống</h3>
-          <p style={{ fontSize: '0.875rem', color: '#737373' }}>Các thông báo mới sẽ xuất hiện ở đây.</p>
+        /* Empty State */
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '60px', 
+          background: 'linear-gradient(180deg, #1e1e2e 0%, #252536 100%)',
+          borderRadius: '12px',
+          border: '1px solid #3b3b5c'
+        }}>
+          <span style={{ fontSize: '64px', display: 'block', marginBottom: '16px' }}>📭</span>
+          <p style={{ color: '#9ca3af', fontSize: '18px', margin: 0 }}>Không có thông báo nào</p>
         </div>
       ) : (
-        <div 
-          ref={listRef}
-          onMouseEnter={() => setIsListHovered(true)}
-          onMouseLeave={() => setIsListHovered(false)}
-          onScroll={checkScroll}
-          style={{ 
-            position: 'relative',
+        <>
+          {/* Table Header */}
+          <div style={{ 
             display: 'flex', 
-            flexDirection: 'column', 
-            gap: '1rem',
-            maxHeight: '70vh',
-            overflowY: 'auto',
-            padding: '8px',
-            margin: '-8px', // Bù lại padding để thanh cuộn sát viền
-          }}
-          className="custom-scrollbar" // Áp dụng thanh cuộn tùy chỉnh nếu có
-        >
-          {/* Nút cuộn lên */}
-          <button
-            onClick={() => scrollList('up')}
-            style={{
-              position: 'sticky', top: 0, zIndex: 10,
-              width: '100%', height: '32px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)',
-              border: 'none', color: '#3b82f6', cursor: 'pointer',
-              opacity: canScroll.up && isListHovered ? 1 : 0,
-              transition: 'opacity 0.2s ease',
-            }}
-          >
-            <ChevronUp size={24} />
-          </button>
+            padding: '14px 20px', 
+            background: 'linear-gradient(90deg, #f472b6 0%, #c084fc 50%, #60a5fa 100%)',
+            borderRadius: '12px 12px 0 0',
+            color: 'white',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            textTransform: 'uppercase'
+          }}>
+            <div style={{ width: '50px', textAlign: 'center' }}>#</div>
+            <div style={{ width: '50px', textAlign: 'center' }}>Loại</div>
+            <div style={{ flex: 1 }}>Nội dung</div>
+            <div style={{ width: '100px' }}>Thời gian</div>
+            <div style={{ width: '90px', textAlign: 'center' }}>Hành động</div>
+          </div>
 
-          {notifications.map((n) => {
-            const { icon, text, color } = getIconForType(n.type, n.isRead);
-            const isUnreadAndColorful = !n.isRead && color !== '#a3a3a3';
-
+          {/* Table Body */}
+          {notifications.map((item, index) => {
+            const typeStyle = getTypeStyle(item.type);
+            const isLast = index === notifications.length - 1;
             return (
-            <div
-              key={n.id}
-              style={{
-                position: 'relative',
-                  borderRadius: '1rem', // Giữ nguyên
-                  transition: 'all 0.4s ease', // Làm chậm animation
-                  backgroundColor: isUnreadAndColorful ? `${color}1A` : 'rgba(10, 10, 10, 0.75)', // 1A là 10% opacity
-                  border: `1px solid ${isUnreadAndColorful ? `${color}4D` : 'rgba(255, 255, 255, 0.1)'}`, // 4D là 30% opacity
-                  boxShadow: isUnreadAndColorful ? `0 0 20px ${color}33, inset 0 0 10px ${color}1A` : 'inset 0 1px 2px rgba(0,0,0,0.5)', // 33 là 20% opacity
-                opacity: deletingId === n.id ? 0.5 : 1,
-                animation: 'slide-up-fade-in 0.5s ease-out forwards',
-                backdropFilter: 'blur(12px)',
-              }}
-              className="notification-card-clip"
-            >
-              {/* Header của thẻ thông báo */}
-              <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{
-                    padding: '0.5rem',
-                    borderRadius: '9999px',
-                    backgroundColor: isUnreadAndColorful ? `${color}1A` : '#262626',
+              <div
+                key={item.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '16px 20px',
+                  backgroundColor: item.isRead ? '#1a1a2e' : '#252536',
+                  borderLeft: `4px solid ${typeStyle.bg}`,
+                  borderRight: '1px solid #3b3b5c',
+                  borderBottom: isLast ? '1px solid #3b3b5c' : 'none',
+                }}
+              >
+                {/* Index */}
+                <div style={{ width: '50px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                  {index + 1}
+                </div>
+
+                {/* Type Icon */}
+                <div style={{ width: '50px', textAlign: 'center' }}>
+                  <span style={{ 
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '36px', 
+                    height: '36px', 
+                    backgroundColor: typeStyle.bg,
+                    borderRadius: '8px',
+                    fontSize: '18px',
+                    boxShadow: `0 2px 10px ${typeStyle.bg}40`
                   }}>
-                    {icon}
-                  </div>
-                  <span style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    color: isUnreadAndColorful ? color : '#737373',
-                  }}>
-                    {text}
+                    {typeStyle.icon}
                   </span>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: '#737373' }}>
-                  {formatRelativeTime(n.createdAt)}
-                </span>
-              </div>
 
-              {/* Nội dung chính */}
-              <div style={{ padding: '1.25rem' }}>
-                <p style={{
-                  fontSize: '1rem',
-                  lineHeight: '1.625',
-                  color: n.isRead ? '#a3a3a3' : '#E5E7EB', // Màu sáng hơn cho dễ đọc
-                }}>
-                  {n.message || 'Thông báo không có nội dung.'}
-                </p>
-              </div>
-
-              {/* Vùng hành động (nếu có) */}
-              {(n.type.toLowerCase() === 'share' || !n.isRead) && (
-                <div style={{ padding: '0.5rem 1.25rem 1rem', borderTop: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                  {/* Nút phát nhạc cho thông báo chia sẻ */}
-                {n.type.toLowerCase() === 'share' && n.payloadJson && n.payloadJson.includes('mediaId') && (
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => handlePlaySharedSong(n)}
-                        style={{
-                          backgroundColor: '#3b82f6',
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold',
-                          padding: '0.5rem 0.75rem',
-                          borderRadius: '9999px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          transition: 'all 0.2s ease',
-                          border: 'none',
-                          cursor: 'pointer'
-                        }}
-                        className="hover:bg-blue-500"
-                    >
-                        <Play size={14} fill="currentColor" />
-                      Phát nhạc
-                    </button>
-                    <button
-                      onClick={() => handleSaveSharedSong(n)}
-                      title="Lưu vào thư viện và về trang chủ"
-                      style={{
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', fontSize: '0.75rem', fontWeight: 'bold', padding: '0.5rem 0.75rem', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s ease', border: 'none', cursor: 'pointer'
-                      }}
-                      className="hover:bg-green-500/20 hover:text-green-400"
-                    >
-                      <Save size={14} />
-                      Lưu
-                    </button>
-                  </div>
-                )}
-
-                  {/* Các nút điều khiển khác */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
-                    {!n.isRead && (
-                      <button 
-                        onClick={() => markAsRead(n.id)}
-                        style={{
-                          padding: '0.5rem',
-                          borderRadius: '9999px',
-                          backgroundColor: 'rgba(52, 52, 52, 0.5)',
-                          color: '#a3a3a3',
-                          border: 'none',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease'
-                        }}
-                        title="Đánh dấu đã đọc"
-                      >
-                        <Check size={14} />
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => deleteNotification(n.id)}
-                      disabled={deletingId === n.id}
-                      style={{
-                          padding: '0.5rem',
-                          borderRadius: '9999px',
-                          backgroundColor: 'rgba(52, 52, 52, 0.5)',
-                          color: '#a3a3a3',
-                          border: 'none',
-                          cursor: deletingId === n.id ? 'not-allowed' : 'pointer',
-                          transition: 'all 0.2s ease',
-                          opacity: deletingId === n.id ? 0.5 : 1,
-                      }}                      
-                      title="Xóa thông báo"
-                      onMouseEnter={(e) => {
-                        if (deletingId !== n.id) {
-                          e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
-                          e.currentTarget.style.color = '#ef4444';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(52, 52, 52, 0.5)';
-                        e.currentTarget.style.color = '#a3a3a3';
-                      }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                {/* Message */}
+                <div style={{ flex: 1 }}>
+                  <p style={{ 
+                    color: item.isRead ? '#9ca3af' : '#f3f4f6', 
+                    fontSize: '14px',
+                    margin: 0,
+                    fontWeight: item.isRead ? 'normal' : '500'
+                  }}>
+                    {item.message}
+                  </p>
+                  <p style={{ 
+                    color: typeStyle.bg, 
+                    fontSize: '11px', 
+                    margin: '4px 0 0',
+                    fontWeight: 'bold'
+                  }}>
+                    {typeStyle.label}
+                  </p>
                 </div>
-              )}
+
+                {/* Time */}
+                <div style={{ 
+                  width: '100px', 
+                  color: '#9ca3af', 
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <span style={{ fontSize: '14px' }}>🕐</span>
+                  {formatTime(item.createdAt)}
+                </div>
+
+                {/* Actions */}
+                <div style={{ width: '90px', display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                  {!item.isRead && (
+                    <span style={{ 
+                      width: '10px', height: '10px', 
+                      backgroundColor: '#3b82f6', 
+                      borderRadius: '50%', 
+                      display: 'inline-block',
+                      boxShadow: '0 0 10px #3b82f6'
+                    }} />
+                  )}
+                  <button
+                    onClick={() => markAsRead(item.id)}
+                    style={{ 
+                      padding: '6px 12px', 
+                      backgroundColor: item.isRead ? '#374151' : '#3b82f6',
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer', 
+                      fontSize: '12px',
+                      fontWeight: 'bold'
+                    }}
+                    title="Đánh dấu đã đọc"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    onClick={() => deleteNotification(item.id)}
+                    style={{ 
+                      padding: '6px 12px', 
+                      backgroundColor: '#374151', 
+                      color: '#ef4444', 
+                      border: 'none', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer', 
+                      fontSize: '12px',
+                      fontWeight: 'bold'
+                    }}
+                    title="Xóa"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Table Footer */}
+          <div style={{ 
+            display: 'flex', 
+            padding: '16px 20px', 
+            background: 'linear-gradient(180deg, #252536 0%, #1e1e2e 100%)',
+            borderRadius: '0 0 12px 12px',
+            border: '1px solid #3b3b5c',
+            borderTop: 'none',
+            color: '#9ca3af',
+            fontSize: '13px'
+          }}>
+            <div style={{ 
+              padding: '8px 16px', 
+              backgroundColor: '#667eea20', 
+              borderRadius: '6px',
+              border: '1px solid #667eea40'
+            }}>
+              Tổng: <strong style={{ color: '#667eea' }}>{notifications.length}</strong>
             </div>
-          )})}
-          {/* Nút cuộn xuống */}
-          <button
-            onClick={() => scrollList('down')}
-            style={{
-              position: 'sticky', bottom: 0, zIndex: 10,
-              width: '100%', height: '32px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-              border: 'none', color: '#3b82f6', cursor: 'pointer',
-              opacity: canScroll.down && isListHovered ? 1 : 0,
-              transition: 'opacity 0.2s ease',
-            }}
-          >
-            <ChevronDown size={24} />
-          </button>
-        </div>
+            <div style={{ 
+              padding: '8px 16px', 
+              backgroundColor: '#10b98120', 
+              borderRadius: '6px',
+              border: '1px solid #10b98140',
+              marginLeft: '12px'
+            }}>
+              Đã đọc: <strong style={{ color: '#10b981' }}>{notifications.filter(n => n.isRead).length}</strong>
+            </div>
+            <div style={{ 
+              padding: '8px 16px', 
+              backgroundColor: '#ef444420', 
+              borderRadius: '6px',
+              border: '1px solid #ef444440',
+              marginLeft: '12px'
+            }}>
+              Chưa đọc: <strong style={{ color: '#ef4444' }}>{unreadCount}</strong>
+            </div>
+          </div>
+        </>
       )}
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

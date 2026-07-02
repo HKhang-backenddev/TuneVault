@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using TuneVault.Domain;
 
 namespace TuneVault.Infrastructure;
@@ -23,10 +22,12 @@ public class TuneVaultDbContext : DbContext
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<PlayHistory> PlayHistories => Set<PlayHistory>();
     public DbSet<Follow> Follows => Set<Follow>();
+    public DbSet<PlaylistFollower> PlaylistFollowers => Set<PlaylistFollower>();
+    public DbSet<PlaylistCollaborator> PlaylistCollaborators => Set<PlaylistCollaborator>();
+    public DbSet<MediaComment> MediaComments => Set<MediaComment>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -37,6 +38,8 @@ public class TuneVaultDbContext : DbContext
         modelBuilder.Entity<PlaylistTrack>().HasKey(pt => new { pt.PlaylistId, pt.MediaItemId });
         modelBuilder.Entity<Favorite>().HasKey(f => new { f.UserId, f.MediaItemId });
         modelBuilder.Entity<Follow>().HasKey(f => new { f.FollowerId, f.TargetUserId });
+        modelBuilder.Entity<PlaylistFollower>().HasKey(pf => new { pf.PlaylistId, pf.UserId });
+        modelBuilder.Entity<PlaylistCollaborator>().HasKey(pc => new { pc.PlaylistId, pc.UserId });
 
         // Cấu hình các mối quan hệ và tránh lỗi loop cascade dính chùm
         modelBuilder.Entity<MediaShare>()
@@ -69,6 +72,58 @@ public class TuneVaultDbContext : DbContext
 
         modelBuilder.Entity<MediaItem>()
             .HasOne(m => m.Owner).WithMany(u => u.UploadedItems).HasForeignKey(m => m.OwnerId).OnDelete(DeleteBehavior.Restrict);
+
+        // Cấu hình cho PlaylistFollower
+        modelBuilder.Entity<PlaylistFollower>()
+            .HasOne(pf => pf.Playlist)
+            .WithMany(p => p.Followers)
+            .HasForeignKey(pf => pf.PlaylistId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlaylistFollower>()
+            .HasOne(pf => pf.User)
+            .WithMany()
+            .HasForeignKey(pf => pf.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Cấu hình cho PlaylistCollaborator
+        modelBuilder.Entity<PlaylistCollaborator>()
+            .HasOne(pc => pc.Playlist)
+            .WithMany(p => p.Collaborators)
+            .HasForeignKey(pc => pc.PlaylistId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlaylistCollaborator>()
+            .HasOne(pc => pc.User)
+            .WithMany()
+            .HasForeignKey(pc => pc.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Cấu hình cho MediaComment
+        modelBuilder.Entity<MediaComment>()
+            .HasOne(c => c.MediaItem)
+            .WithMany()
+            .HasForeignKey(c => c.MediaItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MediaComment>()
+            .HasOne(c => c.User)
+            .WithMany()
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cấu hình cho PlayHistory
+        modelBuilder.Entity<PlayHistory>()
+            .HasOne(ph => ph.MediaItem)
+            .WithMany()
+            .HasForeignKey(ph => ph.MediaItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlayHistory>()
+            .HasOne(ph => ph.User)
+            .WithMany()
+            .HasForeignKey(ph => ph.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Seed Data B2
         var userId = new Guid("3872327a-4302-4e5c-a58a-ca48edd2b108");

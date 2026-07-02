@@ -1,0 +1,404 @@
+import { useState, useEffect } from 'react';
+import api from '../axios';
+import { useAudio } from '../Contexts/AudioContext';
+import { Play, Music, RefreshCw, Clock } from 'lucide-react';
+
+interface HistoryItem {
+  id: string;
+  title: string;
+  artist: string;
+  url: string;
+  thumbnailUrl: string;
+  durationInSeconds: number;
+  playedAt: string;
+}
+
+const ListenHistory = () => {
+  const { playTrack } = useAudio();
+  const [items, setItems] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const fetchHistory = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      console.log('🎧 ListenHistory: Đang gọi API...');
+      const token = localStorage.getItem('token');
+      console.log('🎧 ListenHistory: Token:', token ? 'Có token' : 'Không có token');
+      
+      const res = await api.get('/media/history?pageSize=50');
+      console.log('🎧 ListenHistory: Response:', res.data);
+      
+      let data = res.data;
+      if (data?.items) data = data.items;
+      if (data?.data) data = data.data;
+
+      console.log('🎧 ListenHistory: Data sau xử lý:', data);
+
+      if (Array.isArray(data) && data.length > 0) {
+        setItems(data.map((item: any) => ({
+          id: item.id || item.mediaItemId || item.mediaItem?.id || '',
+          title: item.title || item.mediaItem?.title || `Bài không tên`,
+          artist: item.artist || item.mediaItem?.artist || item.Artist?.Name || 'Nghệ sĩ',
+          url: item.url || item.mediaItem?.url || '',
+          thumbnailUrl: item.thumbnailUrl || item.ThumbnailUrl || item.mediaItem?.thumbnailUrl || '',
+          durationInSeconds: item.durationInSeconds || item.mediaItem?.durationInSeconds || 180,
+          playedAt: item.playedAt || item.PlayedAt || item.createdAt || new Date().toISOString()
+        })));
+      } else {
+        setItems([]);
+      }
+    } catch (err: any) {
+      console.error('🎧 ListenHistory: Lỗi:', err?.response?.status, err?.response?.data);
+      if (err?.response?.status === 401) {
+        setError('Vui lòng đăng nhập để xem lịch sử nghe');
+      } else {
+        setError(err.message || 'Lỗi kết nối');
+      }
+    }
+    setLoading(false);
+  };
+
+  const handlePlay = (item: HistoryItem, index: number) => {
+    playTrack({
+      id: item.id,
+      title: item.title,
+      artist: item.artist,
+      url: item.url,
+      thumbnailUrl: item.thumbnailUrl,
+      durationSeconds: item.durationInSeconds
+    }, items);
+  };
+
+  const handlePlayAll = () => {
+    if (items.length > 0) {
+      handlePlay(items[0], 0);
+    }
+  };
+
+  const formatTime = (s: number) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+  const formatDate = (d: string) => {
+    const date = new Date(d);
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+  const formatHour = (d: string) => {
+    const date = new Date(d);
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const styles = {
+    container: {
+      padding: '16px 20px',
+      maxWidth: '100%',
+      margin: '0 auto',
+    },
+    header: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: '12px',
+      padding: '12px 16px',
+      background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%)',
+      borderRadius: '16px',
+      border: '1px solid rgba(168, 85, 247, 0.2)',
+    },
+    titleWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+    },
+    iconBox: {
+      width: '40px',
+      height: '40px',
+      background: 'linear-gradient(135deg, #a855f7, #8b5cf6)',
+      borderRadius: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: {
+      fontSize: '18px',
+      fontWeight: 'bold',
+      color: 'white',
+      margin: 0,
+    },
+    subtitle: {
+      fontSize: '13px',
+      color: 'rgba(255,255,255,0.6)',
+      margin: '4px 0 0 0',
+    },
+    playAllBtn: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '12px 24px',
+      background: 'linear-gradient(135deg, #10b981, #059669)',
+      border: 'none',
+      borderRadius: '25px',
+      color: 'white',
+      fontWeight: '600',
+      fontSize: '13px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+    },
+    loadingBox: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '60px',
+      backgroundColor: '#1a1a2e',
+      borderRadius: '16px',
+      border: '1px solid rgba(255,255,255,0.05)',
+    },
+    errorBox: {
+      padding: '12px 16px',
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      borderRadius: '12px',
+      border: '1px solid rgba(239, 68, 68, 0.2)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    emptyBox: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '60px',
+      backgroundColor: '#1a1a2e',
+      borderRadius: '16px',
+      border: '1px solid rgba(255,255,255,0.05)',
+      textAlign: 'center' as const,
+    },
+    listContainer: {
+      backgroundColor: '#1a1a2e',
+      borderRadius: '16px',
+      border: '1px solid rgba(255,255,255,0.05)',
+      overflow: 'hidden',
+    },
+    listHeader: {
+      display: 'grid',
+      gridTemplateColumns: '50px 1fr 120px 100px 60px',
+      padding: '8px 12px',
+      backgroundColor: 'rgba(255,255,255,0.03)',
+      borderBottom: '1px solid rgba(255,255,255,0.05)',
+      fontSize: '11px',
+      fontWeight: '600',
+      color: 'rgba(255,255,255,0.5)',
+      textTransform: 'uppercase' as const,
+      letterSpacing: '0.5px',
+    },
+    songRow: {
+      display: 'grid',
+      gridTemplateColumns: '50px 1fr 120px 100px 60px',
+      padding: '8px 12px',
+      alignItems: 'center',
+      borderBottom: '1px solid rgba(255,255,255,0.03)',
+      transition: 'all 0.2s ease',
+      cursor: 'pointer',
+    },
+    rank: {
+      fontSize: '13px',
+      fontWeight: '500',
+      color: 'rgba(255,255,255,0.3)',
+    },
+    songInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      minWidth: 0,
+    },
+    thumbnail: {
+      width: '40px',
+      height: '40px',
+      borderRadius: '8px',
+      objectFit: 'cover' as const,
+      backgroundColor: '#2a2a3e',
+    },
+    songText: {
+      minWidth: 0,
+    },
+    songTitle: {
+      fontSize: '13px',
+      fontWeight: '600',
+      color: 'white',
+      margin: 0,
+      whiteSpace: 'nowrap' as const,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
+    songArtist: {
+      fontSize: '12px',
+      color: 'rgba(255,255,255,0.5)',
+      margin: '4px 0 0 0',
+      whiteSpace: 'nowrap' as const,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
+    playedAt: {
+      fontSize: '12px',
+      color: 'rgba(255,255,255,0.5)',
+    },
+    duration: {
+      fontSize: '13px',
+      color: 'rgba(255,255,255,0.4)',
+    },
+    playBtn: {
+      width: '36px',
+      height: '36px',
+      backgroundColor: '#8b5cf6',
+      border: 'none',
+      borderRadius: '50%',
+      color: 'white',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+    },
+  };
+
+  return (
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.titleWrapper}>
+          <div style={styles.iconBox}>
+            <Clock size={24} style={{ color: 'white' }} />
+          </div>
+          <div>
+            <h1 style={styles.title}>🎧 Lịch Sử Nghe</h1>
+            <p style={styles.subtitle}>{items.length > 0 ? `${items.length} bài hát đã nghe` : 'Danh sách bài hát đã nghe'}</p>
+          </div>
+        </div>
+        {items.length > 0 && (
+          <button
+            style={styles.playAllBtn}
+            onClick={handlePlayAll}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <Play size={16} fill="white" />
+            Phát tất cả
+          </button>
+        )}
+      </div>
+
+      {/* Loading */}
+      {loading && (
+        <div style={styles.loadingBox}>
+          <RefreshCw size={32} style={{ color: '#a855f7', animation: 'spin 1s linear infinite' }} />
+          <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '16px' }}>Đang tải dữ liệu...</p>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div style={styles.errorBox}>
+          <p style={{ color: '#ef4444', margin: 0 }}>❌ {error}</p>
+          <button
+            onClick={fetchHistory}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#ef4444',
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            Thử lại
+          </button>
+        </div>
+      )}
+
+      {/* Empty */}
+      {!loading && !error && items.length === 0 && (
+        <div style={styles.emptyBox}>
+          <Music size={64} style={{ color: '#2a2a3e', marginBottom: '16px' }} />
+          <p style={{ fontSize: '18px', fontWeight: '600', color: 'rgba(255,255,255,0.7)', margin: '0 0 8px 0' }}>
+            Chưa có lịch sử nghe
+          </p>
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+            Hãy phát một số bài hát để xem lịch sử
+          </p>
+        </div>
+      )}
+
+      {/* List */}
+      {!loading && !error && items.length > 0 && (
+        <div style={styles.listContainer}>
+          <div style={styles.listHeader}>
+            <span>#</span>
+            <span>Bài hát</span>
+            <span>Đã nghe lúc</span>
+            <span>Thời lượng</span>
+            <span></span>
+          </div>
+          {items.map((item, index) => (
+            <div
+              key={item.id || index}
+              style={{
+                ...styles.songRow,
+                backgroundColor: index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)';
+              }}
+              onClick={() => handlePlay(item, index)}
+            >
+              <span style={styles.rank}>{index + 1}</span>
+              <div style={styles.songInfo}>
+                {item.thumbnailUrl ? (
+                  <img src={item.thumbnailUrl} alt="" style={styles.thumbnail} />
+                ) : (
+                  <div style={{ ...styles.thumbnail, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Music size={20} style={{ color: '#4a4a5e' }} />
+                  </div>
+                )}
+                <div style={styles.songText}>
+                  <p style={styles.songTitle}>{item.title}</p>
+                  <p style={styles.songArtist}>{item.artist}</p>
+                </div>
+              </div>
+              <span style={styles.playedAt}>
+                <div>{formatDate(item.playedAt)}</div>
+                <div style={{ fontSize: '11px', opacity: 0.7 }}>{formatHour(item.playedAt)}</div>
+              </span>
+              <span style={styles.duration}>{formatTime(item.durationInSeconds)}</span>
+              <button
+                style={styles.playBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePlay(item, index);
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <Play size={14} fill="white" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default ListenHistory;

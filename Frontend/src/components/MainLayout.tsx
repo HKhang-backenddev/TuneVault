@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Library, History, Heart, ChevronsLeft, ChevronsRight, User as UserIcon, Share2, Users } from 'lucide-react';
+import { Library, History, Heart, ChevronsLeft, ChevronsRight, User as UserIcon, Share2, Users, Trophy, Headphones, Music } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
 import { AppHeader } from './AppHeader';
 import PlayerBar from './PlayerBar';
-import { NowPlayingSidebar } from './NowPlayingSidebar'; // Import component mới
+import { NowPlayingSidebar } from './NowPlayingSidebar';
 import { ShareSidebar } from './ShareSidebar';
 import { User } from '@shared-types/user';
 
@@ -16,6 +16,8 @@ const MenuBox = ({ user }: { user: User | null }) => {
     // Cập nhật path để nó là một hàm có thể tạo link động
     { name: 'Hồ sơ', icon: UserIcon, path: (u: User | null) => u?.username ? `/app/profile/${u.username}` : '/login', color: '#8b5cf6' }, // Purple
     { name: 'Thư viện', icon: Library, path: '/app/library', color: '#f97316' }, // Orange
+    { name: 'Top Charts', icon: Trophy, path: '/app/top-charts', color: '#f59e0b' }, // Amber
+    { name: 'Lịch sử nghe', icon: Headphones, path: '/app/listen-history', color: '#a855f7' }, // Purple
     { name: 'Lịch sử', icon: History, path: '/app/history', color: '#eab308' }, // Yellow
     { name: 'Bài hát đã thích', icon: Heart, path: '/app/liked', color: '#ec4899' }, // Pink
     { name: 'Được chia sẻ', icon: Users, path: '/app/shared-with-me', color: '#10b981' }, // Green
@@ -36,9 +38,11 @@ const MenuBox = ({ user }: { user: User | null }) => {
       borderRadius: '12px',
       padding: '16px',
       border: '1px solid rgba(59, 130, 246, 0.15)',
-      alignSelf: 'flex-start',
+      alignSelf: 'stretch',
       transition: 'width 0.3s ease',
       position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
     })}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '12px', marginBottom: '12px' }}>
         {!isMenuCollapsed && (
@@ -67,7 +71,7 @@ const MenuBox = ({ user }: { user: User | null }) => {
           {isMenuCollapsed ? <ChevronsRight size={20} /> : <ChevronsLeft size={20} />}
         </button>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
         {menuItems.map(item => {
           const isActive = location.pathname === item.path;
           // Tạo đường dẫn dựa trên việc path là chuỗi hay hàm
@@ -103,6 +107,55 @@ const MenuBox = ({ user }: { user: User | null }) => {
           );
         })}
       </div>
+      {/* Quick Actions */}
+      <div style={{ marginTop: 'auto', paddingTop: '12px' }}>
+        {!isMenuCollapsed && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(29, 185, 84, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '12px',
+            border: '1px solid rgba(29, 185, 84, 0.2)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                width: '40px', height: '40px',
+                background: 'linear-gradient(135deg, #1db954, #10b981)',
+                borderRadius: '10px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Music size={20} style={{ color: 'white' }} />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: 'white' }}>Tạo Playlist</p>
+                <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Sáng tạo danh sách mới</p>
+              </div>
+            </div>
+            <div style={{
+              display: 'flex', gap: '8px',
+              padding: '8px',
+              background: 'rgba(0,0,0,0.3)',
+              borderRadius: '8px',
+            }}>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#1db954' }}>12</p>
+                <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Playlist</p>
+              </div>
+              <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ec4899' }}>48</p>
+                <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Yêu thích</p>
+              </div>
+              <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#8b5cf6' }}>156</p>
+                <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Đã nghe</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Nút chia sẻ mới */}
       <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '12px', marginTop: '12px' }}>
         <button

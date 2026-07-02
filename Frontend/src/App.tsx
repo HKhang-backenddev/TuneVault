@@ -18,8 +18,11 @@ import Profile from './pages/Profile';
 import MainLayout from './Components/MainLayout';
 import LikedSongs from './pages/LikedSongs';
 import SharedWithMe from './pages/SharedWithMe';
+import TopCharts from './pages/TopCharts';
+import ListenHistory from './pages/ListenHistory';
 import { AppHeader } from './Components/AppHeader';
 import { AudioProvider } from './Contexts/AudioContext';
+import { ThemeProvider } from './Contexts/ThemeContext';
 import { useEffect, useState, useRef } from 'react';
 import * as signalR from '@microsoft/signalr';
 
@@ -169,6 +172,8 @@ const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, setShowUser
             <Route path="import" element={<ImportMusic />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="shared-with-me" element={<SharedWithMe />} />
+            <Route path="top-charts" element={<TopCharts />} />
+            <Route path="listen-history" element={<ListenHistory />} />
             <Route 
               path="profile/:username" 
               element={<Profile currentUser={user} onUpdate={fetchProfile} onLogout={onLogout} />} 
@@ -463,9 +468,22 @@ function App() {
   }, [fetchProfile]);
 
   useEffect(() => {
-    const closeMenu = () => setShowUserMenu(false);
-    if (showUserMenu) window.addEventListener('click', closeMenu);
-    return () => window.removeEventListener('click', closeMenu);
+    const closeMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Không đóng menu nếu click vào button hoặc menu
+      if (target.closest('.user-menu-button') || target.closest('.user-menu-dropdown')) {
+        return;
+      }
+      setShowUserMenu(false);
+    };
+    
+    if (showUserMenu) {
+      // Delay để tránh trigger ngay lập tức khi mở menu
+      setTimeout(() => {
+        document.addEventListener('click', closeMenu);
+      }, 0);
+    }
+    return () => document.removeEventListener('click', closeMenu);
   }, [showUserMenu]);
 
   // Hàm quay về trang chủ và xóa tìm kiếm
@@ -478,6 +496,7 @@ function App() {
   };
 
   return (
+    <ThemeProvider>
     <AudioProvider>
       <BackgroundEffects />
       <style>{`
@@ -569,6 +588,7 @@ function App() {
         <Route path="*" element={<Navigate to="/app" replace />} />
       </Routes>
     </AudioProvider>
+    </ThemeProvider>
   );
 }
 
