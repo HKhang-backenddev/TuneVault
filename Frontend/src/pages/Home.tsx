@@ -57,19 +57,52 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [libraryRes, likedRes, historyRes, recentRes] = await Promise.all([
-          api.get('/media/library?pageSize=50'),
-          api.get('/favorites'),
-          api.get('/media/history'),
-          api.get('/media/recent')
-        ]);
+        console.log("🔍 Home: Đang fetch dữ liệu...");
+        const libraryRes = await api.get('/media/library?pageSize=100');
+        console.log("📦 Library response:", libraryRes.data);
+        
         const sectionsData = [];
-        // Thư viện của user - ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT!
-        if (libraryRes.data?.items?.length > 0) sectionsData.push({ title: 'Thư viện của bạn', items: libraryRes.data.items });
-        if (likedRes.data?.items?.length > 0) sectionsData.push({ title: 'Bài hát đã thích', items: likedRes.data.items });
-        if (recentRes.data?.items?.length > 0) sectionsData.push({ title: 'Nghe gần đây', items: recentRes.data.items });
+        
+        // Lấy items từ response - có thể là array trực tiếp hoặc trong property items
+        let libraryItems = [];
+        if (Array.isArray(libraryRes.data)) {
+          libraryItems = libraryRes.data;
+        } else if (libraryRes.data?.items) {
+          libraryItems = libraryRes.data.items;
+        } else if (libraryRes.data?.data) {
+          libraryItems = libraryRes.data.data;
+        }
+        
+        console.log("🎵 Library items:", libraryItems);
+        
+        if (libraryItems.length > 0) sectionsData.push({ title: 'Thư viện của bạn', items: libraryItems });
+        
+        // Thử lấy favorites
+        try {
+          const likedRes = await api.get('/favorites');
+          let likedItems = [];
+          if (Array.isArray(likedRes.data)) likedItems = likedRes.data;
+          else if (likedRes.data?.items) likedItems = likedRes.data.items;
+          else if (likedRes.data?.songs) likedItems = likedRes.data.songs;
+          
+          if (likedItems.length > 0) sectionsData.push({ title: 'Bài hát đã thích', items: likedItems });
+        } catch (e) { console.log("Không lấy được favorites:", e); }
+        
         setSections(sectionsData);
-      } catch (err) { console.error("Lỗi fetch data:", err); }
+        console.log("✅ Sections cuối cùng:", sectionsData);
+      } catch (err) { 
+        console.error("❌ Lỗi fetch data:", err); 
+        // Nếu lỗi, thử fetch riêng lẻ
+        try {
+          const libraryRes = await api.get('/media/library?pageSize=100');
+          let items = libraryRes.data?.items || libraryRes.data || [];
+          if (items.length > 0) {
+            setSections([{ title: 'Thư viện của bạn', items: items }]);
+          }
+        } catch (e2) {
+          console.error("❌ Lỗi fetch library riêng:", e2);
+        }
+      }
       setLoading(false);
     };
     fetchData();
