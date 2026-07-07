@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import './styles/neon.css';
 import {
   Search as SearchIcon, Plus, Home as HomeIcon, Library as LibraryIcon,
   History, Bell, Play, LogOut, User as UserIcon, Heart, Camera, Image as ImageIcon, Loader2
