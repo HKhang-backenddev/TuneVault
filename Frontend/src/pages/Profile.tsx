@@ -78,7 +78,6 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
   };
 
   const fetchProfileData = async () => {
-    // If no username provided, use current user
     if (!username && currentUser) {
       setProfileUser(currentUser);
       setIsFollowing(currentUser?.isFollowing || false);
@@ -92,7 +91,6 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
       return;
     }
     
-    // If viewing own profile
     if (isOwnProfile && currentUser) {
       setProfileUser(currentUser);
       setIsFollowing(currentUser?.isFollowing || false);
@@ -252,7 +250,6 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
   const totalSongs = userSongs.length;
   const totalPlaylists = userPlaylists.length;
 
-  // If no user data and not loading, show error
   if (!displayUser && !isLoading) {
     return (
       <div style={{
@@ -264,8 +261,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
         justifyContent: 'center',
         color: '#fff'
       }}>
-        <h1 style={{ fontSize: '48px', marginBottom: '16px' }}>😕</h1>
-        <p style={{ fontSize: '18px', color: '#b3b3b3', marginBottom: '24px' }}>User not found</p>
+        <h1 style={{ fontSize: '48px', marginBottom: '16px' }}>User not found</h1>
         <button 
           onClick={() => navigate('/app')}
           style={{
@@ -284,17 +280,17 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
     );
   }
 
+  if (!displayUser) return null;
+
   return (
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: '#121212',
       color: '#fff'
     }}>
-      {/* Hidden file inputs */}
       <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
       <input type="file" ref={bannerInputRef} onChange={handleBannerChange} accept="image/*" style={{ display: 'none' }} />
 
-      {/* Status Message */}
       {statusMessage && (
         <div style={{
           position: 'fixed',
@@ -314,13 +310,12 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
         </div>
       )}
 
-      {/* Profile Header - Spotify Style with Neon Gradient */}
+      {/* Profile Header */}
       <div style={{
         position: 'relative',
         background: `linear-gradient(180deg, rgba(131, 58, 180, 0.9) 0%, rgba(225, 48, 108, 0.6) 30%, rgba(245, 130, 131, 0.4) 60%, #121212 100%)`,
         paddingBottom: '32px'
       }}>
-        {/* Banner */}
         <div 
           style={{
             height: '400px',
@@ -347,7 +342,6 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               <span style={{ color: '#fff', fontSize: '14px' }}>Change Banner</span>
             </div>
           )}
-          
           <div style={{
             position: 'absolute',
             bottom: 0,
@@ -358,7 +352,6 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
           }} />
         </div>
 
-        {/* Profile Info */}
         <div style={{ 
           position: 'absolute', 
           bottom: '32px', 
@@ -367,7 +360,6 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
           alignItems: 'flex-end', 
           gap: '24px' 
         }}>
-          {/* Avatar */}
           <div 
             style={{ 
               position: 'relative',
@@ -383,7 +375,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               borderRadius: '50%',
               background: avatarUrl ? `url(${avatarUrl}) center/cover` : 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
               border: '5px solid #121212',
-              boxShadow: '0 0 50px rgba(131, 58, 180, 0.8), 0 0 100px rgba(253, 29, 29, 0.4), 0 0 150px rgba(252, 176, 69, 0.2)',
+              boxShadow: '0 0 50px rgba(131, 58, 180, 0.8), 0 0 100px rgba(253, 29, 29, 0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -398,37 +390,13 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 backgroundColor: 'rgba(0,0,0,0.6)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                gap: '4px'
-              }}>
-                <Camera size={40} style={{ color: '#fff' }} />
-                <span style={{ color: '#fff', fontSize: '12px' }}>Change</span>
-              </div>
-            )}
-            {uploading && (
-              <div style={{
-                position: 'absolute',
-                inset: '5px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(0,0,0,0.8)',
-                display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <div style={{ 
-                  width: '32px', 
-                  height: '32px', 
-                  border: '3px solid #333', 
-                  borderTopColor: '#1ed760',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
+                <Camera size={40} style={{ color: '#fff' }} />
               </div>
             )}
           </div>
 
-          {/* User Info */}
           <div style={{ paddingBottom: '8px' }}>
             <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', margin: 0 }}>Profile</p>
             <h1 style={{ 
@@ -436,24 +404,16 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               fontWeight: '900', 
               color: '#fff', 
               margin: '0 0 12px 0',
-              textShadow: '0 0 40px rgba(131, 58, 180, 0.9), 0 0 80px rgba(253, 29, 29, 0.5), 0 0 120px rgba(252, 176, 69, 0.3)',
+              textShadow: '0 0 40px rgba(131, 58, 180, 0.9)',
               lineHeight: 1
             }}>{displayName}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e0e0e0', fontSize: '14px' }}>
               <span style={{ color: '#1ed760', fontSize: '10px' }}>●</span>
               <span>{totalSongs} songs</span>
-              <span>•</span>
+              <span> - </span>
               <span>{totalPlaylists} playlists</span>
-              <span>•</span>
+              <span> - </span>
               <span style={{ fontWeight: 'bold' }}>{followerCount} followers</span>
-              {userLocation && (
-                <>
-                  <span>•</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <MapPin size={14} style={{ color: '#ff6b6b' }} /> {userLocation}
-                  </span>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -480,17 +440,10 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 30px rgba(30, 215, 96, 0.6)',
-              transition: 'transform 0.2s'
+              boxShadow: '0 0 30px rgba(30, 215, 96, 0.6)'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            {isFollowing ? (
-              <UserCheck size={26} style={{ color: '#000' }} />
-            ) : (
-              <UserPlus size={26} style={{ color: '#000' }} />
-            )}
+            {isFollowing ? <UserCheck size={26} style={{ color: '#000' }} /> : <UserPlus size={26} style={{ color: '#000' }} />}
           </button>
         )}
         
@@ -508,11 +461,8 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
+                gap: '8px'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1ed760'; e.currentTarget.style.color = '#1ed760'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#b3b3b3'; e.currentTarget.style.color = '#fff'; }}
             >
               <Edit size={18} /> Edit Profile
             </button>
@@ -528,11 +478,8 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
+                gap: '8px'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#ff4d4d'; e.currentTarget.style.color = '#ff4d4d'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#b3b3b3'; e.currentTarget.style.color = '#fff'; }}
             >
               <LogOut size={18} /> Logout
             </button>
@@ -540,7 +487,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
         )}
       </div>
 
-      {/* Tabs - Neon Gradient Style */}
+      {/* Tabs */}
       <div style={{ 
         padding: '0 32px', 
         display: 'flex', 
@@ -561,8 +508,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               fontSize: '16px',
               cursor: 'pointer',
               position: 'relative',
-              textTransform: 'capitalize',
-              letterSpacing: '0.5px'
+              textTransform: 'capitalize'
             }}
           >
             {tab}
@@ -574,7 +520,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 right: 0,
                 height: '3px',
                 background: 'linear-gradient(90deg, #833ab4, #fd1d1d, #fcb045)',
-                boxShadow: '0 0 15px rgba(131, 58, 180, 0.8), 0 0 30px rgba(253, 29, 29, 0.4)'
+                boxShadow: '0 0 15px rgba(131, 58, 180, 0.8)'
               }} />
             )}
           </button>
@@ -585,83 +531,220 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
       <div style={{ padding: '32px' }}>
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {/* Public Playlist Section */}
+            
+            {/* TOP TRACKS - Horizontal Scroll */}
             {userSongs.length > 0 && (
               <div>
-                <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '24px', color: '#fff' }}>
+                <h2 style={{ 
+                  fontSize: '32px', 
+                  fontWeight: 'bold', 
+                  marginBottom: '24px', 
+                  color: '#fff',
+                  textShadow: '0 0 30px rgba(131, 58, 180, 0.6)'
+                }}>
                   Top Tracks
                 </h2>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-                  gap: '24px' 
+                <div style={{
+                  display: 'flex',
+                  gap: '20px',
+                  overflowX: 'auto',
+                  paddingBottom: '24px',
+                  paddingLeft: '4px',
+                  scrollSnapType: 'x mandatory'
                 }}>
-                  {userSongs.slice(0, 6).map((song) => (
-                    <div
-                      key={song.id}
-                      onClick={() => playTrack(song, userSongs)}
-                      style={{
-                        backgroundColor: '#181818',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s',
-                        border: '1px solid transparent'
-                      }}
-                      onMouseEnter={(e) => { 
-                        e.currentTarget.style.backgroundColor = '#282828'; 
-                        e.currentTarget.style.transform = 'translateY(-8px)';
-                        e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.5)';
-                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(131, 58, 180, 0.3)';
-                      }}
-                      onMouseLeave={(e) => { 
-                        e.currentTarget.style.backgroundColor = '#181818'; 
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.borderColor = 'transparent';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <div style={{
-                        width: '100%',
-                        aspectRatio: '1/1',
-                        background: `url(${song.thumbnailUrl}) center/cover`,
-                        borderRadius: '4px',
-                        marginBottom: '16px',
-                        position: 'relative',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
-                      }}>
+                  <style>{`
+                    div::-webkit-scrollbar { height: 6px; }
+                    div::-webkit-scrollbar-track { background: #1a1a1a; border-radius: 3px; }
+                    div::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+                    .track-card:hover .play-overlay { opacity: 1 !important; transform: translateY(0) scale(1) !important; }
+                    @keyframes bounce { from { height: 4px; } to { height: 14px; } }
+                  `}</style>
+                  {userSongs.slice(0, 12).map((song, index) => {
+                    const isCurrent = currentTrack?.id === song.id;
+                    return (
+                      <div
+                        key={song.id}
+                        onClick={() => playTrack(song, userSongs)}
+                        className="track-card"
+                        style={{
+                          minWidth: '180px',
+                          maxWidth: '180px',
+                          background: isCurrent 
+                            ? 'linear-gradient(145deg, rgba(30, 215, 96, 0.15), rgba(131, 58, 180, 0.15))' 
+                            : 'linear-gradient(145deg, #1e1e1e, #252525)',
+                          padding: '14px',
+                          borderRadius: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          border: isCurrent ? '1px solid rgba(30, 215, 96, 0.5)' : '1px solid transparent',
+                          boxShadow: isCurrent ? '0 0 25px rgba(30, 215, 96, 0.25)' : 'none',
+                          scrollSnapAlign: 'start',
+                          position: 'relative'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isCurrent) {
+                            e.currentTarget.style.transform = 'translateY(-10px) scale(1.03)';
+                            e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.5)';
+                            e.currentTarget.style.boxShadow = '0 15px 35px rgba(131, 58, 180, 0.35), 0 0 50px rgba(253, 29, 29, 0.15)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isCurrent) {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.borderColor = 'transparent';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }
+                        }}
+                      >
+                        {/* Rank Badge */}
                         <div style={{
                           position: 'absolute',
-                          bottom: '8px',
-                          right: '8px',
-                          width: '48px',
-                          height: '48px',
+                          top: '8px',
+                          left: '8px',
+                          width: '26px',
+                          height: '26px',
                           borderRadius: '50%',
-                          backgroundColor: '#1ed760',
+                          background: index === 0 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 
+                                     index === 1 ? 'linear-gradient(135deg, #C0C0C0, #A8A8A8)' :
+                                     index === 2 ? 'linear-gradient(135deg, #CD7F32, #A0522D)' :
+                                     'rgba(0,0,0,0.6)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          opacity: 0,
-                          transform: 'translateY(8px)',
-                          transition: 'all 0.3s',
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.5)'
-                        }} className="play-btn">
-                          <Play size={24} fill="#000" style={{ color: '#000', marginLeft: '2px' }} />
+                          fontWeight: 'bold',
+                          fontSize: '11px',
+                          color: index < 3 ? '#000' : '#fff',
+                          zIndex: 2,
+                          boxShadow: index < 3 ? '0 2px 8px rgba(0,0,0,0.4)' : 'none'
+                        }}>
+                          {index + 1}
+                        </div>
+                        
+                        {/* Now Playing Animation */}
+                        {isCurrent && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            display: 'flex',
+                            gap: '2px',
+                            alignItems: 'flex-end',
+                            height: '16px'
+                          }}>
+                            <div style={{ width: '3px', height: '6px', backgroundColor: '#1ed760', animation: 'bounce 0.4s infinite alternate', borderRadius: '1px' }} />
+                            <div style={{ width: '3px', height: '12px', backgroundColor: '#1ed760', animation: 'bounce 0.4s 0.1s infinite alternate', borderRadius: '1px' }} />
+                            <div style={{ width: '3px', height: '8px', backgroundColor: '#1ed760', animation: 'bounce 0.4s 0.2s infinite alternate', borderRadius: '1px' }} />
+                          </div>
+                        )}
+                        
+                        {/* Thumbnail */}
+                        <div style={{
+                          width: '100%',
+                          aspectRatio: '1/1',
+                          background: `url(${song.thumbnailUrl}) center/cover`,
+                          borderRadius: '8px',
+                          marginBottom: '14px',
+                          position: 'relative',
+                          boxShadow: '0 6px 20px rgba(0,0,0,0.5)'
+                        }}>
+                          <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            borderRadius: '8px',
+                            background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.5) 100%)'
+                          }} />
+                          
+                          {/* Play Button */}
+                          <div 
+                            className="play-overlay"
+                            style={{
+                              position: 'absolute',
+                              bottom: '6px',
+                              right: '6px',
+                              width: '46px',
+                              height: '46px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #1ed760, #00d4aa)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              opacity: 0,
+                              transform: 'translateY(8px) scale(0.9)',
+                              transition: 'all 0.3s ease',
+                              boxShadow: '0 6px 20px rgba(30, 215, 96, 0.5)'
+                            }}
+                          >
+                            <Play size={22} fill="#000" style={{ color: '#000', marginLeft: '2px' }} />
+                          </div>
+                        </div>
+                        
+                        <p style={{ 
+                          fontWeight: 'bold', 
+                          color: isCurrent ? '#1ed760' : '#fff', 
+                          margin: '0 0 6px 0', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis',
+                          fontSize: '14px'
+                        }}>
+                          {song.title}
+                        </p>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ 
+                            fontSize: '12px', 
+                            color: '#999',
+                            flex: 1,
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            whiteSpace: 'nowrap',
+                            maxWidth: '110px'
+                          }}>
+                            {song.artist}
+                          </span>
+                          <span style={{ 
+                            fontSize: '11px', 
+                            color: isCurrent ? '#1ed760' : '#666',
+                            fontFamily: 'monospace'
+                          }}>
+                            {formatTime(song.durationInSeconds)}
+                          </span>
                         </div>
                       </div>
-                      <p style={{ fontWeight: 'bold', color: '#fff', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {song.title}
-                      </p>
-                      <p style={{ fontSize: '14px', color: '#b3b3b3', margin: 0 }}>
-                        {song.artist} • {formatTime(song.durationInSeconds)}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
+                </div>
+                
+                {/* View All Button */}
+                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
+                  <button
+                    onClick={() => setActiveTab('songs')}
+                    style={{
+                      padding: '14px 48px',
+                      borderRadius: '30px',
+                      background: 'linear-gradient(135deg, rgba(131, 58, 180, 0.25), rgba(253, 29, 29, 0.25))',
+                      border: '1px solid rgba(131, 58, 180, 0.4)',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(131, 58, 180, 0.45), rgba(253, 29, 29, 0.45))';
+                      e.currentTarget.style.transform = 'scale(1.03)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(131, 58, 180, 0.25), rgba(253, 29, 29, 0.25))';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    View All {userSongs.length} Songs
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* Bio Section */}
+            {/* About Section */}
             <div>
               <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px', color: '#fff' }}>
                 About
@@ -677,63 +760,35 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                   {userBio}
                 </p>
                 
-                {/* Social Links */}
                 {(displayUser?.websiteUrl || displayUser?.twitterUrl || displayUser?.githubUrl) && (
-                  <div style={{ display: 'flex', gap: '20px', marginTop: '24px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '24px', flexWrap: 'wrap' }}>
                     {displayUser?.websiteUrl && (
                       <a href={displayUser.websiteUrl} target="_blank" rel="noopener noreferrer" style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        color: '#1ed760',
-                        textDecoration: 'none',
-                        fontSize: '14px',
-                        padding: '8px 16px',
-                        backgroundColor: 'rgba(30, 215, 96, 0.1)',
-                        borderRadius: '20px',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(30, 215, 96, 0.2)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(30, 215, 96, 0.1)'}
-                      >
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        color: '#1ed760', textDecoration: 'none', fontSize: '14px',
+                        padding: '8px 16px', backgroundColor: 'rgba(30, 215, 96, 0.1)',
+                        borderRadius: '20px'
+                      }}>
                         <Globe size={18} /> Website <ExternalLink size={12} />
                       </a>
                     )}
                     {displayUser?.twitterUrl && (
                       <a href={displayUser.twitterUrl} target="_blank" rel="noopener noreferrer" style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        color: '#1da1f2',
-                        textDecoration: 'none',
-                        fontSize: '14px',
-                        padding: '8px 16px',
-                        backgroundColor: 'rgba(29, 161, 242, 0.1)',
-                        borderRadius: '20px',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(29, 161, 242, 0.2)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(29, 161, 242, 0.1)'}
-                      >
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        color: '#1da1f2', textDecoration: 'none', fontSize: '14px',
+                        padding: '8px 16px', backgroundColor: 'rgba(29, 161, 242, 0.1)',
+                        borderRadius: '20px'
+                      }}>
                         <Twitter size={18} /> Twitter
                       </a>
                     )}
                     {displayUser?.githubUrl && (
                       <a href={displayUser.githubUrl} target="_blank" rel="noopener noreferrer" style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        color: '#fff',
-                        textDecoration: 'none',
-                        fontSize: '14px',
-                        padding: '8px 16px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '20px',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                      >
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        color: '#fff', textDecoration: 'none', fontSize: '14px',
+                        padding: '8px 16px', backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '20px'
+                      }}>
                         <Github size={18} /> GitHub
                       </a>
                     )}
@@ -742,24 +797,19 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               </div>
             </div>
 
-            {/* User Info Grid */}
+            {/* Details */}
             <div>
               <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px', color: '#fff' }}>
                 Details
               </h2>
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                 gap: '16px',
-                maxWidth: '900px'
+                maxWidth: '800px'
               }}>
                 {displayUser?.createdAt && (
-                  <div style={{ 
-                    backgroundColor: '#181818', 
-                    padding: '24px', 
-                    borderRadius: '12px',
-                    border: '1px solid #282828'
-                  }}>
+                  <div style={{ backgroundColor: '#181818', padding: '24px', borderRadius: '12px', border: '1px solid #282828' }}>
                     <p style={{ fontSize: '12px', color: '#b3b3b3', fontWeight: 'bold', marginBottom: '10px', letterSpacing: '1px' }}>MEMBER SINCE</p>
                     <p style={{ color: '#fff', fontSize: '18px', fontWeight: '600' }}>
                       {new Date(displayUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
@@ -794,7 +844,6 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
             </h2>
             {userSongs.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {/* Header */}
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '50px 6fr 4fr 1fr',
@@ -824,8 +873,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                         cursor: 'pointer',
                         alignItems: 'center',
                         transition: 'all 0.2s',
-                        backgroundColor: isCurrent ? 'rgba(30, 215, 96, 0.15)' : 'transparent',
-                        border: isCurrent ? '1px solid rgba(30, 215, 96, 0.3)' : '1px solid transparent'
+                        backgroundColor: isCurrent ? 'rgba(30, 215, 96, 0.15)' : 'transparent'
                       }}
                       onMouseEnter={(e) => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; }}
                       onMouseLeave={(e) => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'transparent'; }}
@@ -846,11 +894,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                         ) : index + 1}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <img 
-                          src={song.thumbnailUrl} 
-                          style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} 
-                          alt={song.title} 
-                        />
+                        <img src={song.thumbnailUrl} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} alt={song.title} />
                         <div>
                           <p style={{ fontWeight: '600', color: isCurrent ? '#1ed760' : '#fff', margin: 0 }}>{song.title}</p>
                           <p style={{ fontSize: '14px', color: '#b3b3b3', margin: 0 }}>{song.artist}</p>
@@ -865,13 +909,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 })}
               </div>
             ) : (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '100px', 
-                color: '#b3b3b3',
-                backgroundColor: '#181818',
-                borderRadius: '12px'
-              }}>
+              <div style={{ textAlign: 'center', padding: '100px', color: '#b3b3b3', backgroundColor: '#181818', borderRadius: '12px' }}>
                 <Music size={72} style={{ marginBottom: '20px', opacity: 0.5 }} />
                 <p style={{ fontSize: '20px', margin: 0 }}>No songs uploaded yet</p>
               </div>
@@ -885,11 +923,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               Playlists
             </h2>
             {userPlaylists.length > 0 ? (
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-                gap: '24px' 
-              }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '24px' }}>
                 {userPlaylists.map((playlist) => (
                   <div
                     key={playlist.id}
@@ -899,47 +933,15 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                       padding: '16px',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      transition: 'all 0.3s',
-                      border: '1px solid transparent'
+                      transition: 'all 0.3s'
                     }}
-                    onMouseEnter={(e) => { 
-                      e.currentTarget.style.backgroundColor = '#282828';
-                      e.currentTarget.style.transform = 'translateY(-8px)';
-                      e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.5)';
-                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(131, 58, 180, 0.3)';
-                    }}
-                    onMouseLeave={(e) => { 
-                      e.currentTarget.style.backgroundColor = '#181818';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.borderColor = 'transparent';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#282828'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#181818'; }}
                   >
                     {playlist.coverUrl ? (
-                      <img 
-                        src={playlist.coverUrl} 
-                        alt={playlist.title} 
-                        style={{ 
-                          width: '100%', 
-                          aspectRatio: '1/1', 
-                          objectFit: 'cover', 
-                          borderRadius: '4px', 
-                          marginBottom: '16px',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
-                        }} 
-                      />
+                      <img src={playlist.coverUrl} alt={playlist.title} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} />
                     ) : (
-                      <div style={{ 
-                        width: '100%', 
-                        aspectRatio: '1/1', 
-                        background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
-                        borderRadius: '4px', 
-                        marginBottom: '16px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        boxShadow: '0 8px 24px rgba(131, 58, 180, 0.4)'
-                      }}>
+                      <div style={{ width: '100%', aspectRatio: '1/1', background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)', borderRadius: '4px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <ListMusic size={56} color="#fff" />
                       </div>
                     )}
@@ -953,13 +955,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 ))}
               </div>
             ) : (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '100px', 
-                color: '#b3b3b3',
-                backgroundColor: '#181818',
-                borderRadius: '12px'
-              }}>
+              <div style={{ textAlign: 'center', padding: '100px', color: '#b3b3b3', backgroundColor: '#181818', borderRadius: '12px' }}>
                 <ListMusic size={72} style={{ marginBottom: '20px', opacity: 0.5 }} />
                 <p style={{ fontSize: '20px', margin: 0 }}>No playlists created yet</p>
               </div>
@@ -968,7 +964,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
         )}
       </div>
 
-      {/* Edit Modal - Neon Style */}
+      {/* Edit Modal */}
       {isEditing && (
         <div style={{
           position: 'fixed',
@@ -986,32 +982,21 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
             padding: '40px',
             width: '100%',
             maxWidth: '520px',
-            boxShadow: '0 0 60px rgba(131, 58, 180, 0.5), 0 0 100px rgba(253, 29, 29, 0.2)',
+            boxShadow: '0 0 60px rgba(131, 58, 180, 0.5)',
             border: '1px solid rgba(131, 58, 180, 0.4)'
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-              <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#fff', textShadow: '0 0 20px rgba(131, 58, 180, 0.5)' }}>
+              <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#fff' }}>
                 Edit Profile
               </h2>
-              <button onClick={() => setIsEditing(false)} style={{ 
-                background: 'none', 
-                border: 'none', 
-                color: '#b3b3b3', 
-                cursor: 'pointer',
-                padding: '8px',
-                borderRadius: '50%',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#333'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#b3b3b3'; }}
-              >
+              <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '8px' }}>
                 <X size={28} />
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold', letterSpacing: '0.5px' }}>Bio</label>
+                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold' }}>Bio</label>
                 <textarea
                   value={editedBio}
                   onChange={(e) => setEditedBio(e.target.value)}
@@ -1026,16 +1011,12 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                     color: '#fff',
                     fontSize: '14px',
                     resize: 'none',
-                    outline: 'none',
-                    transition: 'all 0.2s'
+                    outline: 'none'
                   }}
-                  onFocus={(e) => { e.target.style.borderColor = '#1ed760'; e.target.style.boxShadow = '0 0 20px rgba(30, 215, 96, 0.3)'; }}
-                  onBlur={(e) => { e.target.style.borderColor = 'rgba(131, 58, 180, 0.4)'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
-
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold', letterSpacing: '0.5px' }}>Location</label>
+                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold' }}>Location</label>
                 <input
                   type="text"
                   value={editedLocation}
@@ -1049,16 +1030,12 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                     borderRadius: '12px',
                     color: '#fff',
                     fontSize: '14px',
-                    outline: 'none',
-                    transition: 'all 0.2s'
+                    outline: 'none'
                   }}
-                  onFocus={(e) => { e.target.style.borderColor = '#1ed760'; e.target.style.boxShadow = '0 0 20px rgba(30, 215, 96, 0.3)'; }}
-                  onBlur={(e) => { e.target.style.borderColor = 'rgba(131, 58, 180, 0.4)'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
-
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold', letterSpacing: '0.5px' }}>Website</label>
+                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold' }}>Website</label>
                 <input
                   type="url"
                   value={editedWebsite}
@@ -1072,11 +1049,8 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                     borderRadius: '12px',
                     color: '#fff',
                     fontSize: '14px',
-                    outline: 'none',
-                    transition: 'all 0.2s'
+                    outline: 'none'
                   }}
-                  onFocus={(e) => { e.target.style.borderColor = '#1ed760'; e.target.style.boxShadow = '0 0 20px rgba(30, 215, 96, 0.3)'; }}
-                  onBlur={(e) => { e.target.style.borderColor = 'rgba(131, 58, 180, 0.4)'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
             </div>
@@ -1092,11 +1066,8 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                   border: '2px solid #b3b3b3',
                   color: '#fff',
                   fontWeight: 'bold',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  cursor: 'pointer'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#ff4d4d'; e.currentTarget.style.color = '#ff4d4d'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#b3b3b3'; e.currentTarget.style.color = '#fff'; }}
               >
                 Cancel
               </button>
@@ -1120,23 +1091,6 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
           </div>
         </div>
       )}
-
-      {/* Animation & Hover Styles */}
-      <style>{`
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes bounce {
-          from { height: 4px; }
-          to { height: 16px; }
-        }
-        .play-btn {
-          opacity: 0 !important;
-          transform: translateY(8px) !important;
-        }
-        div:hover .play-btn {
-          opacity: 1 !important;
-          transform: translateY(0) !important;
-        }
-      `}</style>
     </div>
   );
 };
