@@ -128,32 +128,33 @@ const ImportMusic = () => {
       maxWidth: '800px',
       margin: '24px auto',
       padding: '32px',
-      backgroundColor: '#181818',
-      borderRadius: '8px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      backgroundColor: '#1a1a2e',
+      borderRadius: '12px',
+      boxShadow: '0 0 30px rgba(255, 102, 0, 0.3)',
+      border: '1px solid rgba(255, 102, 0, 0.3)',
     }}>
       <style>{`
         .input-neon:focus {
-          border-color: #1DB954 !important;
-          box-shadow: 0 0 15px rgba(29, 185, 84, 0.3);
+          border-color: #FF6600 !important;
+          box-shadow: 0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(255, 0, 255, 0.3) !important;
         }
       `}</style>
-      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2rem', color: 'white', textAlign: 'center' }}>
+      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2rem', color: '#FF6600', textAlign: 'center', textShadow: '0 0 20px rgba(255, 102, 0, 0.8), 0 0 40px rgba(255, 0, 255, 0.6)' }}>
         Add New Music
       </h1>
 
-      {/* Tabs */}
-      <div style={{ position: 'relative', display: 'flex', padding: '4px', backgroundColor: 'rgba(10, 10, 10, 0.8)', borderRadius: '9999px', marginBottom: '2.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+      {/* Tabs - Neon Orange/Pink */}
+      <div style={{ position: 'relative', display: 'flex', padding: '4px', backgroundColor: 'rgba(26, 26, 46, 0.8)', borderRadius: '9999px', marginBottom: '2.5rem', border: '1px solid rgba(255, 102, 0, 0.3)' }}>
         <div style={{
           position: 'absolute',
           top: '4px',
           bottom: '4px',
           width: 'calc(50% - 4px)',
-          backgroundColor: '#3b82f6',
+          background: 'linear-gradient(135deg, #FF6600, #FF00FF)',
           borderRadius: '9999px',
           transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           transform: activeTab === 'youtube' ? 'translateX(0%)' : 'translateX(100%)',
-          boxShadow: '0 0 15px rgba(59, 130, 246, 0.6)'
+          boxShadow: '0 0 20px rgba(255, 102, 0, 0.8), 0 0 40px rgba(255, 0, 255, 0.5)'
         }}></div>
         {['youtube', 'upload'].map(tab => (
           <button
@@ -177,7 +178,7 @@ const ImportMusic = () => {
               color: activeTab === tab ? 'white' : '#a3a3a3',
             }}
           >
-            {tab === 'youtube' ? <Youtube size={20} /> : <UploadCloud size={20} />}
+            {tab === 'youtube' ? <Youtube size={20} style={{ filter: 'drop-shadow(0 0 5px rgba(255,102,0,0.8))' }} /> : <UploadCloud size={20} style={{ filter: 'drop-shadow(0 0 5px rgba(255,0,255,0.8))' }} />}
             {tab === 'youtube' ? 'YouTube' : 'Upload'}
           </button>
         ))}

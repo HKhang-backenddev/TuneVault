@@ -64,46 +64,47 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
     <div className="min-h-screen pb-32 flex justify-center">
       <div style={{
         width: '100%',
-        backgroundColor: '#181818',
-        borderRadius: '8px',
+        backgroundColor: '#1a1a2e',
+        borderRadius: '12px',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        boxShadow: '0 0 30px rgba(59, 130, 246, 0.3)',
       }}>
-        {/* Hero Header */}
+        {/* Hero Header - Neon Blue Style */}
         <div style={{
           padding: '32px',
           paddingTop: '48px',
           display: 'flex',
           alignItems: 'flex-end',
           gap: '24px',
-          background: 'linear-gradient(180deg, #3b82f6 0%, #181818 100%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+          background: 'linear-gradient(180deg, #00CCFF 0%, #1a1a2e 100%)',
+          borderBottom: '1px solid rgba(59, 130, 246, 0.2)',
         }}>
           <div style={{
             width: '192px',
             height: '192px',
-            background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+            background: 'linear-gradient(135deg, #00CCFF, #0066FF)',
+            boxShadow: '0 0 30px rgba(0, 204, 255, 0.8), 0 0 60px rgba(0, 102, 255, 0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: '4px',
+            borderRadius: '8px',
           }}>
-            <History size={80} style={{ color: 'white' }} />
+            <History size={80} style={{ color: 'white', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }} />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#93c5fd', marginBottom: '8px' }}>
+            <p style={{ fontSize: '12px', fontWeight: '700', color: '#000', textTransform: 'uppercase', marginBottom: '8px' }}>
               Download Manager
             </p>
-            <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.05em', color: 'white', marginBottom: '12px' }}>
+            <h1 style={{ fontSize: '56px', fontWeight: '900', color: '#fff', marginBottom: '12px', textShadow: '0 0 20px rgba(0, 204, 255, 0.8), 0 0 40px rgba(0, 102, 255, 0.6)' }}>
               Music Download History
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 'bold', color: '#B0B0B0' }}>
-              <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>TV</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#b3b3b3' }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, #FF00FF, #00FFFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white', fontWeight: 'bold' }}>TV</div>
               <span>TuneVault User</span>
-              <span style={{ color: '#555' }}>•</span>
-              <span style={{ color: 'white' }}>{history.length} songs downloaded</span>
+              <span style={{ color: '#00CCFF' }}>•</span>
+              <span style={{ color: '#00CCFF', textShadow: '0 0 10px rgba(0, 204, 255, 0.5)' }}>{history.length} songs downloaded</span>
             </div>
           </div>
         </div>

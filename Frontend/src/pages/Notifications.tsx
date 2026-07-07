@@ -191,8 +191,9 @@ const Notifications = () => {
     <div style={{
       width: '100%',
       padding: '24px 32px',
-      backgroundColor: '#121212',
-      borderRadius: '8px',
+      backgroundColor: '#1a1a2e',
+      borderRadius: '12px',
+      boxShadow: '0 0 30px rgba(255, 0, 255, 0.3)',
     }}>
       <style>{`
         @keyframes slide-up-fade-in {
@@ -200,18 +201,18 @@ const Notifications = () => {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2.5rem', letterSpacing: '-0.05em', color: 'white', textAlign: 'center', textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #3b82f6, 0 0 40px #3b82f6' }}>
+      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2.5rem', letterSpacing: '-0.05em', color: '#FF00FF', textAlign: 'center', textShadow: '0 0 20px rgba(255, 0, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.6)' }}>
         Inbox
       </h1>
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5rem 0' }}>
-          <Loader2 style={{ width: '2.5rem', height: '2.5rem', color: '#3b82f6' }} className="animate-spin" />
+          <Loader2 style={{ width: '2.5rem', height: '2.5rem', color: '#FF00FF', filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.8))' }} className="animate-spin" />
         </div>
       ) : notifications.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '5rem 0', backgroundColor: 'rgba(10, 10, 10, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '1rem', border: '1px solid #262626', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <Bell size={48} style={{ color: '#404040' }} />
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#a3a3a3' }}>Your inbox is empty</h3>
-          <p style={{ fontSize: '0.875rem', color: '#737373' }}>New notifications will appear here.</p>
+        <div style={{ textAlign: 'center', padding: '5rem 0', backgroundColor: '#121212', borderRadius: '1rem', border: '1px solid rgba(255, 0, 255, 0.3)', boxShadow: '0 0 20px rgba(255, 0, 255, 0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <Bell size={48} style={{ color: '#FF00FF', filter: 'drop-shadow(0 0 15px rgba(255, 0, 255, 0.8))' }} />
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#fff', textShadow: '0 0 10px rgba(255, 0, 255, 0.5)' }}>Your inbox is empty</h3>
+          <p style={{ fontSize: '0.875rem', color: '#b3b3b3' }}>New notifications will appear here.</p>
         </div>
       ) : (
         <div 
@@ -227,7 +228,7 @@ const Notifications = () => {
             maxHeight: '70vh',
             overflowY: 'auto',
             padding: '8px',
-            margin: '-8px', // Bù lại padding để thanh cuộn sát viền
+            margin: '-8px',
           }}
           className="custom-scrollbar" // Áp dụng thanh cuộn tùy chỉnh nếu có
         >
