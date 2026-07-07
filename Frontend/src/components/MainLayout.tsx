@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Library, History, Heart, Home, Search, Plus, Music, ListMusic, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { Library, History, Heart, Home, Search, Plus, Music, ListMusic, ChevronLeft, ChevronRight, Users, User as UserIcon } from 'lucide-react';
 import { User } from '@shared-types/user';
 import { ShareSidebar } from './ShareSidebar';
 
@@ -11,6 +11,7 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
     { name: 'Home', icon: Home, path: '/app' },
     { name: 'Search Songs', icon: Search, path: '/app/search' },
     { name: 'Find Users', icon: Users, path: '/app/users' },
+    { name: 'My Profile', icon: UserIcon, path: user ? `/app/profile/${user.username}` : '/app', color: '#c084fc' },
   ];
 
   const libraryItems = [
@@ -84,7 +85,7 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
                 }} />
               )}
               <item.icon size={24} style={{ 
-                filter: isActive ? 'drop-shadow(0 0 8px rgba(131, 58, 180, 0.8))' : 'none'
+                filter: isActive || item.color ? `drop-shadow(0 0 8px ${item.color || 'rgba(131, 58, 180, 0.8)'})` : 'none', color: item.color || (isActive ? '#fff' : '#b3b3b3')
               }} />
               <span style={{ 
                 textShadow: isActive ? '0 0 10px rgba(131, 58, 180, 0.5)' : 'none'

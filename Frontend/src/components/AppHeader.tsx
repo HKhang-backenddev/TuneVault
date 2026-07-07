@@ -27,7 +27,7 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
     backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(131, 58, 180, 0.3)',
     boxShadow: '0 4px 20px rgba(131, 58, 180, 0.15)'
   }}>
-    <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
+          <div style={{ flex: '1', display: 'flex', alignItems: 'center', gap: '16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={goHome} className="group">
         <div style={{
           width: '40px',
@@ -53,7 +53,41 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
           transition: 'all 0.3s ease'
         }}>TuneVault</h1>
       </div>
-    </div>
+        
+        {/* Profile Link */}
+        <button
+          onClick={() => user?.username && navigate(`/app/profile/${user.username}`)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            border: '1px solid rgba(131, 58, 180, 0.5)',
+            backgroundColor: 'rgba(131, 58, 180, 0.15)',
+            color: '#fff',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontSize: '13px',
+            fontWeight: '600'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(131, 58, 180, 0.3)';
+            e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.8)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(131, 58, 180, 0.15)';
+            e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.5)';
+          }}
+        >
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            <UserIcon size={18} />
+          )}
+          My Profile
+        </button>
+      </div>
 
     <div style={{ flex: '2', display: 'flex', justifyContent: 'center' }}>
       <div style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
