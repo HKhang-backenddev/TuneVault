@@ -31,6 +31,37 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
       boxShadow: '5px 0 30px rgba(131, 58, 180, 0.15)',
     }}>
 
+      {/* Compact Logo Header */}
+      <div style={{
+        padding: '12px 16px',
+        marginBottom: '4px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+      }}>
+        <div style={{
+          width: '36px',
+          height: '36px',
+          borderRadius: '10px',
+          background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 0 15px rgba(131, 58, 180, 0.5)',
+        }}>
+          <Music size={20} style={{ color: '#fff' }} />
+        </div>
+        <span style={{
+          fontSize: '18px',
+          fontWeight: 'bold',
+          background: 'linear-gradient(90deg, #833ab4, #fd1d1d)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}>
+          TuneVault
+        </span>
+      </div>
+
       {/* Main Menu with Neon Hover */}
       <div style={{ padding: '16px 12px 8px' }}>
         {menuItems.map(item => {
