@@ -199,8 +199,169 @@ const Library = () => {
         </div>
       </div>
 
-      {mySongs.length > 0 && (
+      {/* Top Tracks Section */}
+      {mySongs.length >= 4 && (
         <div style={{ padding: '24px 32px 8px' }}>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            marginBottom: '20px',
+            color: '#fff',
+            textShadow: '0 0 20px rgba(131, 58, 180, 0.6)'
+          }}>
+            ⭐ Top Tracks
+          </h2>
+          <div style={{
+            display: 'flex',
+            gap: '16px',
+            overflowX: 'auto',
+            paddingBottom: '24px',
+            scrollSnapType: 'x mandatory'
+          }}>
+            <style>{`
+              .top-track-card { min-width: 160px; max-width: 160px; scroll-snap-align: start; }
+              .top-track-card:hover .play-overlay { opacity: 1 !important; transform: translateY(0) scale(1) !important; }
+            `}</style>
+            {mySongs.slice(0, 8).map((song, index) => {
+              const isCurrent = currentTrack?.id === song.id;
+              const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+              const rankColor = rankColors[index] || null;
+              return (
+                <div
+                  key={song.id}
+                  onClick={() => playTrack(song, mySongs)}
+                  className="top-track-card"
+                  style={{
+                    background: isCurrent
+                      ? 'linear-gradient(145deg, rgba(30, 215, 96, 0.2), rgba(131, 58, 180, 0.2))'
+                      : 'linear-gradient(145deg, #1e1e2e, #252540)',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    border: isCurrent ? '1px solid rgba(30, 215, 96, 0.5)' : '1px solid rgba(131, 58, 180, 0.2)',
+                    boxShadow: isCurrent ? '0 0 20px rgba(30, 215, 96, 0.3)' : '0 4px 15px rgba(0,0,0,0.3)',
+                    position: 'relative'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isCurrent) {
+                      e.currentTarget.style.transform = 'translateY(-8px)';
+                      e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.6)';
+                      e.currentTarget.style.boxShadow = '0 15px 30px rgba(131, 58, 180, 0.3)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isCurrent) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.2)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+                    }
+                  }}
+                >
+                  {/* Rank Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '6px',
+                    left: '6px',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: rankColor 
+                      ? `linear-gradient(135deg, ${rankColor}, ${rankColor}dd)` 
+                      : 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '10px',
+                    color: rankColor ? '#000' : '#fff',
+                    zIndex: 2,
+                    boxShadow: rankColor ? '0 2px 6px rgba(0,0,0,0.4)' : 'none'
+                  }}>
+                    {index + 1}
+                  </div>
+                  
+                  {/* Thumbnail */}
+                  <div style={{ position: 'relative', marginBottom: '10px' }}>
+                    {song.thumbnailUrl ? (
+                      <img 
+                        src={song.thumbnailUrl} 
+                        alt={song.title}
+                        style={{
+                          width: '100%',
+                          aspectRatio: '1',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '100%',
+                        aspectRatio: '1',
+                        background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Music size={40} style={{ color: '#fff' }} />
+                      </div>
+                    )}
+                    {/* Play Button Overlay */}
+                    <div 
+                      className="play-overlay"
+                      style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        right: '8px',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #1ed760, #00d4aa)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0,
+                        transform: 'translateY(8px) scale(0.9)',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 15px rgba(30, 215, 96, 0.5)'
+                      }}
+                    >
+                      <Play size={20} fill="black" color="black" style={{ marginLeft: '2px' }} />
+                    </div>
+                  </div>
+                  
+                  {/* Info */}
+                  <h4 style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#fff',
+                    margin: '0 0 4px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {song.title}
+                  </h4>
+                  <p style={{
+                    fontSize: '11px',
+                    color: '#b3b3b3',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {song.artist || 'Unknown'}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {mySongs.length > 0 && (
+        <div style={{ padding: '8px 32px' }}>
           <button style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #00FF00, #FFFF00)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease', boxShadow: '0 0 20px rgba(0, 255, 0, 0.6), 0 0 40px rgba(255, 255, 0, 0.4)' }} className="hover:scale-105" onClick={() => playTrack(mySongs[0], mySongs)} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}>
             <Play size={24} fill="black" color="black" style={{ marginLeft: '4px' }} />
           </button>
