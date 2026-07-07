@@ -26,23 +26,6 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-    }}>
-      {/* Logo */}
-      <div style={{ padding: '24px 24px 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{
-          width: '36px',
-          height: '36px',
-          backgroundColor: '#1DB954',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 8px 16px rgba(29, 185, 84, 0.3)',
-        }}>
-          <Music size={22} color="black" />
-        </div>
-        <span style={{ fontSize: '20px', fontWeight: '900', color: '#fff', letterSpacing: '-0.5px' }}>TuneVault</span>
-      </div>
 
       {/* Main Menu */}
       <div style={{ padding: '0 12px', marginBottom: '8px' }}>
