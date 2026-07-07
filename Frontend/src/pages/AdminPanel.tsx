@@ -72,7 +72,7 @@ const AdminPanel = () => {
       margin: '0 auto',
       backgroundColor: '#1a1a2e',
       borderRadius: '12px',
-      boxShadow: '0 0 30px rgba(0, 255, 136, 0.3)'
+      boxShadow: '0 0 30px rgba(131, 58, 180, 0.3)'
     }}>
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <Shield size={64} style={{ color: role === 'Admin' ? '#FFD700' : '#666', filter: role === 'Admin' ? 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))' : 'none' }} />
@@ -105,7 +105,7 @@ const AdminPanel = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
-          backgroundColor: message.type === 'success' ? 'rgba(0, 255, 136, 0.2)' : 'rgba(255, 77, 77, 0.2)',
+          backgroundColor: message.type === 'success' ? 'rgba(131, 58, 180, 0.2)' : 'rgba(255, 77, 77, 0.2)',
           border: `1px solid ${message.type === 'success' ? '#00FF88' : '#ff4d4d'}`
         }}>
           {message.type === 'success' ? (
@@ -161,7 +161,7 @@ const AdminPanel = () => {
               color: '#000',
               borderRadius: '8px',
               textDecoration: 'none',
-              boxShadow: '0 0 20px rgba(0, 255, 136, 0.5)'
+              boxShadow: '0 0 20px rgba(131, 58, 180, 0.5)'
             }}
           >
             Đi đến Library →

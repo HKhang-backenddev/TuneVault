@@ -35,7 +35,7 @@ const Register = () => {
     },
     accentBar: {
       height: '8px',
-      backgroundColor: '#3b82f6',
+      backgroundColor: '#833ab4',
       width: '100%',
     },
     header: {
@@ -71,7 +71,7 @@ const Register = () => {
     },
     buttonPrimary: {
       width: '100%',
-      backgroundColor: '#3b82f6',
+      backgroundColor: '#833ab4',
       color: '#ffffff',
       fontWeight: 'bold',
       padding: '14px',
@@ -114,10 +114,10 @@ const Register = () => {
         
         <div style={styles.header}>
           <div className="flex flex-col items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-900 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.6)] border border-white/20 animate-pulse">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-900 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(131, 58, 180,0.6)] border border-white/20 animate-pulse">
               <Play className="w-10 h-10 text-white fill-current" />
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.7)]">TuneVault</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(131, 58, 180,0.7)]">TuneVault</h1>
           </div>
           <p style={{ color: '#a3a3a3', fontSize: '14px' }}>Create a new account to start listening</p>
         </div>
@@ -134,7 +134,7 @@ const Register = () => {
               onChange={(e) => setFormData({...formData, email: e.target.value, username: e.target.value})}
               placeholder="name@domain.com" 
               required
-              onFocus={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#833ab4'}
               onBlur={(e) => e.currentTarget.style.borderColor = '#3f3f46'}
             />
           </div>
@@ -147,7 +147,7 @@ const Register = () => {
               onChange={(e) => setFormData({...formData, displayName: e.target.value})}
               placeholder="Display name on profile"
               required
-              onFocus={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#833ab4'}
               onBlur={(e) => e.currentTarget.style.borderColor = '#3f3f46'}
             />
           </div>
@@ -160,7 +160,7 @@ const Register = () => {
               onChange={(e) => setFormData({...formData, password: e.target.value})} // Sửa lại để cập nhật đúng
               placeholder="Password"
               required 
-              onFocus={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#833ab4'}
               onBlur={(e) => e.currentTarget.style.borderColor = '#3f3f46'}
             />
           </div>

@@ -91,17 +91,17 @@ const SharedWithMe = () => {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: '0 0 30px rgba(0, 255, 136, 0.3)',
+        boxShadow: '0 0 30px rgba(131, 58, 180, 0.3)',
       }}>
         {/* Hero Header - Neon Green Style */}
         <div style={{
           padding: '32px', paddingTop: '48px', display: 'flex', alignItems: 'flex-end', gap: '24px',
-          background: 'linear-gradient(180deg, #00FF88 0%, #1a1a2e 100%)',
-          borderBottom: '1px solid rgba(0, 255, 136, 0.2)',
+          background: 'linear-gradient(180deg, #833ab4 0%, #1a1a2e 100%)',
+          borderBottom: '1px solid rgba(131, 58, 180, 0.2)',
         }}>
           <div style={{
-            width: '192px', height: '192px', background: 'linear-gradient(135deg, #00FF88, #00FFFF)',
-            boxShadow: '0 0 30px rgba(0, 255, 136, 0.8), 0 0 60px rgba(0, 255, 255, 0.5)',
+            width: '192px', height: '192px', background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
+            boxShadow: '0 0 30px rgba(131, 58, 180, 0.8), 0 0 60px rgba(0, 255, 255, 0.5)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px',
           }}>
             <Users size={80} style={{ color: 'black', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }} />
@@ -110,7 +110,7 @@ const SharedWithMe = () => {
             <p style={{ fontSize: '12px', fontWeight: '700', color: '#000', textTransform: 'uppercase', marginBottom: '8px' }}>
               Playlist
             </p>
-            <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', marginBottom: '16px', lineHeight: 1, textShadow: '0 0 20px rgba(0, 255, 136, 0.8), 0 0 40px rgba(0, 255, 255, 0.6)' }}>
+            <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', marginBottom: '16px', lineHeight: 1, textShadow: '0 0 20px rgba(131, 58, 180, 0.8), 0 0 40px rgba(0, 255, 255, 0.6)' }}>
               Shared With Me
             </h1>
             <p style={{ color: '#b3b3b3', fontSize: '14px' }}>
@@ -122,23 +122,23 @@ const SharedWithMe = () => {
         {/* List Frame */}
         <div style={{ padding: '24px 32px 32px' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '80px', color: '#00FF88', fontSize: '14px', fontWeight: '700', textShadow: '0 0 10px rgba(0, 255, 136, 0.5)' }}>
+            <div style={{ textAlign: 'center', padding: '80px', color: '#833ab4', fontSize: '14px', fontWeight: '700', textShadow: '0 0 10px rgba(131, 58, 180, 0.5)' }}>
               LOADING...
             </div>
           ) : items.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px', backgroundColor: '#1a1a2e', borderRadius: '12px', boxShadow: '0 0 20px rgba(0, 255, 136, 0.2)' }}>
-              <Music size={64} style={{ color: '#00FF88', marginBottom: '24px', filter: 'drop-shadow(0 0 20px rgba(0, 255, 136, 0.8))' }} />
+            <div style={{ textAlign: 'center', padding: '80px', backgroundColor: '#1a1a2e', borderRadius: '12px', boxShadow: '0 0 20px rgba(131, 58, 180, 0.2)' }}>
+              <Music size={64} style={{ color: '#833ab4', marginBottom: '24px', filter: 'drop-shadow(0 0 20px rgba(131, 58, 180, 0.8))' }} />
               <p style={{ color: '#b3b3b3', fontWeight: 'bold', fontSize: '18px' }}>Your inbox is empty.</p>
             </div>
           ) : (
             <div style={{
               backgroundColor: 'rgba(26, 26, 46, 0.8)', borderRadius: '12px', padding: '16px',
-              border: '1px solid rgba(0, 255, 136, 0.2)', boxShadow: '0 0 20px rgba(0, 255, 136, 0.2)',
+              border: '1px solid rgba(131, 58, 180, 0.2)', boxShadow: '0 0 20px rgba(131, 58, 180, 0.2)',
             }}>
               {/* Header Grid */}
               <div style={{
                 display: 'grid', gridTemplateColumns: '40px 5fr 3fr 2fr 1fr', gap: '16px', padding: '12px 24px',
-                color: '#00FFFF', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em',
+                color: '#fd1d1d', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em',
                 textShadow: '0 0 5px rgba(0, 255, 255, 0.5)',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '8px',
               }}>

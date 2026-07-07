@@ -69,7 +69,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: '0 0 30px rgba(59, 130, 246, 0.3)',
+        boxShadow: '0 0 30px rgba(131, 58, 180, 0.3)',
       }}>
         {/* Hero Header - Neon Blue Style */}
         <div style={{
@@ -78,13 +78,13 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
           display: 'flex',
           alignItems: 'flex-end',
           gap: '24px',
-          background: 'linear-gradient(180deg, #00CCFF 0%, #1a1a2e 100%)',
-          borderBottom: '1px solid rgba(59, 130, 246, 0.2)',
+          background: 'linear-gradient(180deg, #833ab4 0%, #1a1a2e 100%)',
+          borderBottom: '1px solid rgba(131, 58, 180, 0.2)',
         }}>
           <div style={{
             width: '192px',
             height: '192px',
-            background: 'linear-gradient(135deg, #00CCFF, #0066FF)',
+            background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
             boxShadow: '0 0 30px rgba(0, 204, 255, 0.8), 0 0 60px rgba(0, 102, 255, 0.5)',
             display: 'flex',
             alignItems: 'center',
@@ -103,8 +103,8 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#b3b3b3' }}>
               <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, #FF00FF, #00FFFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white', fontWeight: 'bold' }}>TV</div>
               <span>TuneVault User</span>
-              <span style={{ color: '#00CCFF' }}>•</span>
-              <span style={{ color: '#00CCFF', textShadow: '0 0 10px rgba(0, 204, 255, 0.5)' }}>{history.length} songs downloaded</span>
+              <span style={{ color: '#833ab4' }}>•</span>
+              <span style={{ color: '#833ab4', textShadow: '0 0 10px rgba(0, 204, 255, 0.5)' }}>{history.length} songs downloaded</span>
             </div>
           </div>
         </div>
@@ -127,7 +127,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)'
+              boxShadow: '0 0 15px rgba(131, 58, 180, 0.4)'
             }}
           >
             <Play size={16} fill="white" /> Import More Music
@@ -274,7 +274,7 @@ const StatusBadge = ({ status }: { status: string }) => {
       );
     case 'Downloading':
       return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(131, 58, 180, 0.1)', color: '#3b82f6', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(131, 58, 180, 0.2)' }}>
           <Loader2 size={10} className="animate-spin" /> Downloading...
         </span>
       );

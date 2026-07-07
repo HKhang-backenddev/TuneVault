@@ -240,7 +240,7 @@ const Notifications = () => {
               width: '100%', height: '32px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)',
-              border: 'none', color: '#3b82f6', cursor: 'pointer',
+              border: 'none', color: '#833ab4', cursor: 'pointer',
               opacity: canScroll.up && isListHovered ? 1 : 0,
               transition: 'opacity 0.2s ease',
             }}
@@ -313,7 +313,7 @@ const Notifications = () => {
                     <button
                       onClick={() => handlePlaySharedSong(n)}
                         style={{
-                          backgroundColor: '#3b82f6',
+                          backgroundColor: '#833ab4',
                           color: 'white',
                           fontSize: '0.75rem',
                           fontWeight: 'bold',
@@ -404,7 +404,7 @@ const Notifications = () => {
               width: '100%', height: '32px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-              border: 'none', color: '#3b82f6', cursor: 'pointer',
+              border: 'none', color: '#833ab4', cursor: 'pointer',
               opacity: canScroll.down && isListHovered ? 1 : 0,
               transition: 'opacity 0.2s ease',
             }}

@@ -29,15 +29,15 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
     card: {
       width: '100%',
       maxWidth: '460px',
-      backgroundColor: 'rgba(0,0,0,0.7)', // Nền thẻ bán trong suốt
-      border: '2px solid #3b82f6',
+      backgroundColor: 'rgba(18, 18, 18, 0.95)', // Nền thẻ bán trong suốt
+      border: '2px solid rgba(131, 58, 180, 0.5)',
       borderRadius: '16px',
       overflow: 'hidden',
-      boxShadow: '0 0 40px rgba(59, 130, 246, 0.3)',
+      boxShadow: '0 0 40px rgba(131, 58, 180, 0.3), 0 0 80px rgba(253, 29, 29, 0.15)',
     },
     accentBar: {
       height: '8px',
-      backgroundColor: '#3b82f6',
+      background: 'linear-gradient(90deg, #833ab4, #fd1d1d, #fcb045)',
       width: '100%',
     },
     header: {
@@ -84,14 +84,15 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
     },
     buttonPrimary: {
       width: '100%',
-      backgroundColor: '#3b82f6',
+      background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
       color: '#ffffff',
       fontWeight: '900',
       padding: '16px',
       borderRadius: '10px',
       border: 'none',
       cursor: 'pointer',
-      transition: 'background-color 0.2s',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 4px 20px rgba(131, 58, 180, 0.4)',
     }
   };
 
@@ -145,10 +146,10 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
         
         <div style={styles.header}>
           <div className="flex flex-col items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-900 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.6)] border border-white/20 animate-pulse">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(131, 58, 180,0.6)] border border-white/20 animate-pulse">
               <Play className="w-10 h-10 text-white fill-current" />
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.7)]">TuneVault</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(131, 58, 180,0.7)]">TuneVault</h1>
           </div>
           <p style={{ color: '#a3a3a3', fontSize: '14px' }}>Use your account to continue</p>
         </div>
@@ -168,7 +169,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 placeholder="Email or username"
-                onFocus={(e) => (e.currentTarget.parentElement!.style.borderColor = '#3b82f6')}
+                onFocus={(e) => (e.currentTarget.parentElement!.style.borderColor = 'linear-gradient(135deg, #833ab4, #fd1d1d)')}
                 onBlur={(e) => (e.currentTarget.parentElement!.style.borderColor = '#262626')}
               />
             </div>
@@ -185,7 +186,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                onFocus={(e) => (e.currentTarget.parentElement!.style.borderColor = '#3b82f6')}
+                onFocus={(e) => (e.currentTarget.parentElement!.style.borderColor = 'linear-gradient(135deg, #833ab4, #fd1d1d)')}
                 onBlur={(e) => (e.currentTarget.parentElement!.style.borderColor = '#262626')}
               />
             </div>
@@ -194,7 +195,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
           <button 
             type="submit"
             disabled={loading || isSuccess}
-            style={{ ...styles.buttonPrimary, backgroundColor: isSuccess ? '#16a34a' : '#3b82f6', opacity: loading ? 0.7 : 1 }}
+            style={{ ...styles.buttonPrimary, backgroundColor: isSuccess ? '#16a34a' : 'linear-gradient(135deg, #833ab4, #fd1d1d)', opacity: loading ? 0.7 : 1 }}
             className="hover:scale-[1.02] transition-all active:scale-95 tracking-widest text-sm flex items-center justify-center gap-2"
           >
             {isSuccess ? 'ENTERING...' : (loading ? <Loader2 className="animate-spin" size={20} /> : <>NEXT <ArrowRight size={18} /></>)}
