@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search as SearchIcon, Clock, Music, Play, Pause } from 'lucide-react';
 import api from '../axios';
 import { useAudio } from '../Contexts/AudioContext';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 interface SearchProps {
   searchQuery?: string;
@@ -13,13 +13,18 @@ const Search = ({ searchQuery = '', onSearchChange }: SearchProps) => {
   const [query, setQuery] = useState(searchQuery);
   const [results, setResults] = useState<any[]>([]);
   const { playTrack, currentTrack, isPlaying } = useAudio();
+  const [searchParams] = useSearchParams();
 
-  // Sync with external searchQuery from AppHeader
+  // Sync with external searchQuery from AppHeader or URL params
   useEffect(() => {
-    if (searchQuery) {
+    // Check for q param from category clicks
+    const qParam = searchParams.get('q');
+    if (qParam) {
+      setQuery(qParam);
+    } else if (searchQuery) {
       setQuery(searchQuery);
     }
-  }, [searchQuery]);
+  }, [searchQuery, searchParams]);
 
   // Handle local query change
   const handleQueryChange = (newQuery: string) => {
@@ -172,7 +177,7 @@ const Search = ({ searchQuery = '', onSearchChange }: SearchProps) => {
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '20px',
+            gap: '16px',
             marginBottom: '40px'
           }}>
             {categories.map((cat, i) => (
@@ -187,7 +192,7 @@ const Search = ({ searchQuery = '', onSearchChange }: SearchProps) => {
                   fontWeight: '700',
                   color: '#fff',
                   textDecoration: 'none',
-                  aspectRatio: '1/1',
+                  minHeight: '150px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
