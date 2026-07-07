@@ -10,18 +10,18 @@ const Search = () => {
   const { playTrack, currentTrack, isPlaying } = useAudio();
 
   const categories = [
-    { name: 'Pop', color: 'linear-gradient(135deg, #1DB954, #1ed760)', emoji: '🎵' },
-    { name: 'Hip-Hop', color: 'linear-gradient(135deg, #e8115b, #ff6b35)', emoji: '🎤' },
-    { name: 'Rock', color: 'linear-gradient(135deg, #8a4fff, #ff4a8d)', emoji: '🎸' },
-    { name: 'Jazz', color: 'linear-gradient(135deg, #1e3a5f, #3d5a80)', emoji: '🎷' },
-    { name: 'Electronic', color: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', emoji: '🎹' },
-    { name: 'Classical', color: 'linear-gradient(135deg, #d4af37, #b8860b)', emoji: '🎻' },
-    { name: 'R&B', color: 'linear-gradient(135deg, #9b59b6, #e74c3c)', emoji: '🎧' },
-    { name: 'Country', color: 'linear-gradient(135deg, #f39c12, #d35400)', emoji: '🤠' },
-    { name: 'Latin', color: 'linear-gradient(135deg, #e74c3c, #c0392b)', emoji: '💃' },
-    { name: 'Metal', color: 'linear-gradient(135deg, #2c3e50, #34495e)', emoji: '🤘' },
-    { name: 'Indie', color: 'linear-gradient(135deg, #16a085, #27ae60)', emoji: '🌿' },
-    { name: 'Workout', color: 'linear-gradient(135deg, #e67e22, #f39c12)', emoji: '💪' },
+    { name: 'Pop', color: 'linear-gradient(135deg, #FF00FF, #00FFFF)', emoji: '🎵' },
+    { name: 'Hip-Hop', color: 'linear-gradient(135deg, #FF6600, #FF00FF)', emoji: '🎤' },
+    { name: 'Rock', color: 'linear-gradient(135deg, #FF0044, #FF6600)', emoji: '🎸' },
+    { name: 'Jazz', color: 'linear-gradient(135deg, #00FF88, #00FFFF)', emoji: '🎷' },
+    { name: 'Electronic', color: 'linear-gradient(135deg, #00FFFF, #0066FF)', emoji: '🎹' },
+    { name: 'Classical', color: 'linear-gradient(135deg, #FFD700, #FF00FF)', emoji: '🎻' },
+    { name: 'R&B', color: 'linear-gradient(135deg, #FF00FF, #FF0088)', emoji: '🎧' },
+    { name: 'Country', color: 'linear-gradient(135deg, #00FF00, #FFFF00)', emoji: '🤠' },
+    { name: 'Latin', color: 'linear-gradient(135deg, #FF3300, #FF00FF)', emoji: '💃' },
+    { name: 'Metal', color: 'linear-gradient(135deg, #8800FF, #FF0088)', emoji: '🤘' },
+    { name: 'Indie', color: 'linear-gradient(135deg, #00FF00, #00FFFF)', emoji: '🌿' },
+    { name: 'Workout', color: 'linear-gradient(135deg, #FF6600, #FFFF00)', emoji: '💪' },
   ];
 
   useEffect(() => {
@@ -42,39 +42,47 @@ const Search = () => {
 
   return (
     <div style={{ padding: '24px 32px', minHeight: '100%' }}>
-      {/* Search Bar - Spotify Style */}
+      {/* Search Bar - Neon Cyberpunk Style */}
       <div style={{ 
         position: 'relative', 
-        maxWidth: '500px', 
-        marginBottom: '32px' 
+        maxWidth: '600px', 
+        marginBottom: '40px' 
       }}>
         <div style={{
           position: 'absolute',
-          left: '16px',
+          left: '20px',
           top: '50%',
           transform: 'translateY(-50%)',
-          color: '#b3b3b3',
+          color: '#FF00FF',
           zIndex: 1,
           pointerEvents: 'none',
+          filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.8))',
         }}>
-          <SearchIcon size={22} />
+          <SearchIcon size={24} />
         </div>
         <input
           type="text"
           placeholder="What do you want to listen to?"
           style={{
             width: '100%',
-            backgroundColor: '#242424',
+            backgroundColor: '#1a1a2e',
             borderRadius: '50px',
-            border: 'none',
+            border: '2px solid transparent',
             outline: 'none',
-            padding: '14px 20px 14px 52px',
-            fontSize: '15px',
+            padding: '16px 20px 16px 56px',
+            fontSize: '16px',
             color: '#fff',
-            transition: 'background-color 0.3s ease',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 0 20px rgba(255, 0, 255, 0.3)',
           }}
-          onFocus={(e) => e.target.style.backgroundColor = '#303030'}
-          onBlur={(e) => e.target.style.backgroundColor = '#242424'}
+          onFocus={(e) => { 
+            e.target.style.borderColor = '#FF00FF';
+            e.target.style.boxShadow = '0 0 30px rgba(255, 0, 255, 0.5), 0 0 60px rgba(0, 255, 255, 0.3)';
+          }}
+          onBlur={(e) => { 
+            e.target.style.borderColor = 'transparent';
+            e.target.style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.3)';
+          }}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -186,13 +194,13 @@ const Search = () => {
       ) : (
         <>
           {/* Browse All Section */}
-          <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#00FFFF', marginBottom: '24px', textShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }}>
             Browse All
           </h2>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '16px',
+            gap: '20px',
             marginBottom: '40px'
           }}>
             {categories.map((cat, i) => (
@@ -201,9 +209,9 @@ const Search = () => {
                 to={`/app/search?q=${cat.name}`}
                 style={{
                   background: cat.color,
-                  borderRadius: '8px',
-                  padding: '20px',
-                  fontSize: '18px',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  fontSize: '20px',
                   fontWeight: '700',
                   color: '#fff',
                   textDecoration: 'none',
@@ -211,32 +219,41 @@ const Search = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  transition: 'transform 0.2s ease',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 0 20px rgba(255, 0, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.2)',
                   overflow: 'hidden',
+                  position: 'relative',
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+                onMouseEnter={(e) => { 
+                  (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'; 
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(255, 0, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.4)';
+                }}
+                onMouseLeave={(e) => { 
+                  (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; 
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.2)';
+                }}
               >
-                <span style={{ fontSize: '32px' }}>{cat.emoji}</span>
-                <span>{cat.name}</span>
+                <span style={{ fontSize: '40px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }}>{cat.emoji}</span>
+                <span style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>{cat.name}</span>
               </Link>
             ))}
           </div>
 
           {/* Recent Searches placeholder */}
           <div style={{
-            backgroundColor: '#121212',
-            borderRadius: '8px',
-            padding: '24px',
+            backgroundColor: '#1a1a2e',
+            borderRadius: '12px',
+            padding: '32px',
+            boxShadow: '0 0 20px rgba(255, 0, 255, 0.2)',
+            border: '1px solid rgba(255, 0, 255, 0.3)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <Clock size={20} color="#b3b3b3" />
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#fff' }}>Recent Searches</h3>
+              <Clock size={24} color="#FF00FF" style={{ filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.8))' }} />
+              <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#FF00FF', textShadow: '0 0 10px rgba(255, 0, 255, 0.5)' }}>Recent Searches</h3>
             </div>
             <div style={{ textAlign: 'center', padding: '40px', color: '#b3b3b3' }}>
-              <Music size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-              <p>Your recent searches will appear here</p>
+              <Music size={48} style={{ marginBottom: '16px', color: '#00FFFF', filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.5))' }} />
+              <p style={{ color: '#b3b3b3' }}>Your recent searches will appear here</p>
             </div>
           </div>
         </>
