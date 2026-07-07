@@ -1,7 +1,7 @@
 import React from 'react';
 import { Location, NavigateFunction } from 'react-router-dom';
 import {
-  Search as SearchIcon, Plus, Home as HomeIcon, Bell, LogOut, User as UserIcon, Camera, Image as ImageIcon
+  Search as SearchIcon, Plus, Home as HomeIcon, Bell, LogOut, User as UserIcon, Camera, Image as ImageIcon, Music
 } from 'lucide-react';
 import { User } from '@shared-types/user';
 
@@ -24,29 +24,34 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
   <header style={{
     zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     height: '64px', padding: '0 24px', backgroundColor: '#181818',
-    backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+    backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(131, 58, 180, 0.3)',
+    boxShadow: '0 4px 20px rgba(131, 58, 180, 0.15)'
   }}>
     <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }} onClick={goHome} className="group">
-        <div className="w-10 h-10 neon-logo-box rounded-lg flex items-center justify-center transition-transform group-hover:scale-110">
-          {/* Arctic Fox Logo SVG */}
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ filter: 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.7))' }}
-          >
-            <path d="M2.5 8.5L6 11L2.5 13.5" />
-            <path d="M21.5 8.5L18 11L21.5 13.5" />
-            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" />
-          </svg>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={goHome} className="group">
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '10px',
+          background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 0 20px rgba(131, 58, 180, 0.6), 0 0 40px rgba(253, 29, 29, 0.3)',
+          transition: 'all 0.3s ease'
+        }}>
+          <Music size={22} style={{ color: '#fff' }} />
         </div>
-        <h1 className="text-2xl font-black tracking-tighter text-white drop-shadow-[0_0_10px_rgba(29,185,84,0.5)] transition-all group-hover:tracking-normal group-hover:text-green-100">TuneVault</h1>
+        <h1 style={{
+          fontSize: '22px',
+          fontWeight: '900',
+          background: 'linear-gradient(90deg, #833ab4, #fd1d1d, #fcb045)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          textShadow: '0 0 30px rgba(131, 58, 180, 0.5)',
+          letterSpacing: '0.5px',
+          transition: 'all 0.3s ease'
+        }}>TuneVault</h1>
       </div>
     </div>
 
