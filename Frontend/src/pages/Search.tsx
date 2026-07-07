@@ -95,7 +95,7 @@ const Search = ({ searchQuery = '', onSearchChange }: SearchProps) => {
     { name: 'Country', color: 'linear-gradient(135deg, #f97316, #eab308)', emoji: '🤠' },
     { name: 'Latin', color: 'linear-gradient(135deg, #fd1d1d, #c084fc)', emoji: '💃' },
     { name: 'Metal', color: 'linear-gradient(135deg, #a855f7, #ef4444)', emoji: '🤘' },
-    { name: 'Indie', color: 'linear-gradient(135deg, #22c55e, #00FFFF)', emoji: '🌿' },
+    { name: 'Rap', color: 'linear-gradient(135deg, #ef4444, #fbbf24)', emoji: '🎙️' },
     { name: 'Workout', color: 'linear-gradient(135deg, #f97316, #eab308)', emoji: '💪' },
   ];
 
