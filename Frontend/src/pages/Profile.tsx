@@ -78,8 +78,22 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
   };
 
   const fetchProfileData = async () => {
-    if (!username || !currentUser) return;
-    if (isOwnProfile) {
+    // If no username provided, use current user
+    if (!username && currentUser) {
+      setProfileUser(currentUser);
+      setIsFollowing(currentUser?.isFollowing || false);
+      setFollowerCount(currentUser?.followerCount || 0);
+      setIsLoading(false);
+      return;
+    }
+    
+    if (!username) {
+      setIsLoading(false);
+      return;
+    }
+    
+    // If viewing own profile
+    if (isOwnProfile && currentUser) {
       setProfileUser(currentUser);
       setIsFollowing(currentUser?.isFollowing || false);
       setFollowerCount(currentUser?.followerCount || 0);
@@ -237,6 +251,38 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
   const userLocation = displayUser?.location || null;
   const totalSongs = userSongs.length;
   const totalPlaylists = userPlaylists.length;
+
+  // If no user data and not loading, show error
+  if (!displayUser && !isLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#121212',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff'
+      }}>
+        <h1 style={{ fontSize: '48px', marginBottom: '16px' }}>😕</h1>
+        <p style={{ fontSize: '18px', color: '#b3b3b3', marginBottom: '24px' }}>User not found</p>
+        <button 
+          onClick={() => navigate('/app')}
+          style={{
+            padding: '12px 32px',
+            borderRadius: '24px',
+            backgroundColor: '#1ed760',
+            border: 'none',
+            color: '#000',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+        >
+          Go Home
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ 
