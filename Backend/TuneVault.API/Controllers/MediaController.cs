@@ -161,6 +161,52 @@ public class MediaController : BaseApiController
         return Ok(new { id = mediaItem.Id, message = "Tải lên thành công." });
     }
 
+    /// <summary>Chỉnh sửa thông tin bài hát (Admin only).</summary>
+    [HttpPut("{id:guid}")]
+    [Authorize]
+    public async Task<IActionResult> UpdateSong(Guid id, [FromBody] UpdateSongRequest request)
+    {
+        var userId = RequireUserId();
+        
+        // Check if user is admin
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null || user.Role != "Admin")
+            return Forbid();
+
+        var media = await _context.MediaItems
+            .Include(m => m.Artist)
+            .FirstOrDefaultAsync(m => m.Id == id);
+            
+        if (media == null)
+            return NotFound(new { message = "Không tìm thấy bài hát." });
+
+        // Update title
+        if (!string.IsNullOrWhiteSpace(request.Title))
+            media.Title = request.Title;
+
+        // Update genre
+        if (!string.IsNullOrWhiteSpace(request.Genre))
+            media.Genre = request.Genre;
+
+        // Update artist
+        if (request.ArtistName != null)
+        {
+            var artist = await GetOrCreateArtistAsync(request.ArtistName);
+            media.ArtistId = artist?.Id;
+            media.Artist = artist;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { 
+            id = media.Id, 
+            title = media.Title,
+            artist = media.Artist?.Name ?? "Nghệ sĩ không xác định",
+            genre = media.Genre,
+            message = "Cập nhật thành công." 
+        });
+    }
+
     /// <summary>Lưu bài hát được chia sẻ vào thư viện cá nhân.</summary>
     [HttpPost("save/{mediaId:guid}")]
     [Authorize]
@@ -357,3 +403,5 @@ public class MediaController : BaseApiController
         return artist;
     }
 }
+
+public record UpdateSongRequest(string? Title = null, string? ArtistName = null, string? Genre = null);

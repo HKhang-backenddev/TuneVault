@@ -1,16 +1,21 @@
 import { useEffect, useState, MouseEvent, DragEvent } from 'react';
 import api from '../axios';
-import { Music, Play, Trash2, ListPlus, Heart } from 'lucide-react';
+import { Music, Play, Trash2, ListPlus, Heart, Pencil } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
+import EditSongModal from '../components/EditSongModal';
 
 interface MediaItem {
   id: string;
   title: string;
   artist: string;
+  artistName?: string;
   url: string;
   thumbnailUrl: string;
   durationInSeconds?: number;
   isLiked?: boolean;
+  isOwner?: boolean;
+  canDelete?: boolean;
+  genre?: string;
 }
 
 const Library = () => {
@@ -18,6 +23,21 @@ const Library = () => {
   const [menuConfig, setMenuConfig] = useState<{ x: number, y: number, song: MediaItem } | null>(null);
   const { playTrack, currentTrack } = useAudio();
   const [hearts, setHearts] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
+  const [editingSong, setEditingSong] = useState<MediaItem | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setIsAdmin(user.role === 'Admin');
+      } catch (e) {
+        setIsAdmin(false);
+      }
+    }
+  }, []);
 
   const formatTime = (seconds?: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -184,6 +204,11 @@ const Library = () => {
                   <Heart size={18} fill={song.isLiked ? "currentColor" : "none"} />
                 </button>
                 <span style={{ color: '#00FF00', fontSize: '14px', minWidth: '40px', textAlign: 'right', textShadow: '0 0 5px rgba(0, 255, 0, 0.5)' }}>{formatTime(song.durationInSeconds)}</span>
+                {isAdmin && (
+                  <button onClick={(e) => { e.stopPropagation(); setEditingSong(song); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: '#00FFFF' }} onMouseEnter={(e) => e.currentTarget.style.color = '#00FF88'} onMouseLeave={(e) => e.currentTarget.style.color = '#00FFFF'}>
+                    <Pencil size={16} style={{ filter: 'drop-shadow(0 0 5px rgba(0, 255, 255, 0.5))' }} />
+                  </button>
+                )}
                 <button onClick={(e) => { e.stopPropagation(); handleDelete(song.id, song.title); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: '#b3b3b3' }} onMouseEnter={(e) => e.currentTarget.style.color = '#ff4d4d'} onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'}>
                   <Trash2 size={16} />
                 </button>
@@ -215,6 +240,16 @@ const Library = () => {
       )}
 
       {hearts.map(h => (<Heart key={h.id} className="floating-heart" style={{ left: h.x, top: h.y, color: h.color }} size={24} fill="currentColor" />))}
+
+      {editingSong && (
+        <EditSongModal
+          song={editingSong}
+          onClose={() => setEditingSong(null)}
+          onSave={(updatedSong) => {
+            setMySongs(prev => prev.map(s => s.id === updatedSong.id ? updatedSong : s));
+          }}
+        />
+      )}
     </div>
   );
 };

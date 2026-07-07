@@ -21,6 +21,7 @@ public class User
     public DateTime? DateOfBirth { get; set; }
     public DateTime? LastUpdatedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string Role { get; set; } = "User"; // User or Admin
 
     // Mối quan hệ Theo dõi
     public ICollection<UserFollow> Followers { get; set; } = new List<UserFollow>(); // Những người theo dõi user này
