@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Library, History, Heart, Home, Search, Plus, Music, ListMusic, ChevronLeft, ChevronRight } from 'lucide-react';
 import { User } from '@shared-types/user';
+import { ShareSidebar } from './ShareSidebar';
 
 const SidebarLibrary = ({ user }: { user: User | null }) => {
   const location = useLocation();
@@ -198,14 +199,20 @@ const MainLayout = ({ user, children }: { user: User | null, children: React.Rea
         <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: '#121212' }}>
             {/* Sidebar trai */}
             <SidebarLibrary user={user} />
-            
+
             {/* Noi dung chinh */}
-            <div style={{ 
-              flex: 1, 
+            <div style={{
+              flex: 1,
               overflowY: 'auto',
               overflowX: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
             }} className="custom-scrollbar">
-              {children}
+              <div style={{ flex: 1 }}>
+                {children}
+              </div>
+              {/* Share Sidebar */}
+              <ShareSidebar user={user} />
             </div>
         </div>
     );
