@@ -18,6 +18,7 @@ import Profile from './pages/Profile';
 import MainLayout from './Components/MainLayout';
 import LikedSongs from './pages/LikedSongs';
 import SharedWithMe from './pages/SharedWithMe';
+import AdminPanel from './pages/AdminPanel';
 import { AppHeader } from './Components/AppHeader';
 import { AudioProvider } from './Contexts/AudioContext';
 import { useEffect, useState, useRef } from 'react';
@@ -169,6 +170,7 @@ const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, setShowUser
             <Route path="import" element={<ImportMusic />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="shared-with-me" element={<SharedWithMe />} />
+            <Route path="admin" element={<AdminPanel />} />
             <Route 
               path="profile/:username" 
               element={<Profile currentUser={user} onUpdate={fetchProfile} onLogout={onLogout} />} 
