@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../axios';
-import { Youtube, UploadCloud, Music, Loader2, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { Youtube, UploadCloud, Music, Loader2, CheckCircle, AlertTriangle, XCircle, Plus, FileAudio, Link } from 'lucide-react';
 
 const ImportMusic = () => {
   const [activeTab, setActiveTab] = useState('youtube');
@@ -11,7 +11,9 @@ const ImportMusic = () => {
   const [genre, setGenre] = useState('Pop');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false); // State cho hiệu ứng kéo thả
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const genres = ['Pop', 'Hip-Hop', 'Rock', 'Jazz', 'Electronic', 'Classical', 'R&B', 'Country', 'Latin', 'Metal', 'Indie', 'Other'];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
