@@ -26,17 +26,24 @@ const Library = () => {
   const [editingSong, setEditingSong] = useState<MediaItem | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check if user is admin
+  // Check if user is admin (from API)
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
+    const checkAdmin = async () => {
       try {
-        const user = JSON.parse(userStr);
-        setIsAdmin(user.role === 'Admin');
+        const res = await api.get('/user/my-role');
+        setIsAdmin(res.data.role === 'Admin');
+        // Also update localStorage
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          user.role = res.data.role;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
       } catch (e) {
         setIsAdmin(false);
       }
-    }
+    };
+    checkAdmin();
   }, []);
 
   const formatTime = (seconds?: number) => {
