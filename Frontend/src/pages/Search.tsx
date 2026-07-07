@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search as SearchIcon, Clock, Music, Play, Pause } from 'lucide-react';
+import { Search as SearchIcon, Play, Pause, Heart, X, Loader2 } from 'lucide-react';
 import api from '../axios';
 import { useAudio } from '../Contexts/AudioContext';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -9,15 +9,23 @@ interface SearchProps {
   onSearchChange?: (query: string) => void;
 }
 
+interface MediaItem {
+  id: string;
+  title: string;
+  artist: string;
+  url: string;
+  thumbnailUrl: string;
+  isLiked?: boolean;
+}
+
 const Search = ({ searchQuery = '', onSearchChange }: SearchProps) => {
   const [query, setQuery] = useState(searchQuery);
-  const [results, setResults] = useState<any[]>([]);
-  const { playTrack, currentTrack, isPlaying } = useAudio();
+  const [results, setResults] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { playTrack, currentTrack, isPlaying, updateLikedStatus } = useAudio();
   const [searchParams] = useSearchParams();
 
-  // Sync with external searchQuery from AppHeader or URL params
   useEffect(() => {
-    // Check for q param from category clicks
     const qParam = searchParams.get('q');
     if (qParam) {
       setQuery(qParam);
@@ -26,215 +34,137 @@ const Search = ({ searchQuery = '', onSearchChange }: SearchProps) => {
     }
   }, [searchQuery, searchParams]);
 
-  // Handle local query change
   const handleQueryChange = (newQuery: string) => {
     setQuery(newQuery);
     onSearchChange?.(newQuery);
   };
 
-  const categories = [
-    { name: 'Pop', color: 'linear-gradient(135deg, #FF00FF, #00FFFF)', emoji: '🎵' },
-    { name: 'Hip-Hop', color: 'linear-gradient(135deg, #FF6600, #FF00FF)', emoji: '🎤' },
-    { name: 'Rock', color: 'linear-gradient(135deg, #FF0044, #FF6600)', emoji: '🎸' },
-    { name: 'Jazz', color: 'linear-gradient(135deg, #00FF88, #00FFFF)', emoji: '🎷' },
-    { name: 'Electronic', color: 'linear-gradient(135deg, #00FFFF, #0066FF)', emoji: '🎹' },
-    { name: 'Classical', color: 'linear-gradient(135deg, #FFD700, #FF00FF)', emoji: '🎻' },
-    { name: 'R&B', color: 'linear-gradient(135deg, #FF00FF, #FF0088)', emoji: '🎧' },
-    { name: 'Country', color: 'linear-gradient(135deg, #00FF00, #FFFF00)', emoji: '🤠' },
-    { name: 'Latin', color: 'linear-gradient(135deg, #FF3300, #FF00FF)', emoji: '💃' },
-    { name: 'Metal', color: 'linear-gradient(135deg, #8800FF, #FF0088)', emoji: '🤘' },
-    { name: 'Indie', color: 'linear-gradient(135deg, #00FF00, #00FFFF)', emoji: '🌿' },
-    { name: 'Workout', color: 'linear-gradient(135deg, #FF6600, #FFFF00)', emoji: '💪' },
-  ];
+  const clearSearch = () => {
+    setQuery('');
+    setResults([]);
+    onSearchChange?.('');
+  };
+
+  const toggleLike = async (e: React.MouseEvent, item: MediaItem) => {
+    e.stopPropagation();
+    try {
+      await api.post(`/favorites/toggle/${item.id}`);
+      setResults(prev => prev.map(s => s.id === item.id ? { ...s, isLiked: !s.isLiked } : s));
+      if (currentTrack?.id === item.id) {
+        updateLikedStatus(!item.isLiked);
+      }
+    } catch (err) {
+      console.error("Error toggling like:", err);
+    }
+  };
 
   useEffect(() => {
-    if (!query) {
+    if (!query.trim()) {
       setResults([]);
       return;
     }
+    setLoading(true);
     const delayDebounce = setTimeout(() => {
-      api.get(`/media?query=${query}`).then(res => setResults(res.data.items || []));
+      api.get(`/media?query=${encodeURIComponent(query)}`)
+        .then(res => {
+          const items = res.data.items || res.data || [];
+          setResults(items);
+        })
+        .catch(err => {
+          console.error("Search error:", err);
+          setResults([]);
+        })
+        .finally(() => setLoading(false));
     }, 500);
 
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
-  const handlePlay = (item: any) => {
+  const handlePlay = (item: MediaItem) => {
     playTrack(item, results);
   };
 
+  const categories = [
+    { name: 'Pop', color: 'linear-gradient(135deg, #833ab4, #fd1d1d)', emoji: '🎵' },
+    { name: 'Hip-Hop', color: 'linear-gradient(135deg, #fcb045, #fd1d1d)', emoji: '🎤' },
+    { name: 'Rock', color: 'linear-gradient(135deg, #fd1d1d, #833ab4)', emoji: '🎸' },
+    { name: 'Jazz', color: 'linear-gradient(135deg, #c084fc, #f472b6)', emoji: '🎷' },
+    { name: 'Electronic', color: 'linear-gradient(135deg, #00FFFF, #833ab4)', emoji: '🎹' },
+    { name: 'Classical', color: 'linear-gradient(135deg, #ffd700, #fcb045)', emoji: '🎻' },
+    { name: 'R&B', color: 'linear-gradient(135deg, #f472b6, #fd1d1d)', emoji: '🎧' },
+    { name: 'Country', color: 'linear-gradient(135deg, #f97316, #eab308)', emoji: '🤠' },
+    { name: 'Latin', color: 'linear-gradient(135deg, #fd1d1d, #c084fc)', emoji: '💃' },
+    { name: 'Metal', color: 'linear-gradient(135deg, #a855f7, #ef4444)', emoji: '🤘' },
+    { name: 'Indie', color: 'linear-gradient(135deg, #22c55e, #00FFFF)', emoji: '🌿' },
+    { name: 'Workout', color: 'linear-gradient(135deg, #f97316, #eab308)', emoji: '💪' },
+  ];
+
   return (
     <div style={{ padding: '24px 32px', minHeight: '100%' }}>
-      {/* Search Results */}
-      {results.length > 0 ? (
-        <div>
-          <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#fff', marginBottom: '24px' }}>
-            Top result
+      {query && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff' }}>
+            Kết quả cho "{query}"
           </h2>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '24px',
-            marginBottom: '40px'
-          }}>
-            {/* Featured Result */}
-            <div style={{
-              backgroundColor: '#181818',
-              borderRadius: '8px',
-              padding: '20px',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'}
-            onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = '#181818'}
-            onClick={() => handlePlay(results[0])}
-            >
-              <div style={{ 
-                width: '100px', 
-                height: '100px', 
-                borderRadius: '8px', 
-                overflow: 'hidden', 
-                marginBottom: '16px',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
-              }}>
-                <img 
-                  src={results[0].thumbnailUrl} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                  alt="" 
-                />
-              </div>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>
-                {results[0].title}
-              </h3>
-              <p style={{ fontSize: '13px', color: '#b3b3b3', marginBottom: '16px' }}>
-                {results[0].artist || 'Unknown Artist'}
-              </p>
-              <div style={{
-                width: '48px',
-                height: '48px',
-                backgroundColor: '#1DB954',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-              }}>
-                {currentTrack?.id === results[0].id && isPlaying ? (
-                  <Pause size={24} fill="black" color="black" />
-                ) : (
-                  <Play size={24} fill="black" color="black" style={{ marginLeft: '2px' }} />
-                )}
-              </div>
-            </div>
-
-            {/* Other Results - Grid */}
-            <div>
-              <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#b3b3b3', marginBottom: '16px', textTransform: 'uppercase' }}>
-                Songs
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {results.slice(1, 6).map((item: any) => (
-                  <div 
-                    key={item.id}
-                    onClick={() => handlePlay(item)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '8px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'}
-                    onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
-                  >
-                    <img 
-                      src={item.thumbnailUrl} 
-                      style={{ width: '48px', height: '48px', borderRadius: '4px', objectFit: 'cover' }} 
-                      alt="" 
-                    />
-                    <div style={{ flex: 1, overflow: 'hidden' }}>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.title}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#b3b3b3' }}>
-                        {item.artist || 'Unknown Artist'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <button onClick={clearSearch} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'rgba(131, 58, 180, 0.3)', border: '1px solid rgba(131, 58, 180, 0.5)', borderRadius: '20px', color: '#c084fc', cursor: 'pointer' }}>
+            <X size={16} /> Xóa
+          </button>
         </div>
-      ) : (
+      )}
+
+      {loading && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+          <Loader2 size={48} style={{ color: '#833ab4', animation: 'spin 1s linear infinite' }} />
+        </div>
+      )}
+
+      {!loading && results.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+          {results.map((item) => (
+            <div key={item.id} onClick={() => handlePlay(item)} style={{ backgroundColor: '#181818', borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'all 0.3s ease', position: 'relative', border: '1px solid transparent' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(131, 58, 180, 0.5)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#181818'; (e.currentTarget as HTMLElement).style.borderColor = 'transparent'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px' }}>
+                <img src={item.thumbnailUrl || '/placeholder.png'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={item.title} />
+                <div className="play-overlay" style={{ position: 'absolute', bottom: '8px', right: '8px', width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#833ab4', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease' }}>
+                  {currentTrack?.id === item.id && isPlaying ? <Pause size={24} fill="white" color="white" /> : <Play size={24} fill="white" color="white" style={{ marginLeft: '2px' }} />}
+                </div>
+              </div>
+              <button onClick={(e) => toggleLike(e, item)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', padding: '8px', zIndex: 10 }}>
+                <Heart size={18} fill={item.isLiked ? '#fd1d1d' : 'none'} color={item.isLiked ? '#fd1d1d' : '#fff'} />
+              </button>
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</h3>
+              <p style={{ fontSize: '13px', color: '#b3b3b3' }}>{item.artist || 'Unknown Artist'}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && query && results.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#1a1a2e', borderRadius: '12px', border: '1px solid rgba(131, 58, 180, 0.3)' }}>
+          <SearchIcon size={64} style={{ color: '#833ab4', marginBottom: '16px' }} />
+          <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Không tìm thấy kết quả</h3>
+          <p style={{ color: '#b3b3b3' }}>Thử tìm kiếm từ khóa khác</p>
+        </div>
+      )}
+
+      {!query && (
         <>
-          {/* Browse All Section */}
-          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#00FFFF', marginBottom: '24px', textShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }}>
-            Browse All
-          </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '16px',
-            marginBottom: '40px'
-          }}>
-            {categories.map((cat, i) => (
-              <Link
-                key={cat.name}
-                to={`/app/search?q=${cat.name}`}
-                style={{
-                  background: cat.color,
-                  borderRadius: '12px',
-                  padding: '24px',
-                  fontSize: '20px',
-                  fontWeight: '700',
-                  color: '#fff',
-                  textDecoration: 'none',
-                  minHeight: '150px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 0 20px rgba(255, 0, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.2)',
-                  overflow: 'hidden',
-                  position: 'relative',
-                }}
-                onMouseEnter={(e) => { 
-                  (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'; 
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(255, 0, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.4)';
-                }}
-                onMouseLeave={(e) => { 
-                  (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; 
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.2)';
-                }}
-              >
-                <span style={{ fontSize: '40px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }}>{cat.emoji}</span>
-                <span style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>{cat.name}</span>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#c084fc', marginBottom: '24px' }}>Khám phá thể loại</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px', marginBottom: '40px' }}>
+            {categories.map((cat) => (
+              <Link key={cat.name} to={`/app/search?q=${cat.name}`} style={{ background: cat.color, borderRadius: '12px', padding: '24px', fontSize: '18px', fontWeight: '700', color: '#fff', textDecoration: 'none', minHeight: '140px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all 0.3s ease' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-8px)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
+                <span style={{ fontSize: '36px' }}>{cat.emoji}</span>
+                <span>{cat.name}</span>
               </Link>
             ))}
           </div>
-
-          {/* Recent Searches placeholder */}
-          <div style={{
-            backgroundColor: '#1a1a2e',
-            borderRadius: '12px',
-            padding: '32px',
-            boxShadow: '0 0 20px rgba(255, 0, 255, 0.2)',
-            border: '1px solid rgba(255, 0, 255, 0.3)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <Clock size={24} color="#FF00FF" style={{ filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.8))' }} />
-              <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#FF00FF', textShadow: '0 0 10px rgba(255, 0, 255, 0.5)' }}>Recent Searches</h3>
-            </div>
-            <div style={{ textAlign: 'center', padding: '40px', color: '#b3b3b3' }}>
-              <Music size={48} style={{ marginBottom: '16px', color: '#00FFFF', filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.5))' }} />
-              <p style={{ color: '#b3b3b3' }}>Your recent searches will appear here</p>
-            </div>
-          </div>
         </>
       )}
+
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } div:hover .play-overlay { opacity: 1 !important; transform: translateY(0) !important; }`}</style>
     </div>
   );
 };
