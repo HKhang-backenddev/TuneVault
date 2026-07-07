@@ -84,7 +84,7 @@ const SharedWithMe = () => {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '900px', margin: '24px auto', paddingBottom: '6rem' }}>
+    <div style={{ width: '100%', width: '100%', , paddingBottom: '6rem' }}>
       <style>{`
         /* Keyframes cho viền chuyển động */
         @keyframes animated-border-shared {
@@ -93,15 +93,15 @@ const SharedWithMe = () => {
         }
       `}</style>
       <div style={{
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        border: '2px solid transparent',
-        borderRadius: '24px',
+        backgroundColor: 'transparent',
+        ,
+        borderRadius: '8px',
         backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
         backgroundOrigin: 'border-box',
         backgroundClip: 'padding-box, border-box',
         backgroundSize: '200% 100%',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(16, 185, 129, 0.2)',
-        animation: 'animated-border-shared 8s linear infinite',
+        ,
+        ,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -109,11 +109,11 @@ const SharedWithMe = () => {
         {/* Hero Header */}
         <div style={{
           padding: '32px', paddingTop: '48px', display: 'flex', alignItems: 'flex-end', gap: '24px',
-          background: 'linear-gradient(to bottom, rgba(5, 150, 105, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%)',
+          background: 'linear-gradient(180deg, #10b981 0%, #121212 100%)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         }}>
           <div style={{
-            width: '160px', height: '160px', background: 'linear-gradient(to bottom right, #10b981, #047857)',
+            width: '160px', height: '160px', background: 'linear-gradient(135deg, #10b981, #059669)',
             boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -146,7 +146,7 @@ const SharedWithMe = () => {
             </div>
           ) : (
             <div style={{
-              backgroundColor: 'rgba(24, 24, 24, 0.7)', borderRadius: '24px', padding: '16px',
+              backgroundColor: 'rgba(24, 24, 24, 0.7)', borderRadius: '8px', padding: '16px',
               border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: 'inset 0 0 15px rgba(0,0,0,0.5)',
             }}>
               {/* Header Grid */}

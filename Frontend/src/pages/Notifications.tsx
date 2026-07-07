@@ -189,13 +189,13 @@ const Notifications = () => {
 
   return (
     <div style={{
-      maxWidth: '60rem',
-      margin: '2rem auto',
+      width: '100%',
+      ,
       padding: '2rem',
       paddingBottom: '6rem',
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      borderRadius: '24px',
-      border: '2px solid transparent', // Giữ nguyên để tạo không gian cho viền gradient
+      backgroundColor: 'transparent',
+      borderRadius: '8px',
+      , // Giữ nguyên để tạo không gian cho viền gradient
       backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #ef4444, #c084fc, #3b82f6, #c084fc, #ef4444)',
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',

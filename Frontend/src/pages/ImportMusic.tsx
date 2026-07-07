@@ -125,19 +125,19 @@ const ImportMusic = () => {
 
   return (
     <div style={{
-      maxWidth: '700px',
-      margin: '2rem auto',
-      padding: '2.5rem',
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      borderRadius: '24px',
-      border: '2px solid transparent',
+      maxWidth: '800px',
+      margin: '24px auto',
+      padding: '32px',
+      backgroundColor: '#181818',
+      borderRadius: '8px',
+      ,
       backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #3b82f6, #10b981, #c084fc)',
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
       backgroundSize: '200% 100%',
-      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-      backdropFilter: 'blur(12px)',
-      animation: 'animated-border-import 8s linear infinite',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      ,
+      ,
     }}>
       <style>{`
         @keyframes animated-border-import {
@@ -221,7 +221,7 @@ const ImportMusic = () => {
               style={{
                 border: `2px dashed ${isDragOver ? '#3b82f6' : 'rgba(255, 255, 255, 0.2)'}`,
                 borderRadius: '0.75rem',
-                padding: '2.5rem',
+                padding: '32px',
                 textAlign: 'center',
                 cursor: 'pointer',
                 color: isDragOver ? '#3b82f6' : '#a3a3a3',

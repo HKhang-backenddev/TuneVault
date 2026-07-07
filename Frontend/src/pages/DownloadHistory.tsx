@@ -72,17 +72,17 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
       {/* Main Content Card - Đồng bộ với LikedSongs */}
       <div style={{
         width: '100%',
-        maxWidth: '900px',
-        margin: '24px auto',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        border: '2px solid transparent',
-        borderRadius: '24px',
+        width: '100%',
+        ,
+        backgroundColor: 'transparent',
+        ,
+        borderRadius: '8px',
         backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
         backgroundOrigin: 'border-box',
         backgroundClip: 'padding-box, border-box',
         backgroundSize: '200% 100%',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(59, 130, 246, 0.2)',
-        animation: 'animated-border-history 8s linear infinite',
+        ,
+        ,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -94,7 +94,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
           display: 'flex',
           alignItems: 'flex-end',
           gap: '24px',
-          background: 'linear-gradient(to bottom, rgba(30, 64, 175, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%)',
+          background: 'linear-gradient(180deg, #3b82f6 0%, #121212 100%)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         }}>
           <div style={{
@@ -135,7 +135,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
               backgroundColor: '#3b82f6',
               color: 'white',
               padding: '10px 24px',
-              borderRadius: '24px',
+              borderRadius: '8px',
               fontSize: '13px',
               fontWeight: '900',
               textTransform: 'uppercase',
@@ -156,7 +156,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
         <div style={{ padding: '0 32px 32px' }}>
           <div style={{
             backgroundColor: 'rgba(24, 24, 24, 0.7)',
-            borderRadius: '24px',
+            borderRadius: '8px',
             padding: '16px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: 'inset 0 0 15px rgba(0,0,0,0.5)',

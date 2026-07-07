@@ -71,7 +71,7 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
   };
 
   return (
-    <div className="min-h-screen pb-32 flex justify-center">
+    <div style={{ padding: '24px 32px', minHeight: '100%' }}>
       <style>{`
         @keyframes wave-liked {
           0%, 100% { height: 4px; }
@@ -127,17 +127,17 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
       {/* Main Content Card */}
       <div style={{
         width: '100%',
-        maxWidth: '900px', // Keep the wider width for the list
-        margin: '24px auto', // Center the card and add margin
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        border: '2px solid transparent',
-        borderRadius: '24px', // Rounded corners
+        width: '100%', // Keep the wider width for the list
+        , // Center the card and add margin
+        backgroundColor: 'transparent',
+        ,
+        borderRadius: '8px', // Rounded corners
         backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
         backgroundOrigin: 'border-box',
         backgroundClip: 'padding-box, border-box',
         backgroundSize: '200% 100%',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(59, 130, 246, 0.2)', // Neon glow,
-        animation: 'animated-border-liked 8s linear infinite',
+        , // Neon glow,
+        ,
         overflow: 'hidden', // Ensure content stays within bounds
         display: 'flex',
         flexDirection: 'column',
@@ -148,7 +148,7 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
           display: 'flex',
           alignItems: 'flex-end',
           gap: '24px',
-          background: 'linear-gradient(to bottom, rgba(30, 64, 175, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%)',
+          background: 'linear-gradient(180deg, #450af5 0%, #121212 100%)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         }}>
           <div style={{
@@ -224,7 +224,7 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
             gap: '8px',
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
             padding: '6px 16px',
-            borderRadius: '24px',
+            borderRadius: '8px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             transition: 'all 0.3s ease',
           }}
@@ -265,7 +265,7 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
         <div style={{ padding: '0 32px 32px' }}>
           <div style={{
               backgroundColor: 'rgba(24, 24, 24, 0.7)',
-              borderRadius: '24px',
+              borderRadius: '8px',
               padding: '16px',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               boxShadow: 'inset 0 0 15px rgba(0,0,0,0.5)',
