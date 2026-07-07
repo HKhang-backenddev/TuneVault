@@ -11,6 +11,7 @@ interface MediaItem {
   url: string;
   thumbnailUrl: string;
   genre?: string;
+  genreName?: string;
   isLiked?: boolean;
   isOwner?: boolean;
 }
@@ -30,7 +31,7 @@ interface HomeProps {
 
 const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   const { playTrack, togglePlay, currentTrack, isPlaying, updateLikedStatus } = useAudio();
-  const [sections, setSections] = useState<{ title: string, items: MediaItem[] }[]>([]);
+  const [sections, setSections] = useState<{ title: string; items: MediaItem[] }[]>([]);
   const [userResults, setUserResults] = useState<UserResult[]>([]);
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [hearts, setHearts] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
@@ -50,21 +51,16 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       setSearchResults(prev => prev.map(item => item.id === id ? { ...item, isLiked: liked } : item));
       if (currentTrack?.id === id) updateLikedStatus(liked);
       try { window.dispatchEvent(new CustomEvent('favoritesUpdated')); } catch {}
-    } catch (err) { console.error("Lỗi khi thả tim:", err); }
+    } catch (err) { console.error("Loi khi tha tim:", err); }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        console.log("🔍 Home: Đang fetch dữ liệu...");
-        const libraryRes = await api.get('/media/library?pageSize=100');
-        console.log("📦 Library response:", libraryRes.data);
+        const libraryRes = await api.get('/media/library?pageSize=500');
         
-        const sectionsData = [];
-        
-        // Lấy items từ response - có thể là array trực tiếp hoặc trong property items
-        let libraryItems = [];
+        let libraryItems: MediaItem[] = [];
         if (Array.isArray(libraryRes.data)) {
           libraryItems = libraryRes.data;
         } else if (libraryRes.data?.items) {
@@ -73,35 +69,29 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           libraryItems = libraryRes.data.data;
         }
         
-        console.log("🎵 Library items:", libraryItems);
+        // GROUP SONGS BY GENRE
+        const genreMap = new Map<string, MediaItem[]>();
         
-        if (libraryItems.length > 0) sectionsData.push({ title: 'Thư viện của bạn', items: libraryItems });
+        libraryItems.forEach(song => {
+          const genre = song.genre || song.genreName || 'Khac';
+          if (!genreMap.has(genre)) {
+            genreMap.set(genre, []);
+          }
+          genreMap.get(genre)!.push(song);
+        });
         
-        // Thử lấy favorites
-        try {
-          const likedRes = await api.get('/favorites');
-          let likedItems = [];
-          if (Array.isArray(likedRes.data)) likedItems = likedRes.data;
-          else if (likedRes.data?.items) likedItems = likedRes.data.items;
-          else if (likedRes.data?.songs) likedItems = likedRes.data.songs;
-          
-          if (likedItems.length > 0) sectionsData.push({ title: 'Bài hát đã thích', items: likedItems });
-        } catch (e) { console.log("Không lấy được favorites:", e); }
+        // Create sections from genre map
+        const sectionsData: { title: string; items: MediaItem[] }[] = [];
+        
+        genreMap.forEach((items, genre) => {
+          if (items.length > 0) {
+            sectionsData.push({ title: genre, items });
+          }
+        });
         
         setSections(sectionsData);
-        console.log("✅ Sections cuối cùng:", sectionsData);
       } catch (err) { 
-        console.error("❌ Lỗi fetch data:", err); 
-        // Nếu lỗi, thử fetch riêng lẻ
-        try {
-          const libraryRes = await api.get('/media/library?pageSize=100');
-          let items = libraryRes.data?.items || libraryRes.data || [];
-          if (items.length > 0) {
-            setSections([{ title: 'Thư viện của bạn', items: items }]);
-          }
-        } catch (e2) {
-          console.error("❌ Lỗi fetch library riêng:", e2);
-        }
+        console.error("Loi fetch data:", err); 
       }
       setLoading(false);
     };
@@ -118,17 +108,17 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         ]);
         setSearchResults(songRes.data?.items || []);
         setUserResults(userRes.data || []);
-      } catch (err) { console.error("Lỗi tìm kiếm:", err); }
+      } catch (err) { console.error("Loi tim kiem:", err); }
     };
     const timer = setTimeout(search, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const SongCard = ({ song, showArtist = true }: { song: MediaItem; showArtist?: boolean }) => {
+  const SongCard = ({ song, playlist }: { song: MediaItem; playlist: MediaItem[] }) => {
     const isCurrent = currentTrack?.id === song.id;
     return (
       <div
-        onClick={() => playTrack(song, searchResults.length > 0 ? searchResults : sections.flatMap(s => s.items))}
+        onClick={() => playTrack(song, playlist)}
         style={{
           backgroundColor: '#181818',
           borderRadius: '8px',
@@ -139,14 +129,24 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           transition: 'background-color 0.3s ease',
           position: 'relative',
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#282828'; e.currentTarget.querySelector('.play-btn')?.setAttribute('style', 'opacity:1 !important; transform: translateY(0) !important'); }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#181818'; e.currentTarget.querySelector('.play-btn')?.setAttribute('style', 'opacity:0; transform: translateY(8px)'); }}
+        onMouseEnter={(e) => { 
+          e.currentTarget.style.backgroundColor = '#282828'; 
+          const btn = e.currentTarget.querySelector('.play-btn') as HTMLElement;
+          if (btn) btn.style.opacity = '1';
+          if (btn) btn.style.transform = 'translateY(0)';
+        }}
+        onMouseLeave={(e) => { 
+          e.currentTarget.style.backgroundColor = '#181818';
+          const btn = e.currentTarget.querySelector('.play-btn') as HTMLElement;
+          if (btn) btn.style.opacity = '0';
+          if (btn) btn.style.transform = 'translateY(8px)';
+        }}
       >
         <div style={{ position: 'relative', marginBottom: '16px' }}>
           <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
           <button
             className="play-btn"
-            onClick={(e) => { e.stopPropagation(); playTrack(song, searchResults.length > 0 ? searchResults : sections.flatMap(s => s.items)); }}
+            onClick={(e) => { e.stopPropagation(); playTrack(song, playlist); }}
             style={{
               position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
               backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
@@ -158,8 +158,8 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             {isCurrent && isPlaying ? <Pause size={22} fill="black" color="black" /> : <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />}
           </button>
         </div>
-        <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-        {showArtist && <div style={{ fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghệ sĩ'}</div>}
+        <div style={{ fontSize: '16px', fontWeight: '600', color: isCurrent ? '#1DB954' : '#fff', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
+        <div style={{ fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
       </div>
     );
   };
@@ -172,17 +172,8 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         {u.avatarUrl ? <img src={u.avatarUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <User size={60} style={{ color: '#b3b3b3' }} />}
       </div>
       <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.displayName}</div>
-      <div style={{ fontSize: '12px', color: '#b3b3b3', textAlign: 'center', marginTop: '4px' }}>Người dùng</div>
+      <div style={{ fontSize: '12px', color: '#b3b3b3', textAlign: 'center', marginTop: '4px' }}>Nguoi dung</div>
     </Link>
-  );
-
-  const SectionRow = ({ section }: { section: { title: string; items: MediaItem[] } }) => (
-    <div style={{ marginBottom: '32px' }}>
-      <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '16px' }}>{section.title}</h2>
-      <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }}>
-        {section.items.slice(0, 10).map(song => <SongCard key={song.id} song={song} />)}
-      </div>
-    </div>
   );
 
   return (
@@ -205,14 +196,14 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
           <Loader2 size={48} style={{ color: '#1DB954', animation: 'spin 1s linear infinite' }} />
-          <p style={{ color: '#b3b3b3', fontSize: '16px' }}>Đang tải nhạc...</p>
+          <p style={{ color: '#b3b3b3', fontSize: '16px' }}>Dang tai nhac...</p>
         </div>
       ) : searchQuery ? (
         <div>
-          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#fff', marginBottom: '24px' }}>Kết quả tìm kiếm cho "{searchQuery}"</h2>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#fff', marginBottom: '24px' }}>Ket qua tim kiem cho "{searchQuery}"</h2>
           {userResults.length > 0 && (
             <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Nghệ sĩ</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Nghe si</h3>
               <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }} className="spotify-scroll">
                 {userResults.map(u => <UserCard key={u.id} user={u} />)}
               </div>
@@ -220,206 +211,62 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           )}
           {searchResults.length > 0 ? (
             <div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Bài hát</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Bai hat</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '24px' }}>
-                {searchResults.map(song => <SongCard key={song.id} song={song} />)}
+                {searchResults.map(song => <SongCard key={song.id} song={song} playlist={searchResults} />)}
               </div>
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '80px 0' }}>
               <SearchIcon size={64} style={{ color: '#535353', marginBottom: '16px' }} />
-              <p style={{ color: '#b3b3b3', fontSize: '18px' }}>Không tìm thấy kết quả nào</p>
+              <p style={{ color: '#b3b3b3', fontSize: '18px' }}>Khong tim thay ket qua nao</p>
             </div>
           )}
         </div>
       ) : (
         <div>
           <h1 style={{ fontSize: '36px', fontWeight: '900', color: '#fff', marginBottom: '32px' }}>
-            Xin chào, {user?.displayName || 'bạn'}!
+            Xin chao, {user?.displayName || 'ban'}!
           </h1>
 
-          {/* HIỂN THỊ TẤT CẢ BÀI HÁT */}
-          {sections.length > 0 && sections[0]?.items && sections[0].items.length > 0 && (
-            <div style={{ marginBottom: '32px' }}>
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#fff' }}>Tất cả bài hát</h2>
-                <button 
-                  onClick={() => playTrack(sections[0].items[0], sections[0].items)}
-                  style={{ 
-                    backgroundColor: '#1DB954', 
-                    color: 'black', 
-                    border: 'none', 
-                    borderRadius: '50%', 
-                    width: '40px', 
-                    height: '40px', 
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'transform 0.1s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <Play size={18} fill="black" />
-                </button>
-              </div>
-              
-              {/* Hàng 1 - Cuộn ngang */}
-              <div style={{ 
-                display: 'flex', 
-                gap: '16px',
-                overflowX: 'auto',
-                paddingBottom: '16px',
-              }}
-              className="spotify-scroll"
-              >
-                {sections[0].items.map((song) => {
-                  const isCurrent = currentTrack?.id === song.id;
-                  return (
-                    <div
-                      key={song.id}
-                      onClick={() => playTrack(song, sections[0].items)}
-                      style={{
-                        backgroundColor: '#181818',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.2s ease',
-                        position: 'relative',
-                        minWidth: '180px',
-                        maxWidth: '180px',
-                        flexShrink: 0,
-                      }}
-                      onMouseEnter={(e) => { 
-                        e.currentTarget.style.backgroundColor = '#282828';
-                        const btn = e.currentTarget.querySelector('.play-btn');
-                        if (btn) btn.setAttribute('style', 'opacity:1 !important; transform: translateY(0) !important');
-                      }}
-                      onMouseLeave={(e) => { 
-                        e.currentTarget.style.backgroundColor = '#181818';
-                        const btn = e.currentTarget.querySelector('.play-btn');
-                        if (btn) btn.setAttribute('style', 'opacity:0; transform: translateY(8px)');
-                      }}
-                    >
-                      <div style={{ position: 'relative', marginBottom: '12px' }}>
-                        <img 
-                          src={song.thumbnailUrl} 
-                          style={{ 
-                            width: '100%', 
-                            aspectRatio: '1/1', 
-                            objectFit: 'cover', 
-                            borderRadius: '4px',
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
-                          }} 
-                          alt={song.title}
-                        />
-                        <button
-                          className="play-btn"
-                          onClick={(e) => { e.stopPropagation(); playTrack(song, sections[0].items); }}
-                          style={{
-                            position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
-                            backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
-                            boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-                          }}
-                        >
-                          {isCurrent && isPlaying ? <Pause size={22} fill="black" color="black" /> : <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />}
-                        </button>
-                      </div>
-                      <div style={{ 
-                        fontSize: '14px', 
-                        fontWeight: '600', 
-                        color: isCurrent ? '#1DB954' : '#fff', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        marginBottom: '4px'
-                      }}>
-                        {song.title}
-                      </div>
-                      <div style={{ 
-                        fontSize: '12px', 
-                        color: '#b3b3b3', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis' 
-                      }}>
-                        {song.artist || 'Nghệ sĩ'}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Các section khác (Đã thích, Nghe gần đây) */}
-          {sections.filter((s, idx) => idx > 0 && s.items.length > 0).map((section, idx) => (
-            <div key={idx} style={{ marginBottom: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#fff' }}>{section.title}</h2>
-                <button 
-                  onClick={() => playTrack(section.items[0], section.items)}
-                  style={{ 
-                    backgroundColor: '#1DB954', 
-                    color: 'black', 
-                    border: 'none', 
-                    borderRadius: '50%', 
-                    width: '40px', 
-                    height: '40px', 
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'transform 0.1s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <Play size={18} fill="black" />
-                </button>
-              </div>
-              
-              <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }} className="spotify-scroll">
-                {section.items.map((song) => {
-                  const isCurrent = currentTrack?.id === song.id;
-                  return (
-                    <div
-                      key={song.id}
+          {/* MOI HANG LA MOT THE LOAI */}
+          {sections.length > 0 ? (
+            sections.map((section, idx) => (
+              <div key={idx} style={{ marginBottom: '40px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff' }}>{section.title}</h2>
+                  <button 
+                    onClick={() => playTrack(section.items[0], section.items)}
+                    style={{ 
+                      backgroundColor: '#1DB954', 
+                      color: 'black', 
+                      border: 'none', 
+                      borderRadius: '50%', 
+                      width: '40px', 
+                      height: '40px', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.1s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    <Play size={18} fill="black" />
+                  </button>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }} className="spotify-scroll">
+                  {section.items.map(song => (
+                    <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '8px', padding: '16px', cursor: 'pointer', minWidth: '180px', maxWidth: '180px', flexShrink: 0, transition: 'background-color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
                       onClick={() => playTrack(song, section.items)}
-                      style={{
-                        backgroundColor: '#181818',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.2s ease',
-                        position: 'relative',
-                        minWidth: '180px',
-                        maxWidth: '180px',
-                        flexShrink: 0,
-                      }}
-                      onMouseEnter={(e) => { 
-                        e.currentTarget.style.backgroundColor = '#282828';
-                        const btn = e.currentTarget.querySelector('.play-btn');
-                        if (btn) btn.setAttribute('style', 'opacity:1 !important; transform: translateY(0) !important');
-                      }}
-                      onMouseLeave={(e) => { 
-                        e.currentTarget.style.backgroundColor = '#181818';
-                        const btn = e.currentTarget.querySelector('.play-btn');
-                        if (btn) btn.setAttribute('style', 'opacity:0; transform: translateY(8px)');
-                      }}
                     >
                       <div style={{ position: 'relative', marginBottom: '12px' }}>
-                        <img 
-                          src={song.thumbnailUrl} 
-                          style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} 
-                          alt={song.title}
-                        />
+                        <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
                         <button
-                          className="play-btn"
                           onClick={(e) => { e.stopPropagation(); playTrack(song, section.items); }}
                           style={{
                             position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
@@ -427,32 +274,27 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
                           }}
+                          className="play-btn"
                         >
-                          {isCurrent && isPlaying ? <Pause size={22} fill="black" color="black" /> : <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />}
+                          <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />
                         </button>
                       </div>
-                      <div style={{ fontSize: '14px', fontWeight: '600', color: isCurrent ? '#1DB954' : '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>
-                        {song.title}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {song.artist || 'Nghệ sĩ'}
-                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{song.title}</div>
+                      <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-
-          {sections.length === 0 && (
+            ))
+          ) : (
             <div style={{ textAlign: 'center', padding: '100px 32px', backgroundColor: '#181818', borderRadius: '8px' }}>
               <div style={{ width: '200px', height: '200px', backgroundColor: '#282828', borderRadius: '50%', margin: '0 auto 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Music size={80} style={{ color: '#535353' }} />
               </div>
-              <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Chào mừng đến với TuneVault</h2>
-              <p style={{ color: '#b3b3b3', fontSize: '16px', marginBottom: '24px' }}>Hãy khám phá và thêm nhạc vào thư viện của bạn</p>
+              <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Chao muon den voi TuneVault</h2>
+              <p style={{ color: '#b3b3b3', fontSize: '16px', marginBottom: '24px' }}>Hay kham pha va them nhac vao thu vien cua ban</p>
               <Link to="/app/import" style={{ display: 'inline-block', backgroundColor: '#1DB954', color: 'black', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', fontSize: '16px', textDecoration: 'none' }}>
-                Bắt đầu ngay
+                Bat dau ngay
               </Link>
             </div>
           )}
