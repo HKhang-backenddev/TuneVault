@@ -229,64 +229,75 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             Xin chao, {user?.displayName || 'ban'}!
           </h1>
 
-          {/* GRID HIEN THI TAT CA NHAC - KHONG SCROLL DOC */}
+          {/* HIEN THI TAT CA - GRID */}
           {(() => {
             const allSongs = sections.flatMap(s => s.items);
-            return allSongs.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#fff', margin: 0 }}>Tat ca bai hat ({allSongs.length})</h2>
+            return allSongs.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', margin: 0 }}>Tat ca bai hat</h2>
                   <button 
                     onClick={() => playTrack(allSongs[0], allSongs)}
-                    style={{ 
-                      backgroundColor: '#1DB954', 
-                      color: 'black', 
-                      border: 'none', 
-                      borderRadius: '50%', 
-                      width: '36px', 
-                      height: '36px', 
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+                    style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    <Play size={16} fill="black" />
+                    <Play size={14} fill="black" />
                   </button>
                 </div>
-                
-                {/* Grid hien thi tat ca nhac - tu dong fit man hinh */}
-                <div style={{ 
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                  gap: '12px',
-                  overflowY: 'auto',
-                  maxHeight: 'calc(100vh - 250px)',
-                }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
                   {allSongs.map(song => (
-                    <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '6px', padding: '12px', cursor: 'pointer', transition: 'background-color 0.2s' }}
+                    <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '6px', padding: '10px', cursor: 'pointer' }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
                       onClick={() => playTrack(song, allSongs)}
                     >
                       <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} alt="" />
-                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-                      <div style={{ fontSize: '11px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
+                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
+                      <div style={{ fontSize: '10px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
                     </div>
                   ))}
                 </div>
               </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#181818', borderRadius: '8px' }}>
-                <Music size={64} style={{ color: '#535353', marginBottom: '16px' }} />
-                <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Chua co nhac</h2>
-                <p style={{ color: '#b3b3b3', marginBottom: '16px' }}>Hay them nhac de bat dau</p>
-                <Link to="/app/import" style={{ backgroundColor: '#1DB954', color: 'black', padding: '12px 24px', borderRadius: '20px', fontWeight: '700', textDecoration: 'none' }}>
-                  Them nhac
-                </Link>
-              </div>
             );
           })()}
+
+          {/* HIEN THI THEO THE LOAI - MOI HANG MOT THE LOAI */}
+          {sections.map((section, idx) => (
+            <div key={idx} style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', margin: 0 }}>{section.title}</h2>
+                <button 
+                  onClick={() => playTrack(section.items[0], section.items)}
+                  style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Play size={14} fill="black" />
+                </button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
+                {section.items.map(song => (
+                  <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '6px', padding: '10px', cursor: 'pointer' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
+                    onClick={() => playTrack(song, section.items)}
+                  >
+                    <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} alt="" />
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
+                    <div style={{ fontSize: '10px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {sections.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#181818', borderRadius: '8px' }}>
+              <Music size={64} style={{ color: '#535353', marginBottom: '16px' }} />
+              <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Chua co nhac</h2>
+              <p style={{ color: '#b3b3b3', marginBottom: '16px' }}>Hay them nhac de bat dau</p>
+              <Link to="/app/import" style={{ backgroundColor: '#1DB954', color: 'black', padding: '12px 24px', borderRadius: '20px', fontWeight: '700', textDecoration: 'none' }}>
+                Them nhac
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
