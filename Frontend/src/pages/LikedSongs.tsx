@@ -127,7 +127,6 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
       {/* Main Content Card */}
       <div style={{
         width: '100%',
-        width: '100%', // Keep the wider width for the list
         , // Center the card and add margin
         backgroundColor: 'transparent',
         ,

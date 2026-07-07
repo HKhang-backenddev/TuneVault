@@ -62,27 +62,10 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
 
   return (
     <div className="min-h-screen pb-32 flex justify-center">
-      <style>{`
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border-history {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-      `}</style>
-      {/* Main Content Card - Đồng bộ với LikedSongs */}
       <div style={{
         width: '100%',
-        width: '100%',
-        ,
-        backgroundColor: 'transparent',
-        ,
+        backgroundColor: '#181818',
         borderRadius: '8px',
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-        backgroundOrigin: 'border-box',
-        backgroundClip: 'padding-box, border-box',
-        backgroundSize: '200% 100%',
-        ,
-        ,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -94,22 +77,20 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
           display: 'flex',
           alignItems: 'flex-end',
           gap: '24px',
-          background: 'linear-gradient(180deg, #3b82f6 0%, #121212 100%)',
+          background: 'linear-gradient(180deg, #3b82f6 0%, #181818 100%)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         }}>
           <div style={{
-            width: '160px',
-            height: '160px',
-            background: 'linear-gradient(to bottom right, #1e40af, #172554)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.2)',
+            width: '192px',
+            height: '192px',
+            background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            position: 'relative',
+            borderRadius: '4px',
           }}>
-            <History size={80} style={{ color: 'white', filter: 'drop-shadow(0 0 5px rgba(96, 165, 250, 0.6))' }} />
+            <History size={80} style={{ color: 'white' }} />
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#93c5fd', marginBottom: '8px' }}>

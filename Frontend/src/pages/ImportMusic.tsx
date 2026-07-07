@@ -130,26 +130,15 @@ const ImportMusic = () => {
       padding: '32px',
       backgroundColor: '#181818',
       borderRadius: '8px',
-      ,
-      backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      backgroundSize: '200% 100%',
       boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-      ,
-      ,
     }}>
       <style>{`
-        @keyframes animated-border-import {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
         .input-neon:focus {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+          border-color: #1DB954 !important;
+          box-shadow: 0 0 15px rgba(29, 185, 84, 0.3);
         }
       `}</style>
-      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2rem', color: 'white', textAlign: 'center', textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #3b82f6, 0 0 40px #3b82f6' }}>
+      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2rem', color: 'white', textAlign: 'center' }}>
         Add New Music
       </h1>
 

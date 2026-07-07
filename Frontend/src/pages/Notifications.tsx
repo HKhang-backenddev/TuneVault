@@ -190,32 +190,14 @@ const Notifications = () => {
   return (
     <div style={{
       width: '100%',
-      ,
-      padding: '2rem',
-      paddingBottom: '6rem',
-      backgroundColor: 'transparent',
+      padding: '24px 32px',
+      backgroundColor: '#121212',
       borderRadius: '8px',
-      , // Giữ nguyên để tạo không gian cho viền gradient
-      backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #ef4444, #c084fc, #3b82f6, #c084fc, #ef4444)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      backgroundSize: '200% 100%', // Tăng kích thước nền để có không gian di chuyển
-      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-      backdropFilter: 'blur(10px)',
-      animation: 'animated-border 8s linear infinite', // Áp dụng animation
     }}>
-       <style>{`
+      <style>{`
         @keyframes slide-up-fade-in {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
-        }
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-        .notification-card-clip {
-          clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
         }
       `}</style>
       <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2.5rem', letterSpacing: '-0.05em', color: 'white', textAlign: 'center', textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #3b82f6, 0 0 40px #3b82f6' }}>

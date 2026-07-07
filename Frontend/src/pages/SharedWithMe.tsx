@@ -84,24 +84,10 @@ const SharedWithMe = () => {
   };
 
   return (
-    <div style={{ width: '100%', width: '100%', , paddingBottom: '6rem' }}>
-      <style>{`
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border-shared {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-      `}</style>
+    <div style={{ width: '100%', padding: '24px 32px' }}>
       <div style={{
-        backgroundColor: 'transparent',
-        ,
+        backgroundColor: '#181818',
         borderRadius: '8px',
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-        backgroundOrigin: 'border-box',
-        backgroundClip: 'padding-box, border-box',
-        backgroundSize: '200% 100%',
-        ,
-        ,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -109,26 +95,25 @@ const SharedWithMe = () => {
         {/* Hero Header */}
         <div style={{
           padding: '32px', paddingTop: '48px', display: 'flex', alignItems: 'flex-end', gap: '24px',
-          background: 'linear-gradient(180deg, #10b981 0%, #121212 100%)',
+          background: 'linear-gradient(180deg, #10b981 0%, #181818 100%)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         }}>
           <div style={{
-            width: '160px', height: '160px', background: 'linear-gradient(135deg, #10b981, #059669)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            width: '192px', height: '192px', background: 'linear-gradient(135deg, #10b981, #059669)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px',
           }}>
-            <Users size={70} style={{ color: 'white' }} />
+            <Users size={80} style={{ color: 'white' }} />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#6ee7b7', marginBottom: '8px' }}>
-              Inbox
+            <p style={{ fontSize: '12px', fontWeight: '700', color: '#fff', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Playlist
             </p>
-            <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.05em', color: 'white', marginBottom: '12px' }}>
+            <h1 style={{ fontSize: '72px', fontWeight: '900', color: 'white', marginBottom: '16px', lineHeight: 1 }}>
               Shared With Me
             </h1>
-            <p style={{ color: '#B0B0B0', fontSize: '13px', fontWeight: 'bold' }}>
-              {items.length} songs sent to you
+            <p style={{ color: '#b3b3b3', fontSize: '14px' }}>
+              {items.length} songs
             </p>
           </div>
         </div>
