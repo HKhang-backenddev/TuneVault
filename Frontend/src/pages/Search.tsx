@@ -60,52 +60,6 @@ const Search = ({ searchQuery = '', onSearchChange }: SearchProps) => {
 
   return (
     <div style={{ padding: '24px 32px', minHeight: '100%' }}>
-      {/* Search Bar - Neon Cyberpunk Style */}
-      <div style={{ 
-        position: 'relative', 
-        maxWidth: '600px', 
-        marginBottom: '40px' 
-      }}>
-        <div style={{
-          position: 'absolute',
-          left: '20px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          color: '#FF00FF',
-          zIndex: 1,
-          pointerEvents: 'none',
-          filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.8))',
-        }}>
-          <SearchIcon size={24} />
-        </div>
-        <input
-          type="text"
-          placeholder="What do you want to listen to?"
-          style={{
-            width: '100%',
-            backgroundColor: '#1a1a2e',
-            borderRadius: '50px',
-            border: '2px solid transparent',
-            outline: 'none',
-            padding: '16px 20px 16px 56px',
-            fontSize: '16px',
-            color: '#fff',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 0 20px rgba(255, 0, 255, 0.3)',
-          }}
-          onFocus={(e) => { 
-            e.target.style.borderColor = '#FF00FF';
-            e.target.style.boxShadow = '0 0 30px rgba(255, 0, 255, 0.5), 0 0 60px rgba(0, 255, 255, 0.3)';
-          }}
-          onBlur={(e) => { 
-            e.target.style.borderColor = 'transparent';
-            e.target.style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.3)';
-          }}
-          value={query}
-          onChange={(e) => handleQueryChange(e.target.value)}
-        />
-      </div>
-
       {/* Search Results */}
       {results.length > 0 ? (
         <div>

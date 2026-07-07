@@ -95,7 +95,17 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
         <input
           type="text" placeholder="Search songs, artists..."
           style={{ width: '100%', backgroundColor: '#242424', borderRadius: '24px', padding: '10px 16px 10px 48px', fontSize: '14px', color: 'white', outline: 'none' }}
-          value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          value={searchQuery} onChange={(e) => {
+            setSearchQuery(e.target.value);
+            if (e.target.value.length >= 2) {
+              navigate('/app/search');
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && searchQuery.length >= 2) {
+              navigate('/app/search');
+            }
+          }}
         />
       </div>
     </div>
