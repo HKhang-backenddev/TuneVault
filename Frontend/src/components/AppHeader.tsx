@@ -91,11 +91,45 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
 
     <div style={{ flex: '2', display: 'flex', justifyContent: 'center' }}>
       <div style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
-        <SearchIcon style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#b3b3b3' }} size={18} />
+        {/* Neon Search Icon */}
+        <SearchIcon style={{ 
+          position: 'absolute', 
+          left: '18px', 
+          top: '50%', 
+          transform: 'translateY(-50%)', 
+          color: '#c084fc',
+          filter: 'drop-shadow(0 0 8px rgba(131, 58, 180, 0.8))',
+          zIndex: 1
+        }} size={20} />
+        
+        {/* Search Input - Neon Style */}
         <input
-          type="text" placeholder="Search songs, artists..."
-          style={{ width: '100%', backgroundColor: '#242424', borderRadius: '24px', padding: '10px 16px 10px 48px', fontSize: '14px', color: 'white', outline: 'none' }}
-          value={searchQuery} onChange={(e) => {
+          type="text" 
+          placeholder="Search songs, artists..."
+          style={{ 
+            width: '100%', 
+            backgroundColor: 'rgba(18, 18, 18, 0.9)', 
+            borderRadius: '50px', 
+            padding: '12px 20px 12px 54px', 
+            fontSize: '15px', 
+            color: '#fff', 
+            outline: 'none',
+            border: '2px solid rgba(131, 58, 180, 0.3)',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 0 15px rgba(131, 58, 180, 0.2)',
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = '#833ab4';
+            e.target.style.boxShadow = '0 0 25px rgba(131, 58, 180, 0.5), 0 0 50px rgba(253, 29, 29, 0.2)';
+            e.target.style.backgroundColor = 'rgba(30, 30, 50, 0.95)';
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = 'rgba(131, 58, 180, 0.3)';
+            e.target.style.boxShadow = '0 0 15px rgba(131, 58, 180, 0.2)';
+            e.target.style.backgroundColor = 'rgba(18, 18, 18, 0.9)';
+          }}
+          value={searchQuery} 
+          onChange={(e) => {
             setSearchQuery(e.target.value);
             if (e.target.value.length >= 2) {
               navigate('/app/search');
