@@ -187,13 +187,14 @@ builder.Services.AddDbContextFactory<TuneVault.Infrastructure.TuneVaultDbContext
 
 var app = builder.Build();
 
-// During development, ensure the database is created to avoid schema issues when running locally.
+// Apply migrations automatically on startup
 try
 {
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<TuneVault.Infrastructure.TuneVaultDbContext>();
-        db.Database.EnsureCreated();
+        db.Database.Migrate();
+        Console.WriteLine("Database migrations applied successfully!");
     }
 }
 catch (Exception ex)
