@@ -147,3 +147,143 @@ input::placeholder {
 .spotify-progress-bar:hover::-webkit-slider-thumb {
   transform: scale(1.2);
 }
+
+/* ===== RESPONSIVE DESIGN - FIT SCREEN ===== */
+
+/* App Layout - Full Height */
+.app-container {
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.app-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Spotify song cards - Responsive sizes */
+.spotify-card {
+  min-width: 160px !important;
+  max-width: 200px !important;
+}
+
+/* Horizontal scroll container - Fit screen */
+.scroll-container {
+  display: flex !important;
+  gap: 16px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding-bottom: 16px !important;
+  flex-wrap: nowrap !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Song cards in horizontal scroll */
+.scroll-card {
+  min-width: 140px !important;
+  max-width: 180px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Section title */
+.section-title {
+  font-size: 20px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Grid for search results - Responsive */
+.song-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  gap: 16px !important;
+}
+
+/* Full width sections */
+.full-width-section {
+  width: 100% !important;
+  padding: 0 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Player bar - Fixed bottom */
+.player-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* Header - Responsive */
+.app-header {
+  padding: 12px 16px !important;
+  min-height: 60px !important;
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Large screens */
+@media (min-width: 1400px) {
+  .scroll-card {
+    min-width: 180px !important;
+    max-width: 220px !important;
+  }
+  
+  .spotify-card {
+    min-width: 180px !important;
+    max-width: 220px !important;
+  }
+}
+
+/* Medium screens */
+@media (max-width: 1200px) {
+  .scroll-card {
+    min-width: 140px !important;
+    max-width: 170px !important;
+  }
+  
+  .section-title {
+    font-size: 18px !important;
+  }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .scroll-card {
+    min-width: 130px !important;
+    max-width: 160px !important;
+  }
+  
+  .spotify-card {
+    min-width: 130px !important;
+    max-width: 160px !important;
+  }
+  
+  .song-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .scroll-card {
+    min-width: 120px !important;
+    max-width: 150px !important;
+  }
+  
+  .section-title {
+    font-size: 16px !important;
+  }
+  
+  .app-header {
+    padding: 8px 12px !important;
+  }
+  
+  .song-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    gap: 12px !important;
+  }
+}

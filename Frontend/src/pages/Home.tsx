@@ -177,7 +177,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   );
 
   return (
-    <div style={{ color: 'white', padding: '24px 32px', minHeight: '100%' }}>
+    <div style={{ color: 'white', padding: '20px', minHeight: '100%', boxSizing: 'border-box' }}>
       <style>{`
         .spotify-scroll::-webkit-scrollbar { height: 8px; }
         .spotify-scroll::-webkit-scrollbar-track { background: transparent; }
