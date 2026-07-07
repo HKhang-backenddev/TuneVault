@@ -24,6 +24,8 @@ export type AudioContextType = {
   seek: (time: number) => void;
   volume: number;
   setVolume: (v: number) => void;
+  playbackRate: number;
+  setPlaybackRate: (rate: number) => void;
   loading: boolean;
   updateLikedStatus: (liked: boolean) => void;
   playNext: () => void; // Thêm hàm mới
@@ -38,6 +40,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [volume, setVolume] = useState(0.5);
+  const [playbackRate, setPlaybackRateState] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [queue, setQueue] = useState<Track[]>([]); // State cho hàng đợi
@@ -283,9 +286,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const setPlaybackRate = (rate: number) => {
+    setPlaybackRateState(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
+  };
+
   useEffect(() => {
     audioRef.current.volume = volume;
   }, [volume]);
+
+  useEffect(() => {
+    audioRef.current.playbackRate = playbackRate;
+  }, [playbackRate]);
 
   const playNext = () => {
     if (queue.length === 0) return;
@@ -319,7 +333,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       playTrack, togglePlay, stopTrack,
       playNext, playPrev, // Thêm hàm mới
       currentTime, duration, seek, analyser, // Thêm analyser
-      volume, setVolume, updateLikedStatus
+      volume, setVolume, playbackRate, setPlaybackRate, updateLikedStatus
     }}>
       {children}
       <audio
