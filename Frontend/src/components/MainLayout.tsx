@@ -31,46 +31,8 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
       boxShadow: '5px 0 30px rgba(131, 58, 180, 0.15)',
     }}>
 
-      {/* Logo Area with Neon Glow */}
-      <div style={{
-        padding: '24px 20px',
-        marginBottom: '8px',
-        position: 'relative'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 30px rgba(131, 58, 180, 0.6), 0 0 60px rgba(253, 29, 29, 0.3)',
-          }}>
-            <Music size={28} style={{ color: '#fff' }} />
-          </div>
-          <h1 style={{
-            fontSize: '24px',
-            fontWeight: '900',
-            margin: 0,
-            background: 'linear-gradient(90deg, #833ab4, #fd1d1d, #fcb045)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 30px rgba(131, 58, 180, 0.5)',
-            letterSpacing: '1px'
-          }}>
-            TuneVault
-          </h1>
-        </div>
-      </div>
-
       {/* Main Menu with Neon Hover */}
-      <div style={{ padding: '0 12px', marginBottom: '8px' }}>
+      <div style={{ padding: '16px 12px 8px' }}>
         {menuItems.map(item => {
           const isActive = location.pathname === item.path;
           return (
