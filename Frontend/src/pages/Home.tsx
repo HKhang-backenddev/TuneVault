@@ -238,129 +238,125 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             Xin chào, {user?.displayName || 'bạn'}!
           </h1>
 
-          {/* HIỂN THỊ TẤT CẢ BÀI HÁT TRONG THƯ VIỆN - CUỘN NGANG */}
-          {sections.length > 0 && sections[0]?.items && sections[0].items.length > 0 && (
-            <div style={{ marginBottom: '40px' }}>
-              {/* Header với nút phát tất cả */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff' }}>Tất cả bài hát</h2>
-                <button 
-                  onClick={() => sections[0].items.length > 0 && playTrack(sections[0].items[0], sections[0].items)}
-                  style={{ 
-                    backgroundColor: '#1DB954', 
-                    color: 'black', 
-                    border: 'none', 
-                    borderRadius: '50%', 
-                    width: '48px', 
-                    height: '48px', 
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'transform 0.1s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          {/* HIỂN THỊ TỪNG HÀNG THEO THỂ LOẠI/SECTION */}
+          {sections.map((section, sectionIdx) => (
+            section.items.length > 0 && (
+              <div key={sectionIdx} style={{ marginBottom: '32px' }}>
+                {/* Header mỗi hàng */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#fff' }}>{section.title}</h2>
+                  <button 
+                    onClick={() => playTrack(section.items[0], section.items)}
+                    style={{ 
+                      backgroundColor: '#1DB954', 
+                      color: 'black', 
+                      border: 'none', 
+                      borderRadius: '50%', 
+                      width: '40px', 
+                      height: '40px', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.1s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    <Play size={18} fill="black" />
+                  </button>
+                </div>
+                
+                {/* Flexbox với cuộn ngang */}
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '16px',
+                  overflowX: 'auto',
+                  paddingBottom: '16px',
+                }}
+                className="spotify-scroll"
                 >
-                  <Play size={24} fill="black" />
-                </button>
+                  {section.items.slice(0, 20).map((song) => {
+                    const isCurrent = currentTrack?.id === song.id;
+                    return (
+                      <div
+                        key={song.id}
+                        onClick={() => playTrack(song, section.items)}
+                        style={{
+                          backgroundColor: '#181818',
+                          borderRadius: '8px',
+                          padding: '16px',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s ease',
+                          position: 'relative',
+                          minWidth: '180px',
+                          maxWidth: '180px',
+                          flexShrink: 0,
+                        }}
+                        onMouseEnter={(e) => { 
+                          e.currentTarget.style.backgroundColor = '#282828';
+                          const btn = e.currentTarget.querySelector('.play-btn');
+                          if (btn) btn.setAttribute('style', 'opacity:1 !important; transform: translateY(0) !important');
+                        }}
+                        onMouseLeave={(e) => { 
+                          e.currentTarget.style.backgroundColor = '#181818';
+                          const btn = e.currentTarget.querySelector('.play-btn');
+                          if (btn) btn.setAttribute('style', 'opacity:0; transform: translateY(8px)');
+                        }}
+                      >
+                        <div style={{ position: 'relative', marginBottom: '12px' }}>
+                          <img 
+                            src={song.thumbnailUrl} 
+                            style={{ 
+                              width: '100%', 
+                              aspectRatio: '1/1', 
+                              objectFit: 'cover', 
+                              borderRadius: '4px',
+                              boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+                            }} 
+                            alt={song.title}
+                          />
+                          <button
+                            className="play-btn"
+                            onClick={(e) => { e.stopPropagation(); playTrack(song, section.items); }}
+                            style={{
+                              position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
+                              backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
+                              boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                            }}
+                          >
+                            {isCurrent && isPlaying ? <Pause size={22} fill="black" color="black" /> : <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />}
+                          </button>
+                        </div>
+                        <div style={{ 
+                          fontSize: '14px', 
+                          fontWeight: '600', 
+                          color: isCurrent ? '#1DB954' : '#fff', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis',
+                          marginBottom: '4px'
+                        }}>
+                          {song.title}
+                        </div>
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: '#b3b3b3', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis' 
+                        }}>
+                          {song.artist || 'Nghệ sĩ'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              
-              {/* Flexbox với cuộn ngang */}
-              <div style={{ 
-                display: 'flex', 
-                gap: '16px',
-                overflowX: 'auto',
-                paddingBottom: '16px',
-              }}
-              className="spotify-scroll"
-              >
-                {sections[0].items.map((song, index) => {
-                  const isCurrent = currentTrack?.id === song.id;
-                  return (
-                    <div
-                      key={song.id}
-                      onClick={() => playTrack(song, sections[0].items)}
-                      style={{
-                        backgroundColor: '#181818',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.2s ease',
-                        position: 'relative',
-                        minWidth: '200px',
-                        maxWidth: '200px',
-                        flexShrink: 0,
-                      }}
-                      onMouseEnter={(e) => { 
-                        e.currentTarget.style.backgroundColor = '#282828';
-                        const btn = e.currentTarget.querySelector('.play-btn');
-                        if (btn) btn.setAttribute('style', 'opacity:1 !important; transform: translateY(0) !important');
-                      }}
-                      onMouseLeave={(e) => { 
-                        e.currentTarget.style.backgroundColor = '#181818';
-                        const btn = e.currentTarget.querySelector('.play-btn');
-                        if (btn) btn.setAttribute('style', 'opacity:0; transform: translateY(8px)');
-                      }}
-                    >
-                      {/* Thumbnail với nút play */}
-                      <div style={{ position: 'relative', marginBottom: '12px' }}>
-                        <img 
-                          src={song.thumbnailUrl} 
-                          style={{ 
-                            width: '100%', 
-                            aspectRatio: '1/1', 
-                            objectFit: 'cover', 
-                            borderRadius: '4px',
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
-                          }} 
-                          alt={song.title}
-                        />
-                        <button
-                          className="play-btn"
-                          onClick={(e) => { e.stopPropagation(); playTrack(song, sections[0].items); }}
-                          style={{
-                            position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
-                            backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
-                            boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-                          }}
-                        >
-                          {isCurrent && isPlaying ? <Pause size={22} fill="black" color="black" /> : <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />}
-                        </button>
-                      </div>
-                      
-                      {/* Thông tin bài hát */}
-                      <div style={{ 
-                        fontSize: '15px', 
-                        fontWeight: '600', 
-                        color: isCurrent ? '#1DB954' : '#fff', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        marginBottom: '4px'
-                      }}>
-                        {song.title}
-                      </div>
-                      <div style={{ 
-                        fontSize: '13px', 
-                        color: '#b3b3b3', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis' 
-                      }}>
-                        {song.artist || 'Nghệ sĩ'}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Các section khác */}
-          {sections.filter((_, idx) => idx > 0).map((section, idx) => <SectionRow key={idx} section={section} />)}
+            )
+          ))}
 
           {sections.length === 0 && (
             <div style={{ textAlign: 'center', padding: '100px 32px', backgroundColor: '#181818', borderRadius: '8px' }}>
