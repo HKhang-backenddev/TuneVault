@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Shield, CheckCircle, XCircle } from 'lucide-react';
+import api from '../axios';
 
 const AdminPanel = () => {
   const [role, setRole] = useState<string>('User');
@@ -24,13 +25,8 @@ const AdminPanel = () => {
 
   const checkRole = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/user/my-role', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setRole(data.role);
-      }
+      const res = await api.get('/user/my-role');
+      setRole(res.data.role);
     } catch (e) {
       console.error('Failed to check role');
     }
@@ -46,33 +42,24 @@ const AdminPanel = () => {
     setMessage(null);
 
     try {
-      const res = await fetch('http://localhost:5000/api/user/make-me-admin', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await api.post('/user/make-me-admin');
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setRole('Admin');
-        setMessage({ type: 'success', text: data.message });
-        
-        // Update localStorage
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          user.role = 'Admin';
-          localStorage.setItem('user', JSON.stringify(user));
-        }
-        
-        // Reload after 2 seconds
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      } else {
-        setMessage({ type: 'error', text: data.message || 'Có lỗi xảy ra!' });
+      setRole('Admin');
+      setMessage({ type: 'success', text: res.data.message });
+      
+      // Update localStorage
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        user.role = 'Admin';
+        localStorage.setItem('user', JSON.stringify(user));
       }
-    } catch (e) {
-      setMessage({ type: 'error', text: 'Không thể kết nối server. Hãy chắc chắn Backend đang chạy!' });
+      
+      // Reload after 2 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e.response?.data?.message || 'Có lỗi xảy ra!' });
     } finally {
       setLoading(false);
     }
