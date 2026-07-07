@@ -238,7 +238,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             Xin chào, {user?.displayName || 'bạn'}!
           </h1>
 
-          {/* HIỂN THỊ TẤT CẢ BÀI HÁT TRONG THƯ VIỆN - GRID VIEW */}
+          {/* HIỂN THỊ TẤT CẢ BÀI HÁT TRONG THƯ VIỆN - CUỘN NGANG */}
           {sections.length > 0 && sections[0]?.items && sections[0].items.length > 0 && (
             <div style={{ marginBottom: '40px' }}>
               {/* Header với nút phát tất cả */}
@@ -266,15 +266,15 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                 </button>
               </div>
               
-              {/* Grid hiển thị tất cả bài hát */}
+              {/* Flexbox với cuộn ngang */}
               <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                display: 'flex', 
                 gap: '16px',
-                backgroundColor: '#121212',
-                borderRadius: '8px',
-                padding: '16px'
-              }}>
+                overflowX: 'auto',
+                paddingBottom: '16px',
+              }}
+              className="spotify-scroll"
+              >
                 {sections[0].items.map((song, index) => {
                   const isCurrent = currentTrack?.id === song.id;
                   return (
@@ -288,6 +288,9 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                         cursor: 'pointer',
                         transition: 'background-color 0.2s ease',
                         position: 'relative',
+                        minWidth: '200px',
+                        maxWidth: '200px',
+                        flexShrink: 0,
                       }}
                       onMouseEnter={(e) => { 
                         e.currentTarget.style.backgroundColor = '#282828';
