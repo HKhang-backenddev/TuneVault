@@ -23,7 +23,7 @@ interface AppHeaderProps {
 export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUserMenu, avatarInputRef, bannerInputRef, handleMenuUpload, navigate, location, searchQuery, setSearchQuery }: AppHeaderProps) => (
   <header style={{
     zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    height: '64px', padding: '0 24px', backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    height: '64px', padding: '0 24px', backgroundColor: '#181818',
     backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
   }}>
     <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
@@ -46,17 +46,16 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
             <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" />
           </svg>
         </div>
-        <h1 className="text-2xl font-black tracking-tighter text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.7)] transition-all group-hover:tracking-normal group-hover:text-blue-100">TuneVault</h1>
+        <h1 className="text-2xl font-black tracking-tighter text-white drop-shadow-[0_0_10px_rgba(29,185,84,0.5)] transition-all group-hover:tracking-normal group-hover:text-green-100">TuneVault</h1>
       </div>
     </div>
 
     <div style={{ flex: '2', display: 'flex', justifyContent: 'center' }}>
       <div style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
-        <SearchIcon style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#737373' }} size={18} />
+        <SearchIcon style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#b3b3b3' }} size={18} />
         <input
-          type="text" placeholder="Tìm kiếm bài hát, nghệ sĩ, hoặc người dùng..."
+          type="text" placeholder="Tìm kiếm bài hát, nghệ sĩ..."
           style={{ width: '100%', backgroundColor: '#242424', borderRadius: '24px', padding: '10px 16px 10px 48px', fontSize: '14px', color: 'white', outline: 'none' }}
-          className="neon-search-input"
           value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
@@ -66,8 +65,8 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
       <nav style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: '12px' }}>
         <button
           onClick={() => navigate('/app/import')}
-          style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: location.pathname.includes('/import') ? '#3b82f6' : 'transparent', color: location.pathname.includes('/import') ? 'white' : '#3b82f6', border: '1px solid #3b82f6' }}
-          className="flex items-center justify-center transition shadow-lg shadow-blue-500/20 neon-nav-button neon-button-active-effect"
+          style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: location.pathname.includes('/import') ? '#1DB954' : 'transparent', color: location.pathname.includes('/import') ? 'black' : '#b3b3b3', border: '1px solid #b3b3b3' }}
+          className="flex items-center justify-center transition hover:scale-110"
         >
           <Plus size={24} />
         </button>
@@ -76,10 +75,10 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
           onClick={goHome}
           style={{
             width: '40px', height: '40px', borderRadius: '50%',
-            backgroundColor: (location.pathname === '/app' || location.pathname === '/app/') ? '#3b82f6' : 'transparent',
-            color: (location.pathname === '/app' || location.pathname === '/app/') ? 'white' : '#3b82f6',
-            border: '1px solid #3b82f6'
-          }} className="flex items-center justify-center transition shadow-lg shadow-blue-500/20 neon-nav-button neon-button-active-effect"
+            backgroundColor: (location.pathname === '/app' || location.pathname === '/app/') ? '#1DB954' : 'transparent',
+            color: (location.pathname === '/app' || location.pathname === '/app/') ? 'black' : '#b3b3b3',
+            border: '1px solid #b3b3b3'
+          }} className="flex items-center justify-center transition hover:scale-110"
         >
           <HomeIcon size={20} fill="currentColor" />
         </button>
@@ -89,18 +88,17 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
         style={{
           position: 'relative',
           width: '40px', height: '40px', borderRadius: '50%',
-          backgroundColor: location.pathname.includes('/notifications') ? '#3b82f6' : 'transparent',
-          color: location.pathname.includes('/notifications') ? 'white' : '#3b82f6',
-          border: '1px solid #3b82f6'
+          backgroundColor: location.pathname.includes('/notifications') ? '#1DB954' : 'transparent',
+          color: location.pathname.includes('/notifications') ? 'black' : '#b3b3b3',
+          border: '1px solid #b3b3b3'
         }}
-        className="flex items-center justify-center transition shadow-lg shadow-blue-500/20 neon-nav-button neon-button-active-effect"
+        className="flex items-center justify-center transition hover:scale-110"
       >
         <Bell size={20} fill={location.pathname === '/notifications' ? "currentColor" : "none"} />
         {user?.hasUnreadNotifications && (
           <span style={{
             position: 'absolute', top: '6px', right: '6px', width: '10px', height: '10px',
-            borderRadius: '50%', backgroundColor: '#ef4444', border: '2px solid #000',
-            animation: 'pulse-red 2s infinite'
+            borderRadius: '50%', backgroundColor: '#1DB954', border: '2px solid #181818'
           }}></span>
         )}
       </button>
@@ -108,11 +106,11 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
       <div className="relative" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={(e) => {
-            e.stopPropagation(); // Ngăn không cho menu đóng ngay lập tức
+            e.stopPropagation();
             setShowUserMenu(!showUserMenu);
           }}
-          style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid rgba(59, 130, 246, 0.7)' }}
-          className="bg-gradient-to-tr from-blue-600 to-blue-900 flex-shrink-0 flex items-center justify-center font-bold text-sm cursor-pointer transition-all text-white overflow-hidden neon-blue-profile-button neon-button-active-effect"
+          style={{ width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #1DB954' }}
+          className="flex-shrink-0 flex items-center justify-center font-bold text-sm cursor-pointer transition-all text-white overflow-hidden hover:scale-110"
           title="Xem hồ sơ của bạn"
         >
           {user?.avatarUrl ? (
@@ -125,16 +123,16 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
         {showUserMenu && (
           <div style={{
             position: 'absolute', top: '56px', right: 0, width: '280px', zIndex: 1001,
-            backgroundColor: '#121212', borderRadius: '12px',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            boxShadow: '0 8px 32px rgba(59, 130, 246, 0.2)',
+            backgroundColor: '#181818', borderRadius: '8px',
+            border: '1px solid #282828',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
             overflow: 'hidden'
           }}
             className="animate-in fade-in zoom-in-95 duration-200">
-            <div style={{ padding: '20px', textAlign: 'center', borderBottom: '1px solid rgba(59, 130, 246, 0.15)' }}>
+            <div style={{ padding: '20px', textAlign: 'center', borderBottom: '1px solid #282828' }}>
 
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', margin: '0 auto 12px', boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)' }}>
-                {user?.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(to bottom, #2563eb, #1e40af)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold' }}>{user?.displayName?.charAt(0).toUpperCase() || 'U'}</div>}
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #1DB954', margin: '0 auto 12px' }}>
+                {user?.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1DB954, #169c46)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold', color: 'white' }}>{user?.displayName?.charAt(0).toUpperCase() || 'U'}</div>}
               </div>
               <p
                 style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}
@@ -148,7 +146,7 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
               >
                 {user?.displayName || 'Người dùng'}
               </p>
-              <p style={{ fontSize: '12px', color: '#a3a3a3', margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email || `@${user?.username}`}</p>
+              <p style={{ fontSize: '12px', color: '#b3b3b3', margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email || `@${user?.username}`}</p>
             </div>
             <div style={{ padding: '8px' }}>
               <button
@@ -157,28 +155,27 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
                   e.preventDefault();
                   setShowUserMenu(false);
                   if (user?.username) {
-                    // Route trong App.tsx là: /app/profile/:username
                     navigate(`/app/profile/${user.username}`);
                   }
                 }}
-                style={{ width: '100%', textAlign: 'left', padding: '10px 12px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px', borderRadius: '6px', transition: 'all 0.2s ease', color: '#d4d4d4', fontWeight: '500', background: 'transparent', border: 'none', cursor: 'pointer', }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'; e.currentTarget.style.color = 'white'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#d4d4d4'; }}
+                style={{ width: '100%', textAlign: 'left', padding: '10px 12px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px', borderRadius: '4px', transition: 'all 0.2s ease', color: '#b3b3b3', fontWeight: '500', background: 'transparent', border: 'none', cursor: 'pointer', }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#282828'; e.currentTarget.style.color = 'white'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#b3b3b3'; }}
               >
-                <UserIcon size={16} style={{ color: '#60a5fa' }} /> Hồ sơ của tôi
+                <UserIcon size={16} style={{ color: '#1DB954' }} /> Hồ sơ của tôi
               </button>
               <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                <button onClick={() => { setShowUserMenu(false); avatarInputRef.current?.click(); }} style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', borderRadius: '6px', transition: 'all 0.2s ease', color: '#d4d4d4', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#60a5fa'; e.currentTarget.style.color = '#60a5fa'; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#d4d4d4'; }}>
+                <button onClick={() => { setShowUserMenu(false); avatarInputRef.current?.click(); }} style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', borderRadius: '4px', transition: 'all 0.2s ease', color: '#b3b3b3', background: '#282828', border: 'none', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#333'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#282828'; }}>
                   <Camera size={14} /> Avatar
                 </button>
-                <button onClick={() => { setShowUserMenu(false); bannerInputRef.current?.click(); }} style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', borderRadius: '6px', transition: 'all 0.2s ease', color: '#d4d4d4', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#60a5fa'; e.currentTarget.style.color = '#60a5fa'; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#d4d4d4'; }}>
+                <button onClick={() => { setShowUserMenu(false); bannerInputRef.current?.click(); }} style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', borderRadius: '4px', transition: 'all 0.2s ease', color: '#b3b3b3', background: '#282828', border: 'none', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#333'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#282828'; }}>
                   <ImageIcon size={14} /> Ảnh bìa
                 </button>
               </div>
             </div>
-            <div style={{ borderTop: '1px solid rgba(59, 130, 246, 0.15)', margin: '0 8px' }}></div>
+            <div style={{ borderTop: '1px solid #282828', margin: '0 8px' }}></div>
             <div style={{ padding: '8px' }}>
-              <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', padding: '10px 12px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px', borderRadius: '6px', transition: 'all 0.2s ease', color: '#f87171', fontWeight: 'bold', background: 'transparent', border: 'none', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#f87171'; }}>
+              <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', padding: '10px 12px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px', borderRadius: '4px', transition: 'all 0.2s ease', color: '#f87171', fontWeight: 'bold', background: 'transparent', border: 'none', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#282828'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}>
                 <LogOut size={16} /> Đăng xuất
               </button>
             </div>

@@ -69,17 +69,29 @@ const PlayerBar = () => {
   return (
     <>
     <style>{`
-      @keyframes progress-neon-rainbow {
-        0% { accent-color: #3b82f6; filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6)); }
-        25% { accent-color: #60a5fa; filter: drop-shadow(0 0 3px rgba(96, 165, 250, 0.6)); }
-        50% { accent-color: #93c5fd; filter: drop-shadow(0 0 3px rgba(147, 197, 253, 0.6)); }
-        75% { accent-color: #60a5fa; filter: drop-shadow(0 0 3px rgba(96, 165, 250, 0.6)); }
-        100% { accent-color: #3b82f6; filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6)); }
+      @keyframes progress-spotify {
+        0% { accent-color: #1DB954; }
+        100% { accent-color: #1DB954; }
       }
-      .neon-progress-bar {
-        animation: progress-neon-rainbow 6s linear infinite !important;
+      .spotify-progress {
+        animation: progress-spotify 0s linear !important;
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        cursor: pointer;
       }
-      @keyframes float-heart-player { /* Đổi tên animation để tránh xung đột */
+      .spotify-progress::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #1DB954;
+        cursor: pointer;
+      }
+      @keyframes float-heart-player { 
         0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
         25% { transform: translate(calc(-50% - 20px), calc(-50% - 50px)) scale(1); opacity: 0.8; }
         50% { transform: translate(calc(-50% + 20px), calc(-50% - 100px)) scale(1.5); opacity: 0.6; }
@@ -92,6 +104,15 @@ const PlayerBar = () => {
         z-index: 9999;
         animation: float-heart-player 1s ease-out forwards;
       }
+      .player-button {
+        transition: transform 0.1s ease;
+      }
+      .player-button:hover {
+        transform: scale(1.1);
+      }
+      .player-button:active {
+        transform: scale(0.95);
+      }
     `}</style>
     <div style={{
       position: 'fixed',
@@ -102,36 +123,33 @@ const PlayerBar = () => {
     }}>
       <div style={{
         position: 'relative',
-        backgroundColor: 'rgba(10, 10, 10, 0.7)',
-        backdropFilter: 'blur(10px)',
-        borderTop: '2px solid #3b82f6',
+        backgroundColor: '#181818',
+        borderTop: '1px solid #282828',
         padding: '12px 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        boxShadow: '0 -5px 30px rgba(59, 130, 246, 0.4)'
       }}>
         {/* Nút thoát - góc trên bên phải */}
         <button 
           onClick={stopTrack}
           style={{
             position: 'absolute',
-            top: '-15px', // Điều chỉnh lại vị trí
+            top: '-15px',
             right: '20px',
             width: '28px',
             height: '28px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#1a1a1a',
-            border: '2px solid #3b82f6',
+            backgroundColor: '#282828',
+            border: '1px solid #404040',
             borderRadius: '50%',
             cursor: 'pointer',
-            color: '#3b82f6',
-            boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)',
+            color: '#b3b3b3',
             zIndex: 1001,
           }}
-          className="hover:bg-blue-600 hover:text-white transition-colors"
+          className="hover:bg-neutral-700 transition-colors"
           title="Thoát / Đóng trình phát"
         >
           <X size={16} />
@@ -140,40 +158,33 @@ const PlayerBar = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
           <img src={currentTrack.thumbnailUrl} alt={currentTrack.title} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' }} />
           <div style={{ overflow: 'hidden' }}>
-            <p className="text-white font-bold text-[11px] truncate">{currentTrack.title}</p>
-            <p className="text-neutral-400 text-[10px] truncate">{currentTrack.artist || 'Nghệ sĩ'}</p>
+            <p className="text-white font-bold text-[11px] truncate hover:text-[#1DB954] cursor-pointer">{currentTrack.title}</p>
+            <p className="text-[#b3b3b3] text-[10px] truncate hover:text-white cursor-pointer">{currentTrack.artist || 'Nghệ sĩ'}</p>
           </div>
+          <button 
+            onClick={(e) => handleToggleLike(e)}
+            className={`ml-2 ${currentTrack.isLiked ? 'text-[#1DB954]' : 'text-[#b3b3b3] hover:text-white'}`}
+            title={currentTrack.isLiked ? "Bỏ thích" : "Yêu thích"}
+          >
+            <Heart size={18} fill={currentTrack.isLiked ? "currentColor" : "none"} className="player-button" />
+          </button>
         </div>
 
         {/* Điều khiển & Tiến trình */}
         <div style={{ flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '0 20px' }}>
           {/* Các nút điều khiển chính */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <button onClick={playPrev} className="text-neutral-400 hover:text-white transition-all active:scale-90">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button onClick={playPrev} className="text-[#b3b3b3] hover:text-white player-button">
               <SkipBack size={20} fill="currentColor" />
-            </button>
-            <button 
-              onClick={(e) => handleToggleLike(e)}
-              className={`transition-transform active:scale-90 ${currentTrack.isLiked ? 'text-blue-500' : 'text-neutral-500 hover:text-white'}`}
-              title={currentTrack.isLiked ? "Bỏ thích" : "Yêu thích"}
-            >
-              <Heart size={18} fill={currentTrack.isLiked ? "currentColor" : "none"} />
             </button>
             <button 
               onClick={togglePlay} 
               disabled={loading}
-              className="text-white transition disabled:opacity-50 flex-shrink-0 w-10 h-10 rounded-full bg-white flex items-center justify-center text-black hover:scale-105 active:scale-100"
+              className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black player-button hover:scale-105 disabled:opacity-50"
             >
-              {loading ? <Loader2 size={24} className="animate-spin text-blue-500" /> : (isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />)}
+              {loading ? <Loader2 size={20} className="animate-spin text-[#1DB954]" /> : (isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />)}
             </button>
-            <button 
-              onClick={handleShare}
-              className="text-neutral-500 hover:text-white transition-transform active:scale-90"
-              title="Chia sẻ bài hát"
-            >
-              <Share2 size={18} />
-            </button>
-            <button onClick={playNext} className="text-neutral-400 hover:text-white transition-all active:scale-90">
+            <button onClick={playNext} className="text-[#b3b3b3] hover:text-white player-button">
               <SkipForward size={20} fill="currentColor" />
             </button>
           </div>
@@ -181,40 +192,47 @@ const PlayerBar = () => {
           {/* Thanh tiến trình */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', maxWidth: '600px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '10px', color: '#737373', minWidth: '35px', textAlign: 'right' }}>{formatTime(currentTime)}</span>
+              <span style={{ fontSize: '11px', color: '#b3b3b3', minWidth: '40px', textAlign: 'right' }}>{formatTime(currentTime)}</span>
               <input
                 type="range"
                 min="0"
-                max={duration}
+                max={duration || 100}
                 value={currentTime}
                 step="0.1"
                 onChange={handleSeek}
-                style={{ flex: 1, height: '4px', cursor: 'pointer' }}
-                className="neon-progress-bar"
+                className="spotify-progress flex-1"
               />
-              <span style={{ fontSize: '10px', color: '#737373', minWidth: '35px' }}>{formatTime(duration)}</span>
+              <span style={{ fontSize: '11px', color: '#b3b3b3', minWidth: '40px' }}>{formatTime(duration)}</span>
             </div>
           </div>
         </div>
 
         {/* Âm lượng */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', minWidth: '200px' }}>
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', minWidth: '180px' }}>
+          <button 
+            onClick={handleShare}
+            className="text-[#b3b3b3] hover:text-white player-button p-1"
+            title="Chia sẻ bài hát"
+          >
+            <Share2 size={16} />
+          </button>
+          
           {/* Tốc độ phát */}
           <div className="relative" ref={speedMenuRef}>
             <button
               onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-              className="flex items-center gap-1 px-2 py-1 rounded-md bg-neutral-800 hover:bg-neutral-700 transition-colors text-neutral-300 hover:text-white"
+              className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#282828] hover:bg-[#333] transition-colors text-[#b3b3b3] hover:text-white text-xs"
               title="Tốc độ phát"
             >
-              <Gauge size={16} />
-              <span style={{ fontSize: '12px', minWidth: '35px' }}>
+              <Gauge size={14} />
+              <span style={{ minWidth: '30px' }}>
                 {playbackRate === 1 ? '1x' : `${playbackRate}x`}
               </span>
             </button>
             {showSpeedMenu && (
               <div 
-                className="absolute bottom-full mb-2 right-0 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl py-2 z-50"
-                style={{ minWidth: '80px' }}
+                className="absolute bottom-full mb-2 right-0 bg-[#282828] border border-[#404040] rounded-lg shadow-xl py-1 z-50"
+                style={{ minWidth: '100px' }}
               >
                 {speedOptions.map((speed) => (
                   <button
@@ -223,19 +241,19 @@ const PlayerBar = () => {
                       setPlaybackRate(speed);
                       setShowSpeedMenu(false);
                     }}
-                    className={`w-full px-3 py-1.5 text-left text-sm hover:bg-neutral-800 transition-colors ${
-                      playbackRate === speed ? 'text-blue-400 bg-neutral-800' : 'text-neutral-300'
+                    className={`w-full px-3 py-2 text-left text-sm hover:bg-[#333] transition-colors ${
+                      playbackRate === speed ? 'text-[#1DB954]' : 'text-[#b3b3b3]'
                     }`}
                   >
-                    {speed === 1 ? '1x (Bình thường)' : `${speed}x`}
+                    {speed === 1 ? 'Bình thường' : `${speed}x`}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            {volume > 0 ? <Volume2 size={16} className="text-neutral-400" /> : <VolumeX size={16} className="text-neutral-400" />}
+          <div className="flex items-center gap-1">
+            {volume > 0 ? <Volume2 size={16} className="text-[#b3b3b3]" /> : <VolumeX size={16} className="text-[#b3b3b3]" />}
             <input
               type="range"
               min="0"
@@ -243,7 +261,7 @@ const PlayerBar = () => {
               step="0.01"
               value={volume}
               onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="w-20 h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-20 h-1 bg-[#404040] rounded-full appearance-none cursor-pointer accent-[#1DB954]"
             />
           </div>
         </div>
