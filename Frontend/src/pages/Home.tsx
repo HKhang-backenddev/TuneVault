@@ -57,18 +57,17 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [likedRes, historyRes, recentRes] = await Promise.all([
+        const [libraryRes, likedRes, historyRes, recentRes] = await Promise.all([
+          api.get('/media/library?pageSize=50'),
           api.get('/favorites'),
           api.get('/media/history'),
           api.get('/media/recent')
         ]);
         const sectionsData = [];
+        // Thư viện của user - ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT!
+        if (libraryRes.data?.items?.length > 0) sectionsData.push({ title: 'Thư viện của bạn', items: libraryRes.data.items });
         if (likedRes.data?.items?.length > 0) sectionsData.push({ title: 'Bài hát đã thích', items: likedRes.data.items });
-        if (historyRes.data?.items?.length > 0) sectionsData.push({ title: 'Lịch sử nghe', items: historyRes.data.items });
         if (recentRes.data?.items?.length > 0) sectionsData.push({ title: 'Nghe gần đây', items: recentRes.data.items });
-        const allItems = sectionsData.flatMap(s => s.items);
-        const uniqueItems = allItems.filter((item, idx, arr) => arr.findIndex(i => i.id === item.id) === idx);
-        if (uniqueItems.length > 0 && sectionsData.length === 0) sectionsData.push({ title: 'Khám phá', items: uniqueItems.slice(0, 20) });
         setSections(sectionsData);
       } catch (err) { console.error("Lỗi fetch data:", err); }
       setLoading(false);
