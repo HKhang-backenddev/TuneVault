@@ -9,6 +9,7 @@ import PlayerBar from './Components/PlayerBar'; // Đảm bảo đường dẫn 
 import Home from './pages/Home';
 import Notifications from './pages/Notifications';
 import Search from './pages/Search';
+import Users from './pages/Users';
 import DownloadHistory from './pages/DownloadHistory';
 import Login from './pages/Login';
 import Register from './pages/Register_inform';
@@ -168,6 +169,7 @@ const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, setShowUser
             <Route path="history" element={<DownloadHistory lastRefreshTime={lastRefreshTime} />} />
             <Route path="liked" element={<LikedSongs lastRefreshTime={lastRefreshTime} />} />
             <Route path="search" element={<Search searchQuery={searchQuery} onSearchChange={setSearchQuery} />} />
+            <Route path="users" element={<Users searchQuery={searchQuery} onSearchChange={setSearchQuery} />} />
             <Route path="import" element={<ImportMusic />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="shared-with-me" element={<SharedWithMe />} />

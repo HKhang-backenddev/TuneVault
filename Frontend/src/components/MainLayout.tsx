@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Library, History, Heart, Home, Search, Plus, Music, ListMusic, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Library, History, Heart, Home, Search, Plus, Music, ListMusic, ChevronLeft, ChevronRight, UsersPlus } from 'lucide-react';
 import { User } from '@shared-types/user';
 import { ShareSidebar } from './ShareSidebar';
 
@@ -9,7 +9,8 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
 
   const menuItems = [
     { name: 'Home', icon: Home, path: '/app' },
-    { name: 'Search', icon: Search, path: '/app/search' },
+    { name: 'Search Songs', icon: Search, path: '/app/search' },
+    { name: 'Find Users', icon: UsersPlus, path: '/app/users' },
   ];
 
   const libraryItems = [
