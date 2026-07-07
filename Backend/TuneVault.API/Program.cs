@@ -209,7 +209,7 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<TuneVault.Infrastructure.TuneVaultDbContext>();
-        if (!db.MediaItems.Any())
+        if (db.MediaItems.Count() < 5)
         {
             Console.WriteLine("Seeding sample music data...");
             

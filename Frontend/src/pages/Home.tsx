@@ -65,28 +65,29 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const libraryRes = await api.get('/media/library?pageSize=500');
+        // Fetch all songs using /media endpoint (AllowAnonymous)
+        const [mediaRes, adminRes] = await Promise.all([
+          api.get('/media?pageSize=100'),
+          api.get('/media/admin-songs?pageSize=50').catch(() => ({ data: { items: [] } }))
+        ]);
 
-        // Fetch admin songs first
-        const adminRes = await api.get('/media/admin-songs?pageSize=50');
+        // Parse admin songs
         let adminItems: MediaItem[] = [];
-        if (Array.isArray(adminRes.data?.items)) {
+        if (adminRes?.data?.items) {
           adminItems = adminRes.data.items;
-        } else if (Array.isArray(adminRes.data)) {
+        } else if (Array.isArray(adminRes?.data)) {
           adminItems = adminRes.data;
         }
 
-        
+        // Parse library songs
         let libraryItems: MediaItem[] = [];
-        if (Array.isArray(libraryRes.data)) {
-          libraryItems = libraryRes.data;
-        } else if (libraryRes.data?.items) {
-          libraryItems = libraryRes.data.items;
-        } else if (libraryRes.data?.data) {
-          libraryItems = libraryRes.data.data;
+        if (Array.isArray(mediaRes?.data)) {
+          libraryItems = mediaRes.data;
+        } else if (mediaRes?.data?.items) {
+          libraryItems = mediaRes.data.items;
+        } else if (mediaRes?.data?.data) {
+          libraryItems = mediaRes.data.data;
         }
-        
-        // GROUP SONGS BY GENRE
         const genreMap = new Map<string, MediaItem[]>();
         
         libraryItems.forEach(song => {
