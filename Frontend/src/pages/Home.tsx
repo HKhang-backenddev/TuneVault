@@ -511,14 +511,14 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           ))}
 
           {sections.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '60px 40px', backgroundColor: '#1a1a1a', borderRadius: '12px', marginTop: '20px' }}>
-              <div style={{ width: '120px', height: '120px', backgroundColor: '#282828', borderRadius: '50%', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Music size={60} style={{ color: '#535353' }} />
+            <div style={{ textAlign: 'center', padding: '60px 40px', backgroundColor: '#1a1a2e', borderRadius: '12px', marginTop: '20px', border: '1px solid rgba(131, 58, 180, 0.3)' }}>
+              <div style={{ width: '120px', height: '120px', backgroundColor: 'rgba(131, 58, 180, 0.2)', borderRadius: '50%', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(131, 58, 180, 0.3)' }}>
+                <Music size={60} style={{ color: '#833ab4' }} />
               </div>
-              <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#fff', marginBottom: '12px' }}>No music yet</h2>
-              <p style={{ color: '#b3b3b3', marginBottom: '24px', fontSize: '15px' }}>Add some music to get started</p>
-              <Link to="/app/import" style={{ backgroundColor: '#1DB954', color: 'black', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', textDecoration: 'none', display: 'inline-block' }}>
-                Add Music
+              <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#c084fc', marginBottom: '12px', textShadow: '0 0 10px rgba(131, 58, 180, 0.5)' }}>Chưa có nhạc</h2>
+              <p style={{ color: '#b3b3b3', marginBottom: '24px', fontSize: '15px' }}>Admin hãy thêm nhạc để mọi người cùng nghe nhé!</p>
+              <Link to="/app/import" style={{ backgroundColor: '#833ab4', color: 'white', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', textDecoration: 'none', display: 'inline-block', boxShadow: '0 0 20px rgba(131, 58, 180, 0.5)' }}>
+                + Thêm nhạc
               </Link>
             </div>
           )}
