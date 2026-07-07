@@ -167,7 +167,7 @@ const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, setShowUser
             <Route path="library" element={<LibraryPage />} />
             <Route path="history" element={<DownloadHistory lastRefreshTime={lastRefreshTime} />} />
             <Route path="liked" element={<LikedSongs lastRefreshTime={lastRefreshTime} />} />
-            <Route path="search" element={<Search />} />
+            <Route path="search" element={<Search searchQuery={searchQuery} onSearchChange={setSearchQuery} />} />
             <Route path="import" element={<ImportMusic />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="shared-with-me" element={<SharedWithMe />} />

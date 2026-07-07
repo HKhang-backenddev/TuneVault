@@ -4,10 +4,28 @@ import api from '../axios';
 import { useAudio } from '../Contexts/AudioContext';
 import { Link } from 'react-router-dom';
 
-const Search = () => {
-  const [query, setQuery] = useState('');
+interface SearchProps {
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+}
+
+const Search = ({ searchQuery = '', onSearchChange }: SearchProps) => {
+  const [query, setQuery] = useState(searchQuery);
   const [results, setResults] = useState<any[]>([]);
   const { playTrack, currentTrack, isPlaying } = useAudio();
+
+  // Sync with external searchQuery from AppHeader
+  useEffect(() => {
+    if (searchQuery) {
+      setQuery(searchQuery);
+    }
+  }, [searchQuery]);
+
+  // Handle local query change
+  const handleQueryChange = (newQuery: string) => {
+    setQuery(newQuery);
+    onSearchChange?.(newQuery);
+  };
 
   const categories = [
     { name: 'Pop', color: 'linear-gradient(135deg, #FF00FF, #00FFFF)', emoji: '🎵' },
@@ -84,7 +102,7 @@ const Search = () => {
             e.target.style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.3)';
           }}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => handleQueryChange(e.target.value)}
         />
       </div>
 
