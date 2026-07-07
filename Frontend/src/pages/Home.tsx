@@ -37,6 +37,13 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
   const [hearts, setHearts] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   const toggleLike = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     try {
@@ -226,43 +233,180 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       ) : (
         <div>
           <h1 style={{ fontSize: '36px', fontWeight: '900', color: '#fff', marginBottom: '32px' }}>
-            Welcome, {user?.displayName || 'there'}!
+            {getGreeting()}
           </h1>
 
-          {/* HIEN THI TAT CA - GRID CO SCROLL DOC */}
+          {/* Quick Access Cards - Spotify style */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+            gap: '16px', 
+            marginBottom: '40px' 
+          }}>
+            <Link 
+              to="/app/liked"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0',
+                background: 'linear-gradient(135deg, #450af5, #e81b76)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                transition: 'transform 0.2s',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+            >
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Liked Songs</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>Your favorite tracks</div>
+              </div>
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', marginRight: '16px', borderRadius: '4px' }}>
+                <Heart size={48} fill="white" color="white" />
+              </div>
+            </Link>
+
+            <Link 
+              to="/app/library"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0',
+                background: '#1a1a1a',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                transition: 'transform 0.2s',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a1a'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+            >
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Your Library</div>
+                <div style={{ fontSize: '13px', color: '#b3b3b3' }}>Browse your collection</div>
+              </div>
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#333', marginRight: '16px', borderRadius: '4px' }}>
+                <Music size={48} color="#1DB954" />
+              </div>
+            </Link>
+
+            <Link 
+              to="/app/search"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0',
+                background: '#1a1a1a',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                transition: 'transform 0.2s',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a1a'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+            >
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Browse All</div>
+                <div style={{ fontSize: '13px', color: '#b3b3b3' }}>Discover new music</div>
+              </div>
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', marginRight: '16px', borderRadius: '4px' }}>
+                <SearchIcon size={48} color="white" />
+              </div>
+            </Link>
+
+            <Link 
+              to="/app/import"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0',
+                background: '#1a1a1a',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                transition: 'transform 0.2s',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a1a'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+            >
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Add Music</div>
+                <div style={{ fontSize: '13px', color: '#b3b3b3' }}>Import from YouTube</div>
+              </div>
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #ff6b6b, #feca57)', marginRight: '16px', borderRadius: '4px' }}>
+                <Music size={48} color="white" />
+              </div>
+            </Link>
+          </div>
+
+          {/* All Songs - Horizontal scroll like Spotify */}
           {(() => {
             const allSongs = sections.flatMap(s => s.items);
             return allSongs.length > 0 && (
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', margin: 0 }}>All Songs</h2>
+              <div style={{ marginBottom: '40px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#fff', margin: 0 }}>All Songs</h2>
                   <button 
                     onClick={() => playTrack(allSongs[0], allSongs)}
-                    style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
                   >
-                    <Play size={14} fill="black" />
+                    <Play size={16} fill="black" />
                   </button>
                 </div>
-                {/* Grid co scroll doc */}
+                {/* Horizontal scroll */}
                 <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
-                  gap: '10px',
-                  maxHeight: 'calc(100vh - 280px)',
-                  overflowY: 'auto',
-                  paddingRight: '8px',
+                  display: 'flex', 
+                  gap: '16px',
+                  overflowX: 'auto',
+                  paddingBottom: '16px',
                 }}
-                className="spotify-scrollbar"
+                className="spotify-scroll"
                 >
-                  {allSongs.map(song => (
-                    <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '6px', padding: '10px', cursor: 'pointer' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
+                  {allSongs.slice(0, 10).map(song => (
+                    <div key={song.id} 
+                      style={{ 
+                        backgroundColor: '#1a1a1a', 
+                        borderRadius: '8px', 
+                        padding: '16px', 
+                        cursor: 'pointer',
+                        minWidth: '160px',
+                        width: '160px',
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                      }}
+                      onMouseEnter={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#282828';
+                        const btn = e.currentTarget.querySelector('.mini-play-btn') as HTMLElement;
+                        if (btn) { btn.style.opacity = '1'; btn.style.transform = 'translateY(0)'; }
+                      }}
+                      onMouseLeave={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#1a1a1a';
+                        const btn = e.currentTarget.querySelector('.mini-play-btn') as HTMLElement;
+                        if (btn) { btn.style.opacity = '0'; btn.style.transform = 'translateY(8px)'; }
+                      }}
                       onClick={() => playTrack(song, allSongs)}
                     >
-                      <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} alt="" />
-                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-                      <div style={{ fontSize: '10px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
+                      <div style={{ position: 'relative', marginBottom: '12px' }}>
+                        <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
+                        <button
+                          className="mini-play-btn"
+                          onClick={(e) => { e.stopPropagation(); playTrack(song, allSongs); }}
+                          style={{
+                            position: 'absolute', right: '8px', bottom: '8px', width: '40px', height: '40px',
+                            backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
+                            boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                          }}
+                        >
+                          {currentTrack?.id === song.id && isPlaying ? <Pause size={18} fill="black" color="black" /> : <Play size={18} fill="black" color="black" />}
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{song.title}</div>
+                      <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
                     </div>
                   ))}
                 </div>
@@ -270,38 +414,71 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             );
           })()}
 
-          {/* HIEN THI THEO THE LOAI - MOI HANG MOT THE LOAI */}
+          {/* Genre sections - Horizontal scroll like Spotify */}
           {sections.map((section, idx) => (
-            <div key={idx} style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', margin: 0 }}>{section.title}</h2>
+            <div key={idx} style={{ marginBottom: '40px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#fff', margin: 0 }}>{section.title}</h2>
                 <button 
                   onClick={() => playTrack(section.items[0], section.items)}
-                  style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
                 >
-                  <Play size={14} fill="black" />
+                  <Play size={16} fill="black" />
                 </button>
               </div>
-              {/* Grid co scroll doc */}
+              {/* Horizontal scroll */}
               <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
-                gap: '10px',
-                maxHeight: 'calc(100vh - 280px)',
-                overflowY: 'auto',
-                paddingRight: '8px',
+                display: 'flex', 
+                gap: '16px',
+                overflowX: 'auto',
+                paddingBottom: '16px',
               }}
-              className="spotify-scrollbar"
+              className="spotify-scroll"
               >
-                {section.items.map(song => (
-                  <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '6px', padding: '10px', cursor: 'pointer' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181828'}
+                {section.items.slice(0, 8).map(song => (
+                  <div key={song.id} 
+                    style={{ 
+                      backgroundColor: '#1a1a1a', 
+                      borderRadius: '8px', 
+                      padding: '16px', 
+                      cursor: 'pointer',
+                      minWidth: '180px',
+                      width: '180px',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                    }}
+                    onMouseEnter={(e) => { 
+                      e.currentTarget.style.backgroundColor = '#282828';
+                      const btn = e.currentTarget.querySelector('.genre-play-btn') as HTMLElement;
+                      if (btn) { btn.style.opacity = '1'; btn.style.transform = 'translateY(0)'; }
+                    }}
+                    onMouseLeave={(e) => { 
+                      e.currentTarget.style.backgroundColor = '#1a1a1a';
+                      const btn = e.currentTarget.querySelector('.genre-play-btn') as HTMLElement;
+                      if (btn) { btn.style.opacity = '0'; btn.style.transform = 'translateY(8px)'; }
+                    }}
                     onClick={() => playTrack(song, section.items)}
                   >
-                    <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} alt="" />
-                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-                    <div style={{ fontSize: '10px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
+                    <div style={{ position: 'relative', marginBottom: '12px' }}>
+                      <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
+                      <button
+                        className="genre-play-btn"
+                        onClick={(e) => { e.stopPropagation(); playTrack(song, section.items); }}
+                        style={{
+                          position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
+                          backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                        }}
+                      >
+                        {currentTrack?.id === song.id && isPlaying ? <Pause size={20} fill="black" color="black" /> : <Play size={20} fill="black" color="black" />}
+                      </button>
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{song.title}</div>
+                    <div style={{ fontSize: '13px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
                   </div>
                 ))}
               </div>
@@ -309,11 +486,13 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           ))}
 
           {sections.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#181818', borderRadius: '8px' }}>
-              <Music size={64} style={{ color: '#535353', marginBottom: '16px' }} />
-              <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>No music yet</h2>
-              <p style={{ color: '#b3b3b3', marginBottom: '16px' }}>Add some music to get started</p>
-              <Link to="/app/import" style={{ backgroundColor: '#1DB954', color: 'black', padding: '12px 24px', borderRadius: '20px', fontWeight: '700', textDecoration: 'none' }}>
+            <div style={{ textAlign: 'center', padding: '60px 40px', backgroundColor: '#1a1a1a', borderRadius: '12px', marginTop: '20px' }}>
+              <div style={{ width: '120px', height: '120px', backgroundColor: '#282828', borderRadius: '50%', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Music size={60} style={{ color: '#535353' }} />
+              </div>
+              <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#fff', marginBottom: '12px' }}>No music yet</h2>
+              <p style={{ color: '#b3b3b3', marginBottom: '24px', fontSize: '15px' }}>Add some music to get started</p>
+              <Link to="/app/import" style={{ backgroundColor: '#1DB954', color: 'black', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', textDecoration: 'none', display: 'inline-block' }}>
                 Add Music
               </Link>
             </div>
