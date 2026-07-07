@@ -26,6 +26,7 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
+    }}>
 
       {/* Main Menu */}
       <div style={{ padding: '0 12px', marginBottom: '8px' }}>
