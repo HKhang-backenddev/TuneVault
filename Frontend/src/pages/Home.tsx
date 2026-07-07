@@ -229,6 +229,66 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             Xin chao, {user?.displayName || 'ban'}!
           </h1>
 
+          {/* HANG TAT CA NHAC */}
+          {(() => {
+            const allSongs = sections.flatMap(s => s.items);
+            return allSongs.length > 0 && (
+              <div style={{ marginBottom: '40px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff' }}>Tat ca bai hat</h2>
+                  <button 
+                    onClick={() => playTrack(allSongs[0], allSongs)}
+                    style={{ 
+                      backgroundColor: '#1DB954', 
+                      color: 'black', 
+                      border: 'none', 
+                      borderRadius: '50%', 
+                      width: '40px', 
+                      height: '40px', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.1s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    <Play size={18} fill="black" />
+                  </button>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }} className="spotify-scroll">
+                  {allSongs.map(song => (
+                    <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '8px', padding: '16px', cursor: 'pointer', minWidth: '180px', maxWidth: '180px', flexShrink: 0, transition: 'background-color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
+                      onClick={() => playTrack(song, allSongs)}
+                    >
+                      <div style={{ position: 'relative', marginBottom: '12px' }}>
+                        <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); playTrack(song, allSongs); }}
+                          style={{
+                            position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
+                            backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
+                          }}
+                          className="play-btn"
+                        >
+                          <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{song.title}</div>
+                      <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* MOI HANG LA MOT THE LOAI */}
           {sections.length > 0 ? (
             sections.map((section, idx) => (
