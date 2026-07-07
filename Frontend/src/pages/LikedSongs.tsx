@@ -78,44 +78,49 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
         }
         .music-bar {
           width: 3px;
-          background-color: #1DB954;
+          background: linear-gradient(to top, #FF00FF, #00FFFF);
           border-radius: 2px;
           animation: wave 0.5s ease-in-out infinite alternate;
+          box-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
         }
         @keyframes float-heart-liked {
           0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
           100% { transform: translate(-50%, calc(-50% - 200px)) scale(2); opacity: 0; }
         }
         .floating-heart { position: fixed; pointer-events: none; z-index: 9999; animation: float-heart-liked 1s ease-out forwards; }
+        .neon-text {
+          text-shadow: 0 0 10px rgba(255, 0, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.6);
+        }
       `}</style>
 
-      {/* Header - Spotify Style */}
+      {/* Header - Neon Cyberpunk Style */}
       <div style={{
         padding: '32px',
         display: 'flex',
         alignItems: 'flex-end',
         gap: '24px',
-        background: 'linear-gradient(180deg, #450af5 0%, #121212 100%)',
-        borderRadius: '8px',
+        background: 'linear-gradient(180deg, #FF00FF 0%, #0a0a1a 100%)',
+        borderRadius: '12px',
         marginBottom: '24px',
+        boxShadow: '0 0 30px rgba(255, 0, 255, 0.5), 0 0 60px rgba(0, 255, 255, 0.3)',
       }}>
         <div style={{
           width: '192px',
           height: '192px',
-          background: 'linear-gradient(135deg, #450af5, #e81b76)',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+          background: 'linear-gradient(135deg, #FF00FF, #00FFFF)',
+          boxShadow: '0 0 30px rgba(255, 0, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.5)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: '4px',
+          borderRadius: '8px',
         }}>
-          <Heart size={80} fill="white" color="white" />
+          <Heart size={80} fill="white" color="white" style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.8))' }} />
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: '12px', fontWeight: '700', color: '#fff', textTransform: 'uppercase', marginBottom: '8px' }}>
+          <p style={{ fontSize: '12px', fontWeight: '700', color: '#00FFFF', textTransform: 'uppercase', marginBottom: '8px', textShadow: '0 0 10px rgba(0, 255, 255, 0.8)' }}>
             Playlist
           </p>
-          <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', margin: '0 0 16px', lineHeight: 1 }}>
+          <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', margin: '0 0 16px', lineHeight: 1, textShadow: '0 0 20px rgba(255, 0, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.6)' }}>
             Liked Songs
           </h1>
           <p style={{ fontSize: '14px', color: '#b3b3b3', margin: 0 }}>
@@ -132,17 +137,17 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
             width: '56px',
             height: '56px',
             borderRadius: '50%',
-            backgroundColor: '#1DB954',
+            background: 'linear-gradient(135deg, #FF00FF, #00FFFF)',
             border: 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-            transition: 'transform 0.2s',
+            boxShadow: '0 0 20px rgba(255, 0, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.5)',
+            transition: 'all 0.3s ease',
           }}
-          onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(255, 0, 255, 1), 0 0 60px rgba(0, 255, 255, 0.8)'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.5)'; }}
         >
           <Play size={24} fill="black" color="black" style={{ marginLeft: '4px' }} />
         </button>
@@ -174,22 +179,22 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
           <span style={{ marginLeft: '12px' }}>Loading...</span>
         </div>
       ) : songs.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 32px', backgroundColor: '#181818', borderRadius: '8px' }}>
-          <Heart size={64} style={{ color: '#535353', marginBottom: '16px' }} />
-          <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Songs you like will appear here</h3>
+        <div style={{ textAlign: 'center', padding: '80px 32px', backgroundColor: '#1a1a2e', borderRadius: '12px', boxShadow: '0 0 20px rgba(255, 0, 255, 0.3)' }}>
+          <Heart size={64} style={{ color: '#FF00FF', marginBottom: '16px', filter: 'drop-shadow(0 0 20px rgba(255, 0, 255, 0.8))' }} />
+          <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px', textShadow: '0 0 10px rgba(255, 0, 255, 0.5)' }}>Songs you like will appear here</h3>
           <p style={{ color: '#b3b3b3', marginBottom: '24px' }}>Save songs by tapping the heart icon</p>
-          <button onClick={() => window.location.href = '/app/search'} style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', padding: '12px 24px', borderRadius: '20px', fontWeight: '700', cursor: 'pointer' }}>
+          <button onClick={() => window.location.href = '/app/search'} style={{ background: 'linear-gradient(135deg, #FF00FF, #00FFFF)', color: 'black', border: 'none', padding: '12px 24px', borderRadius: '20px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 0 20px rgba(255, 0, 255, 0.5)' }}>
             Find Songs
           </button>
         </div>
       ) : (
-        <div style={{ borderBottom: '1px solid #282828', marginBottom: '16px' }}>
+        <div style={{ borderBottom: '1px solid #2a2a4e', marginBottom: '16px' }}>
           {/* Header Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '40px 6fr 4fr 100px', gap: '16px', padding: '8px 16px', borderBottom: '1px solid #282828' }}>
-            <div style={{ textAlign: 'center', color: '#b3b3b3', fontSize: '14px' }}>#</div>
-            <div style={{ color: '#b3b3b3', fontSize: '14px' }}>Title</div>
-            <div style={{ color: '#b3b3b3', fontSize: '14px' }}>Album</div>
-            <div style={{ color: '#b3b3b3', fontSize: '14px', textAlign: 'right' }}><Clock size={16} /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '40px 6fr 4fr 100px', gap: '16px', padding: '8px 16px', borderBottom: '1px solid #2a2a4e' }}>
+            <div style={{ textAlign: 'center', color: '#00FFFF', fontSize: '14px' }}>#</div>
+            <div style={{ color: '#00FFFF', fontSize: '14px' }}>Title</div>
+            <div style={{ color: '#00FFFF', fontSize: '14px' }}>Album</div>
+            <div style={{ color: '#00FFFF', fontSize: '14px', textAlign: 'right' }}><Clock size={16} /></div>
           </div>
 
           {/* Song Rows */}
@@ -204,15 +209,23 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
                   gridTemplateColumns: '40px 6fr 4fr 100px',
                   gap: '16px',
                   padding: '8px 16px',
-                  borderRadius: '4px',
+                  borderRadius: '8px',
                   cursor: 'pointer',
                   alignItems: 'center',
-                  transition: 'background-color 0.2s',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: 'transparent',
                 }}
-                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'}
-                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
+                onMouseEnter={(e) => { 
+                  (e.currentTarget as HTMLElement).style.backgroundColor = '#2a2a4e'; 
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(255, 0, 255, 0.3)';
+                  (e.currentTarget as HTMLElement).style.borderRadius = '8px';
+                }}
+                onMouseLeave={(e) => { 
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                  (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                }}
               >
-                <div style={{ textAlign: 'center', color: isCurrent ? '#1DB954' : '#b3b3b3', fontSize: '14px' }}>
+                <div style={{ textAlign: 'center', color: isCurrent ? '#FF00FF' : '#b3b3b3', fontSize: '14px', textShadow: isCurrent ? '0 0 10px rgba(255, 0, 255, 0.8)' : 'none' }}>
                   {isCurrent && isPlaying ? (
                     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '2px', height: '16px' }}>
                       <div className="music-bar" />
@@ -224,9 +237,9 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <img src={song.thumbnailUrl} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} alt="" />
+                  <img src={song.thumbnailUrl} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 0 10px rgba(0, 255, 255, 0.3)' }} alt="" />
                   <div>
-                    <div style={{ fontSize: '16px', fontWeight: '500', color: isCurrent ? '#1DB954' : '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: '500', color: isCurrent ? '#FF00FF' : '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px', textShadow: isCurrent ? '0 0 10px rgba(255, 0, 255, 0.5)' : 'none' }}>
                       {song.title}
                     </div>
                   </div>
@@ -241,16 +254,17 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      color: '#1DB954',
-                      opacity: 0.7,
-                      transition: 'opacity 0.2s',
+                      color: '#FF00FF',
+                      opacity: 0.8,
+                      transition: 'all 0.2s',
+                      filter: 'drop-shadow(0 0 5px rgba(255, 0, 255, 0.5))',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.opacity = '1'}
-                    onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.opacity = '0.7'}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.2)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
                   >
                     <Heart size={16} fill="currentColor" />
                   </button>
-                  <span style={{ color: '#b3b3b3', fontSize: '14px' }}>{formatTime(song.durationInSeconds)}</span>
+                  <span style={{ color: '#00FFFF', fontSize: '14px', textShadow: '0 0 5px rgba(0, 255, 255, 0.5)' }}>{formatTime(song.durationInSeconds)}</span>
                 </div>
               </div>
             );

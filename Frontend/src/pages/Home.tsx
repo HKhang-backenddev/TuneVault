@@ -127,45 +127,51 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       <div
         onClick={() => playTrack(song, playlist)}
         style={{
-          backgroundColor: '#181818',
-          borderRadius: '8px',
+          backgroundColor: '#1a1a2e',
+          borderRadius: '12px',
           padding: '16px',
           cursor: 'pointer',
           width: '180px',
           minWidth: '180px',
-          transition: 'background-color 0.3s ease',
+          transition: 'all 0.3s ease',
           position: 'relative',
+          border: '1px solid transparent',
+          boxShadow: '0 0 15px rgba(255, 0, 255, 0.2)',
         }}
         onMouseEnter={(e) => { 
-          e.currentTarget.style.backgroundColor = '#282828'; 
+          e.currentTarget.style.backgroundColor = '#2a2a4e'; 
+          e.currentTarget.style.borderColor = '#FF00FF';
+          e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 0, 255, 0.5), 0 0 50px rgba(0, 255, 255, 0.3)';
           const btn = e.currentTarget.querySelector('.play-btn') as HTMLElement;
           if (btn) btn.style.opacity = '1';
           if (btn) btn.style.transform = 'translateY(0)';
         }}
         onMouseLeave={(e) => { 
-          e.currentTarget.style.backgroundColor = '#181818';
+          e.currentTarget.style.backgroundColor = '#1a1a2e';
+          e.currentTarget.style.borderColor = 'transparent';
+          e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 0, 255, 0.2)';
           const btn = e.currentTarget.querySelector('.play-btn') as HTMLElement;
           if (btn) btn.style.opacity = '0';
           if (btn) btn.style.transform = 'translateY(8px)';
         }}
       >
         <div style={{ position: 'relative', marginBottom: '16px' }}>
-          <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
+          <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)' }} alt="" />
           <button
             className="play-btn"
             onClick={(e) => { e.stopPropagation(); playTrack(song, playlist); }}
             style={{
               position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
-              backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
+              backgroundColor: '#00FFFF', borderRadius: '50%', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
-              boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+              boxShadow: '0 0 20px rgba(0, 255, 255, 0.8)',
             }}
           >
             {isCurrent && isPlaying ? <Pause size={22} fill="black" color="black" /> : <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />}
           </button>
         </div>
-        <div style={{ fontSize: '16px', fontWeight: '600', color: isCurrent ? '#1DB954' : '#fff', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
+        <div style={{ fontSize: '16px', fontWeight: '600', color: isCurrent ? '#00FFFF' : '#fff', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: isCurrent ? '0 0 10px rgba(0, 255, 255, 0.5)' : 'none' }}>{song.title}</div>
         <div style={{ fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
       </div>
     );
@@ -236,7 +242,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             {getGreeting()}
           </h1>
 
-          {/* Quick Access Cards - Spotify style */}
+          {/* Quick Access Cards - Neon Cyberpunk Style */}
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
@@ -249,21 +255,22 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '0',
-                background: 'linear-gradient(135deg, #450af5, #e81b76)',
+                background: 'linear-gradient(135deg, #FF00FF, #00FFFF)',
                 borderRadius: '8px',
                 overflow: 'hidden',
                 textDecoration: 'none',
-                transition: 'transform 0.2s',
+                boxShadow: '0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)',
+                transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(255, 0, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.5)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)'; }}
             >
               <div style={{ padding: '20px', flex: 1 }}>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Liked Songs</div>
-                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>Your favorite tracks</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px', textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>Liked Songs</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>Your favorite tracks</div>
               </div>
-              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', marginRight: '16px', borderRadius: '4px' }}>
-                <Heart size={48} fill="white" color="white" />
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)', marginRight: '16px', borderRadius: '4px' }}>
+                <Heart size={48} fill="white" color="white" style={{ filter: 'drop-shadow(0 0 10px rgba(255,0,255,0.8))' }} />
               </div>
             </Link>
 
@@ -273,21 +280,22 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '0',
-                background: '#1a1a1a',
+                background: 'linear-gradient(135deg, #00FF00, #FFFF00)',
                 borderRadius: '8px',
                 overflow: 'hidden',
                 textDecoration: 'none',
-                transition: 'transform 0.2s',
+                boxShadow: '0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(255, 255, 0, 0.3)',
+                transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a1a'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(0, 255, 0, 0.8), 0 0 60px rgba(255, 255, 0, 0.5)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(255, 255, 0, 0.3)'; }}
             >
               <div style={{ padding: '20px', flex: 1 }}>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Your Library</div>
-                <div style={{ fontSize: '13px', color: '#b3b3b3' }}>Browse your collection</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#000', marginBottom: '8px' }}>Your Library</div>
+                <div style={{ fontSize: '13px', color: 'rgba(0,0,0,0.7)' }}>Browse your collection</div>
               </div>
-              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#333', marginRight: '16px', borderRadius: '4px' }}>
-                <Music size={48} color="#1DB954" />
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', marginRight: '16px', borderRadius: '4px' }}>
+                <Music size={48} color="#000" style={{ filter: 'drop-shadow(0 0 10px rgba(0,255,0,0.8))' }} />
               </div>
             </Link>
 
@@ -297,21 +305,22 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '0',
-                background: '#1a1a1a',
+                background: 'linear-gradient(135deg, #FF6600, #FF00FF)',
                 borderRadius: '8px',
                 overflow: 'hidden',
                 textDecoration: 'none',
-                transition: 'transform 0.2s',
+                boxShadow: '0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(255, 0, 255, 0.3)',
+                transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a1a'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(255, 102, 0, 0.8), 0 0 60px rgba(255, 0, 255, 0.5)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(255, 0, 255, 0.3)'; }}
             >
               <div style={{ padding: '20px', flex: 1 }}>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Browse All</div>
-                <div style={{ fontSize: '13px', color: '#b3b3b3' }}>Discover new music</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px', textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>Browse All</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>Discover new music</div>
               </div>
-              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', marginRight: '16px', borderRadius: '4px' }}>
-                <SearchIcon size={48} color="white" />
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', marginRight: '16px', borderRadius: '4px' }}>
+                <SearchIcon size={48} color="white" style={{ filter: 'drop-shadow(0 0 10px rgba(255,102,0,0.8))' }} />
               </div>
             </Link>
 
@@ -321,21 +330,22 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '0',
-                background: '#1a1a1a',
+                background: 'linear-gradient(135deg, #00FFFF, #0066FF)',
                 borderRadius: '8px',
                 overflow: 'hidden',
                 textDecoration: 'none',
-                transition: 'transform 0.2s',
+                boxShadow: '0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3)',
+                transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#282828'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a1a'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 102, 255, 0.5)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3)'; }}
             >
               <div style={{ padding: '20px', flex: 1 }}>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Add Music</div>
-                <div style={{ fontSize: '13px', color: '#b3b3b3' }}>Import from YouTube</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#000', marginBottom: '8px' }}>Add Music</div>
+                <div style={{ fontSize: '13px', color: 'rgba(0,0,0,0.7)' }}>Import from YouTube</div>
               </div>
-              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #ff6b6b, #feca57)', marginRight: '16px', borderRadius: '4px' }}>
-                <Music size={48} color="white" />
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', marginRight: '16px', borderRadius: '4px' }}>
+                <Music size={48} color="#000" style={{ filter: 'drop-shadow(0 0 10px rgba(0,255,255,0.8))' }} />
               </div>
             </Link>
           </div>
