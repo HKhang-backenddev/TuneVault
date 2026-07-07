@@ -229,13 +229,13 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             Xin chao, {user?.displayName || 'ban'}!
           </h1>
 
-          {/* HANG TAT CA NHAC */}
+          {/* GRID HIEN THI TAT CA NHAC - KHONG SCROLL DOC */}
           {(() => {
             const allSongs = sections.flatMap(s => s.items);
-            return allSongs.length > 0 && (
-              <div style={{ marginBottom: '40px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                  <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff' }}>Tat ca bai hat</h2>
+            return allSongs.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#fff', margin: 0 }}>Tat ca bai hat ({allSongs.length})</h2>
                   <button 
                     onClick={() => playTrack(allSongs[0], allSongs)}
                     style={{ 
@@ -243,121 +243,50 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                       color: 'black', 
                       border: 'none', 
                       borderRadius: '50%', 
-                      width: '40px', 
-                      height: '40px', 
+                      width: '36px', 
+                      height: '36px', 
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      transition: 'transform 0.1s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
-                    <Play size={18} fill="black" />
+                    <Play size={16} fill="black" />
                   </button>
                 </div>
                 
-                <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }} className="spotify-scroll">
+                {/* Grid hien thi tat ca nhac - tu dong fit man hinh */}
+                <div style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                  gap: '12px',
+                  overflowY: 'auto',
+                  maxHeight: 'calc(100vh - 250px)',
+                }}>
                   {allSongs.map(song => (
-                    <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '8px', padding: '16px', cursor: 'pointer', minWidth: '180px', maxWidth: '180px', flexShrink: 0, transition: 'background-color 0.2s' }}
+                    <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '6px', padding: '12px', cursor: 'pointer', transition: 'background-color 0.2s' }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
                       onClick={() => playTrack(song, allSongs)}
                     >
-                      <div style={{ position: 'relative', marginBottom: '12px' }}>
-                        <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
-                        <button
-                          onClick={(e) => { e.stopPropagation(); playTrack(song, allSongs); }}
-                          style={{
-                            position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
-                            backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
-                          }}
-                          className="play-btn"
-                        >
-                          <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />
-                        </button>
-                      </div>
-                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{song.title}</div>
-                      <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
+                      <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} alt="" />
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
+                      <div style={{ fontSize: '11px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#181818', borderRadius: '8px' }}>
+                <Music size={64} style={{ color: '#535353', marginBottom: '16px' }} />
+                <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Chua co nhac</h2>
+                <p style={{ color: '#b3b3b3', marginBottom: '16px' }}>Hay them nhac de bat dau</p>
+                <Link to="/app/import" style={{ backgroundColor: '#1DB954', color: 'black', padding: '12px 24px', borderRadius: '20px', fontWeight: '700', textDecoration: 'none' }}>
+                  Them nhac
+                </Link>
               </div>
             );
           })()}
-
-          {/* MOI HANG LA MOT THE LOAI */}
-          {sections.length > 0 ? (
-            sections.map((section, idx) => (
-              <div key={idx} style={{ marginBottom: '40px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                  <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff' }}>{section.title}</h2>
-                  <button 
-                    onClick={() => playTrack(section.items[0], section.items)}
-                    style={{ 
-                      backgroundColor: '#1DB954', 
-                      color: 'black', 
-                      border: 'none', 
-                      borderRadius: '50%', 
-                      width: '40px', 
-                      height: '40px', 
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'transform 0.1s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                  >
-                    <Play size={18} fill="black" />
-                  </button>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }} className="spotify-scroll">
-                  {section.items.map(song => (
-                    <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '8px', padding: '16px', cursor: 'pointer', minWidth: '180px', maxWidth: '180px', flexShrink: 0, transition: 'background-color 0.2s' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
-                      onClick={() => playTrack(song, section.items)}
-                    >
-                      <div style={{ position: 'relative', marginBottom: '12px' }}>
-                        <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
-                        <button
-                          onClick={(e) => { e.stopPropagation(); playTrack(song, section.items); }}
-                          style={{
-                            position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
-                            backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
-                          }}
-                          className="play-btn"
-                        >
-                          <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />
-                        </button>
-                      </div>
-                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{song.title}</div>
-                      <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div style={{ textAlign: 'center', padding: '100px 32px', backgroundColor: '#181818', borderRadius: '8px' }}>
-              <div style={{ width: '200px', height: '200px', backgroundColor: '#282828', borderRadius: '50%', margin: '0 auto 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Music size={80} style={{ color: '#535353' }} />
-              </div>
-              <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Chao muon den voi TuneVault</h2>
-              <p style={{ color: '#b3b3b3', fontSize: '16px', marginBottom: '24px' }}>Hay kham pha va them nhac vao thu vien cua ban</p>
-              <Link to="/app/import" style={{ display: 'inline-block', backgroundColor: '#1DB954', color: 'black', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', fontSize: '16px', textDecoration: 'none' }}>
-                Bat dau ngay
-              </Link>
-            </div>
-          )}
         </div>
       )}
 

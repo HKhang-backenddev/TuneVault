@@ -1,11 +1,19 @@
-/* Thiết lập cơ bản cho ứng dụng giống Spotify */
-html, body, #root {
+/* Thiết lập cơ bản cho ứng dụng giống Spotify - FULL SCREEN */
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #121212; /* Nền đen Spotify */
+  background-color: #121212;
   color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Màu accent Spotify */
@@ -16,6 +24,9 @@ html, body, #root {
   --spotify-light: #282828;
   --spotify-gray: #b3b3b3;
   --spotify-white: #ffffff;
+  --header-height: 64px;
+  --sidebar-width: 240px;
+  --player-height: 90px;
 }
 
 /* Ép tất cả văn bản trong Auth Form phải sáng màu */
@@ -52,11 +63,75 @@ input::placeholder {
   color: #727272 !important;
 }
 
-/* Đảm bảo root chiếm toàn bộ màn hình */
-#root {
-  height: 100%;
-  width: 100%;
-  display: block;
+/* ===== SPOTIFY LAYOUT - FIT SCREEN NO SCROLL ===== */
+
+/* Main app container - fills screen */
+.app-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+}
+
+/* Content area - takes remaining space */
+.app-main {
+  display: flex !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  height: calc(100vh - var(--header-height) - var(--player-height)) !important;
+}
+
+/* Header - fixed height */
+.app-header {
+  height: var(--header-height) !important;
+  flex-shrink: 0 !important;
+}
+
+/* Sidebar - fixed width */
+.app-sidebar {
+  width: var(--sidebar-width) !important;
+  flex-shrink: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Main content - scrollable horizontally only */
+.app-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 16px !important;
+}
+
+/* Player bar - fixed at bottom */
+.app-player {
+  height: var(--player-height) !important;
+  flex-shrink: 0 !important;
+}
+
+/* Content pages - fit screen */
+.page-content {
+  height: 100% !important;
+  overflow-y: auto !important;
+  padding: 16px !important;
+}
+
+/* Song rows - horizontal scroll only */
+.song-row-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding-bottom: 8px !important;
+}
+
+/* Song card - compact size */
+.song-card {
+  min-width: 140px !important;
+  max-width: 160px !important;
+  flex-shrink: 0 !important;
 }
 
 /* Tùy chỉnh thanh cuộn Spotify */
