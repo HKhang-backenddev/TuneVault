@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAudio } from '../Contexts/AudioContext';
-import { Play, Pause, Volume2, VolumeX, Loader2, Heart, Share2, X, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Loader2, Heart, Share2, X, SkipBack, SkipForward, Gauge } from 'lucide-react';
 import api from '../axios';
 
 const PlayerBar = () => {
   // Sửa lỗi: Lấy trực tiếp playNext và playPrev từ context
-  const { currentTrack, isPlaying, loading, togglePlay, stopTrack, volume, setVolume, currentTime, duration, seek, updateLikedStatus, selectSongForShare, playNext, playPrev } = useAudio();
+  const { currentTrack, isPlaying, loading, togglePlay, stopTrack, volume, setVolume, playbackRate, setPlaybackRate, currentTime, duration, seek, updateLikedStatus, selectSongForShare, playNext, playPrev } = useAudio();
   const [hearts, setHearts] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const speedMenuRef = useRef<HTMLDivElement>(null);
+  const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+  // Close speed menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (speedMenuRef.current && !speedMenuRef.current.contains(event.target as Node)) {
+        setShowSpeedMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   if (!currentTrack) {
     return null; // Không hiển thị PlayerBar nếu không có bài hát nào đang phát
@@ -184,7 +198,42 @@ const PlayerBar = () => {
         </div>
 
         {/* Âm lượng */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', minWidth: '150px' }}>
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', minWidth: '200px' }}>
+          {/* Tốc độ phát */}
+          <div className="relative" ref={speedMenuRef}>
+            <button
+              onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+              className="flex items-center gap-1 px-2 py-1 rounded-md bg-neutral-800 hover:bg-neutral-700 transition-colors text-neutral-300 hover:text-white"
+              title="Tốc độ phát"
+            >
+              <Gauge size={16} />
+              <span style={{ fontSize: '12px', minWidth: '35px' }}>
+                {playbackRate === 1 ? '1x' : `${playbackRate}x`}
+              </span>
+            </button>
+            {showSpeedMenu && (
+              <div 
+                className="absolute bottom-full mb-2 right-0 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl py-2 z-50"
+                style={{ minWidth: '80px' }}
+              >
+                {speedOptions.map((speed) => (
+                  <button
+                    key={speed}
+                    onClick={() => {
+                      setPlaybackRate(speed);
+                      setShowSpeedMenu(false);
+                    }}
+                    className={`w-full px-3 py-1.5 text-left text-sm hover:bg-neutral-800 transition-colors ${
+                      playbackRate === speed ? 'text-blue-400 bg-neutral-800' : 'text-neutral-300'
+                    }`}
+                  >
+                    {speed === 1 ? '1x (Bình thường)' : `${speed}x`}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center gap-2">
             {volume > 0 ? <Volume2 size={16} className="text-neutral-400" /> : <VolumeX size={16} className="text-neutral-400" />}
             <input
