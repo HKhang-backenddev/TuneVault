@@ -134,7 +134,60 @@ input::placeholder {
   flex-shrink: 0 !important;
 }
 
-/* Tùy chỉnh thanh cuộn Spotify */
+/* ===== NEON SCROLLBAR - Global Style ===== */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(18, 18, 18, 0.8);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #833ab4, #fd1d1d, #fcb045);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #c084fc, #f472b6, #fd1d1d);
+  box-shadow: 0 0 15px rgba(131, 58, 180, 0.6), 0 0 30px rgba(253, 29, 29, 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #00FFFF, #00FF88);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(18, 18, 18, 0.8);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(131, 58, 180, 0.8) rgba(18, 18, 18, 0.8);
+}
+
+/* Hover glow effect on scrollbar thumb */
+*:hover::-webkit-scrollbar-thumb {
+  animation: scrollGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes scrollGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(131, 58, 180, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(131, 58, 180, 0.8), 0 0 30px rgba(253, 29, 29, 0.4);
+  }
+}
+
+/* Tùy chỉnh thanh cuộn - Legacy support */
 .custom-scrollbar::-webkit-scrollbar,
 .spotify-scrollbar::-webkit-scrollbar {
   width: 8px;
@@ -147,19 +200,20 @@ input::placeholder {
 
 .custom-scrollbar::-webkit-scrollbar-thumb,
 .spotify-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(180deg, #833ab4, #fd1d1d);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover,
 .spotify-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.5);
+  background: linear-gradient(180deg, #c084fc, #f472b6);
+  box-shadow: 0 0 15px rgba(131, 58, 180, 0.6);
 }
 
 /* Spotify scrollbar for grids */
 .spotify-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  scrollbar-color: rgba(131, 58, 180, 0.8) transparent;
 }
 
 /* Spotify hover effect cho cards */
