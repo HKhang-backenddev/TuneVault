@@ -31,7 +31,7 @@ interface ProfileProps {
   onLogout?: () => void; // Thêm prop để nhận hàm đăng xuất
 }
 
-// Thêm kiểu dữ liệu cho bài hát và playlist
+// Thêm kiểu dữ liệu cho songs và playlist
 interface MediaItem {
   id: string;
   title: string;
@@ -112,8 +112,8 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
       setIsFollowing(res.data.isFollowing || false);
       setFollowerCount(res.data.followerCount || 0);
     } catch (error) {
-      console.error("Không thể tải hồ sơ người dùng:", error);
-      setStatusMessage({ type: 'error', text: 'Không thể tải hồ sơ người dùng. Vui lòng thử lại.' });
+      console.error("Unable to load user profile:", error);
+      setStatusMessage({ type: 'error', text: 'Unable to load user profile. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +129,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
     const fetchDataForTabs = async () => {
       if (profileUser) {
         try {
-          // Lấy danh sách bài hát đã tải lên (giống trang Library)
+          // Lấy danh sách songs đã tải lên (giống trang Library)
           const songsRes = await api.get('/media');
           setUserSongs(songsRes.data?.items || []);
 
@@ -140,7 +140,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
           const playlistsRes = await api.get(endpoint); 
           setUserPlaylists(playlistsRes.data || []);
         } catch (error) {
-          console.warn("Lỗi khi tải dữ liệu cho các tab (có thể do endpoint playlist chưa tồn tại):", error);
+          console.warn("Error loading tab data (playlist endpoint may not exist):", error);
         }
       }
     };
@@ -169,7 +169,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
 
     const currentToken = localStorage.getItem('token');
     if (!currentToken || currentToken === "dev-token-bypass") {
-      setStatusMessage({ type: 'error', text: "Chế độ khách không thể tải ảnh. Vui lòng đăng nhập!" });
+      setStatusMessage({ type: 'error', text: "Guest mode cannot upload images. Please log in!" });
       setUploading(false);
       e.target.value = '';
       return;
@@ -203,13 +203,13 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
         }
       }
 
-      setStatusMessage({ type: 'success', text: "Cập nhật ảnh đại diện thành công!" });
+      setStatusMessage({ type: 'success', text: "Avatar updated successfully!" });
       if (onUpdate) onUpdate(); // Làm mới dữ liệu ở App.tsx
     } catch (err: any) {
       console.error("Lỗi upload avatar:", err);
       const errorMsg = err.response?.status === 401 
-        ? "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại." 
-        : "Không thể tải ảnh lên Server. Ảnh đã được lưu tạm cục bộ.";
+        ? "Session expired. Please log in again." 
+        : "Cannot upload image to server. Image saved locally.";
       setStatusMessage({ type: 'error', text: errorMsg });
 
       if (onUpdate) onUpdate(); // Vẫn gọi onUpdate để cập nhật UI với Base64
@@ -229,7 +229,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
 
     const currentToken = localStorage.getItem('token');
     if (!currentToken || currentToken === "dev-token-bypass" || currentToken === "null" || currentToken === "undefined") {
-      setStatusMessage({ type: 'error', text: "Bạn cần đăng nhập để tải ảnh bìa lên." });
+      setStatusMessage({ type: 'error', text: "You need to log in to upload a banner image." });
       setUploadingBanner(false);
       e.target.value = '';
       return;
@@ -256,10 +256,10 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
     } catch (err) {
       console.error("Lỗi upload banner:", err); // Log lỗi chi tiết để debug
       if ((err as any).response?.status === 401) {
-        setStatusMessage({ type: 'error', text: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại để tải ảnh bìa." });
+        setStatusMessage({ type: 'error', text: "Session expired. Please log in to upload banner." });
         // KHÔNG XÓA TOKEN Ở ĐÂY, ĐỂ APP.TSX QUYẾT ĐỊNH LOGOUT
       } else {
-        setStatusMessage({ type: 'info', text: "Server chưa chạy hoặc có lỗi. Ảnh bìa đã được lưu tạm vào trình duyệt." });
+        setStatusMessage({ type: 'info', text: "Server not running or error. Banner saved locally." });
         if (onUpdate) onUpdate();
       }
     } finally {
@@ -292,7 +292,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
     try {
       await api.put('/User/profile', profileData);
       setIsEditing(false);
-      setStatusMessage({ type: 'success', text: "Hồ sơ đã được đồng bộ với máy chủ!" });
+      setStatusMessage({ type: 'success', text: "Profile synced with server!" });
       // Update state user (username/email) ngay để UI header & phần hiển thị email phản ánh đúng sau khi sửa
       if (onUpdate) await onUpdate(); // App.tsx truyền fetchProfile
       // Đồng bộ lại local form model theo user mới (tránh trường hợp UI hiển thị chậm)
@@ -303,12 +303,12 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
     } catch (err: any) {
       const isAuthError = err.response?.status === 401;
       if (isAuthError) {
-        setStatusMessage({ type: 'error', text: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại để lưu dữ liệu." });
+        setStatusMessage({ type: 'error', text: "Session expired. Please log in to save data." });
         if (onUpdate) onUpdate(); // Kích hoạt App.tsx để xử lý logout và redirect
       } else {
-        console.warn("Server không phản hồi, dữ liệu đã được lưu tạm vào trình duyệt.");
+        console.warn("Server not responding, data saved locally.");
         saveToLocalStorage(); // Lưu vào localStorage khi có lỗi
-        setStatusMessage({ type: 'info', text: "Đã lưu thay đổi vào máy (Chế độ Offline)." });
+        setStatusMessage({ type: 'info', text: "Changes saved locally (Offline Mode)." });
         if (onUpdate) onUpdate();
         setIsEditing(false);
       }
@@ -354,11 +354,11 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
       // Gọi lại fetchProfileData để cập nhật followerCount chính xác từ server
       fetchProfileData();
     } catch (error) {
-      console.error("Lỗi khi theo dõi:", error);
+      console.error("Error following:", error);
       // Hoàn tác lại UI nếu có lỗi
       setIsFollowing(prev => !prev);
       setFollowerCount(prev => isFollowing ? prev - 1 : prev + 1);
-      setStatusMessage({ type: 'error', text: "Đã xảy ra lỗi. Vui lòng thử lại." });
+      setStatusMessage({ type: 'error', text: "An error occurred. Please try again." });
     }
   };
 
@@ -382,12 +382,12 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
 
   const handleFetchLocation = async () => {
     if (!navigator.geolocation) {
-      setStatusMessage({ type: 'error', text: 'Trình duyệt của bạn không hỗ trợ định vị.' });
+      setStatusMessage({ type: 'error', text: 'Your browser does not support geolocation.' });
       return;
     }
 
     setIsFetchingLocation(true);
-    setStatusMessage({ type: 'info', text: 'Đang lấy vị trí của bạn...' });
+    setStatusMessage({ type: 'info', text: 'Getting your location...' });
 
     navigator.geolocation.getCurrentPosition(async (position) => {
       const { latitude, longitude } = position.coords;
@@ -396,8 +396,8 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
         const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=vi`);
         const data = await response.json();
         const locationString = `${data.city || ''}, ${data.countryName || ''}`.replace(/^, |, $/g, '');
-        setEditedLocation(locationString || 'Không xác định được');
-        setStatusMessage({ type: 'success', text: 'Đã lấy vị trí thành công!' });
+        setEditedLocation(locationString || 'Undetermined');
+        setStatusMessage({ type: 'success', text: 'Location retrieved successfully!' });
       } catch (error) {
         setStatusMessage({ type: 'error', text: 'Không thể chuyển đổi tọa độ.' });
       } finally {
@@ -409,7 +409,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
     });
   };
 
-  // Hàm định dạng thời gian cho bài hát
+  // Hàm định dạng thời gian cho songs
   const formatTime = (seconds?: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
@@ -984,17 +984,17 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
         </div>
         
         <div style={styles.mainInfo}>
-          <h1 style={styles.name}>{(isOwnProfile ? currentUser?.displayName : profileUser?.displayName) || 'Người dùng mới'}</h1>
+          <h1 style={styles.name}>{(isOwnProfile ? currentUser?.displayName : profileUser?.displayName) || 'New User'}</h1>
           <div style={styles.handle}>
             <span>@{(isOwnProfile ? currentUser?.username : profileUser?.username) || 'username'}</span>
             <span>•</span>
             <span>Thành viên từ {(isOwnProfile ? currentUser?.createdAt : profileUser?.createdAt) ? new Date((isOwnProfile ? currentUser?.createdAt : profileUser?.createdAt)!).toLocaleDateString('vi-VN') : 'gần đây'}</span>
           </div>
           <div style={styles.statsContainer}>
-            <span><strong>{userSongs.length}</strong> bài hát</span>
-            <span><strong>{userPlaylists.length}</strong> danh sách phát</span>
-            <span><strong>{followerCount}</strong> người theo dõi</span>
-            <span>Đang theo dõi <strong>{(isOwnProfile ? currentUser?.followingCount : profileUser?.followingCount) || 0}</strong> người dùng</span>
+            <span><strong>{userSongs.length}</strong> songs</span>
+            <span><strong>{userPlaylists.length}</strong> playlists</span>
+            <span><strong>{followerCount}</strong> followers</span>
+            <span>Following <strong>{(isOwnProfile ? currentUser?.followingCount : profileUser?.followingCount) || 0}</strong> người dùng</span>
           </div>
           <div style={styles.actionButtons}>
             {!isEditing && isOwnProfile && (
@@ -1003,7 +1003,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                   className="btn-primary-profile"
                   onClick={handleStartEditing}
                 >
-                  <Edit size={16} /> Tùy chỉnh hồ sơ
+                  <Edit size={16} /> Customize Profile
                 </button>
               </>
             )}
@@ -1019,22 +1019,22 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 onClick={handleFollowToggle}
               >
                 {isFollowing ? <UserCheck size={16} /> : <UserPlus size={16} />}
-                {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
+                {isFollowing ? 'Following' : 'Follow'}
               </button>
             )}
-            {isOwnProfile && <button className="btn-secondary-profile" onClick={() => navigate('/app/library')}>Quản lý bài hát</button>}
+            {isOwnProfile && <button className="btn-secondary-profile" onClick={() => navigate('/app/library')}>Quản lý songs</button>}
           </div>
         </div>
       </div>
 
-      {/* Khung Form Chỉnh sửa Hồ sơ */}
+      {/* Edit Profile Form */}
       {isEditing && (
         <div style={styles.formCard}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 className="section-title-neon" style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Thông tin cá nhân</h2>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button className="form-save-btn" onClick={handleSaveProfile}>
-                <Save size={16} /> Lưu thay đổi
+                <Save size={16} /> Save Changes
               </button>
               <button className="form-cancel-btn" onClick={handleCancelEdit}>
                 <X size={16} /> Hủy
@@ -1081,12 +1081,12 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 </div>
               </div>
             </div>
-            <p style={{ margin: 0, fontSize: '11px', color: '#555', fontStyle: 'italic' }}>* Bạn có thể dán link ảnh trực tiếp vào đây nếu tính năng tải tệp lên gặp sự cố.</p>
+            <p style={{ margin: 0, fontSize: '11px', color: '#555', fontStyle: 'italic' }}>* You can paste an image link directly here if the file upload feature has issues.</p>
           </div>
 
           <div style={styles.formRow}>
             <div>
-              <label style={styles.labelHeader}><User size={14}/> Tên tài khoản (Email)</label>
+              <label style={styles.labelHeader}><User size={14}/> Username (Email)</label>
               <div style={styles.inputIconGroup} className="focus-within-red">
                 <input
                   type="email"
@@ -1098,14 +1098,14 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               </div>
             </div>
             <div>
-              <label style={styles.labelHeader}><User size={14}/> Tên hiển thị</label>
+              <label style={styles.labelHeader}><User size={14}/> Display Name</label>
               <div style={styles.inputIconGroup} className="focus-within-red">
                 <input
                   type="text"
                   style={styles.formInputNoBorder}
                   value={editedDisplayName}
                   onChange={(e) => setEditedDisplayName(e.target.value)}
-                  placeholder="Tên của bạn"
+                  placeholder="Your name"
                 />
               </div>
             </div>
@@ -1142,7 +1142,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
           </div>
 
           <div>
-            <label style={styles.labelHeader}><MapPin size={14}/> Vị trí</label>
+            <label style={styles.labelHeader}><MapPin size={14}/> Location</label>
             <div style={{...styles.inputIconGroup, gap: '4px'}}>
               <input
                 type="text"
@@ -1170,19 +1170,19 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
             </div>
           </div>
           <div>
-            <label style={styles.labelHeader}><Info size={14}/> Tiểu sử</label>
+            <label style={styles.labelHeader}><Info size={14}/> Bio</label>
             <textarea
               style={{...styles.textareaField, borderColor: '#333'}}
               value={editedBio}
               onChange={(e) => setEditedBio(e.target.value)}
-              placeholder="Hãy chia sẻ một chút về bản thân bạn hoặc gu âm nhạc của bạn..."
+              placeholder="Share a bit about yourself or your music taste..."
               onFocus={inputFocusStyle}
               onBlur={inputBlurStyle}
             />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <label style={styles.labelHeader}>Liên kết mạng xã hội</label>
+            <label style={styles.labelHeader}>Social Links</label>
             
             <div style={styles.inputIconGroup}>
               <Globe size={18} color="#aaa" />
@@ -1214,7 +1214,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
       {!isEditing && (
         <>
           <div style={{ color: '#aaa', fontSize: '14px', maxWidth: '600px', marginTop: '16px', paddingLeft: '24px', fontStyle: (isOwnProfile ? currentUser?.bio : profileUser?.bio) ? 'normal' : 'italic' }}>
-            {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || `Chào mừng bạn đến với hồ sơ của ${(isOwnProfile ? currentUser?.displayName : profileUser?.displayName) || 'bạn'}.`}
+            {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || `Welcome to the profile of ${(isOwnProfile ? currentUser?.displayName : profileUser?.displayName) || 'user'}.`}
           </div>
 
           {/* Tabs */}
@@ -1225,7 +1225,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                 style={{ ...styles.tab, ...(activeTab === tab ? styles.activeTab : {}) }}
                 onClick={() => setActiveTab(tab)}
               >
-                {tab === 'home' ? 'Trang chủ' : tab === 'songs' ? 'Bài hát' : tab === 'playlists' ? 'Danh sách phát' : 'Giới thiệu'}
+                {tab === 'home' ? 'Home' : tab === 'songs' ? 'Songs' : tab === 'playlists' ? 'Playlists' : 'About'}
               </button>
             ))}
           </div>
@@ -1252,7 +1252,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                   <div style={styles.iconWrapper}><Mail size={20} /></div>
                   <div>
                     <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>EMAIL</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.email : profileUser?.email) || 'Chưa cung cấp'}</p>
+                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.email : profileUser?.email) || 'Not provided'}</p>
                   </div>
                 </div>
                 <div style={styles.infoBox}>
@@ -1275,28 +1275,28 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                   <div style={styles.iconWrapper}><MapPin size={20} /></div>
                   <div>
                     <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>VỊ TRÍ</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.location : profileUser?.location) || 'Chưa cung cấp'}</p>
+                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.location : profileUser?.location) || 'Not provided'}</p>
                   </div>
                 </div>
                 <div style={styles.infoBox}>
                   <div style={styles.iconWrapper}><Cake size={20} /></div>
                   <div>
                     <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>NGÀY SINH</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.dateOfBirth : profileUser?.dateOfBirth) ? new Date((isOwnProfile ? currentUser?.dateOfBirth : profileUser?.dateOfBirth)!).toLocaleDateString('vi-VN') : 'Chưa cung cấp'}</p>
+                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.dateOfBirth : profileUser?.dateOfBirth) ? new Date((isOwnProfile ? currentUser?.dateOfBirth : profileUser?.dateOfBirth)!).toLocaleDateString('vi-VN') : 'Not provided'}</p>
                   </div>
                 </div>
                 <div style={styles.infoBox}>
                   <div style={styles.iconWrapper}><VenetianMask size={20} /></div>
                   <div>
                     <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>GIỚI TÍNH</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.gender : profileUser?.gender) || 'Chưa cung cấp'}</p>
+                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.gender : profileUser?.gender) || 'Not provided'}</p>
                   </div>
                 </div>
                 <div style={styles.infoBox}>
                   <div style={styles.iconWrapper}><ShieldCheck size={20} /></div>
                   <div>
                     <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>BẢO MẬT</p>
-                    <p style={{ color: '#93c5fd', margin: 0 }}>Tài khoản đã xác minh</p>
+                    <p style={{ color: '#93c5fd', margin: 0 }}>Verified Account</p>
                   </div>
                 </div>
               </div>
@@ -1304,15 +1304,15 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               <div style={styles.fullWidthInfo}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                   <Info size={18} style={{ color: '#60a5fa' }} />
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Tiểu sử</h3>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Bio</h3>
                 </div>
                 <p style={{ color: '#aaa', lineHeight: '1.6', margin: 0 }}>
-                  {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || "Người dùng này chưa cập nhật tiểu sử."}
+                  {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || "User has not updated their bio."}
                 </p>
               </div>
 
               <div style={styles.fullWidthInfo}>
-                <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: 'bold' }}>Liên kết mạng xã hội</h3>
+                <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: 'bold' }}>Social Links</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px' }}>
                   {profileUser?.websiteUrl && (
                     <a href={profileUser.websiteUrl} target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
@@ -1337,7 +1337,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               <div>
                 <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>Thông tin cá nhân</h2>
                 <p style={{ color: '#aaa', fontSize: '14px', marginBottom: '24px' }}>
-                  Thông tin cơ bản như tên và ảnh mà bạn sử dụng trên dịch vụ TuneVault.
+                  Basic information like name and photo that you use on TuneVault service.
                 </p>
                 
                 {/* SECTION: THÔNG TIN TÀI KHOẢN THỦ CÔNG (VIEW MODE) */}
@@ -1362,22 +1362,22 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                       onClick={() => setIsEditing(true)}
                       style={{ ...styles.btnPrimary, padding: '6px 18px', fontSize: '11px', textTransform: 'uppercase' }}
                     >
-                      Nhập thông tin
+                      Enter information
                     </button>
                   </div>
 
                   <div style={{ background: 'rgba(0, 0, 0, 0.6)', padding: '20px', borderRadius: '14px', border: '1px solid #333' }}>
-                    <p style={{ margin: '0 0 10px 0', fontSize: '10px', color: '#60a5fa', fontWeight: '900', letterSpacing: '1px', opacity: 0.7 }}>TÊN ĐĂNG NHẬP / EMAIL</p>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '10px', color: '#60a5fa', fontWeight: '900', letterSpacing: '1px', opacity: 0.7 }}>USERNAME OR EMAIL / EMAIL</p>
                     <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <span>{(isOwnProfile ? currentUser?.email : profileUser?.email) || profileUser?.username || 'chưa_cung_cấp'}</span>
                     </p>
                   </div>
                 </div>
 
-                {/* Section: Vị trí */}
+                {/* Section: Location */}
                 <div style={styles.googleCard}>
                   <div style={{ padding: '20px 24px', borderBottom: '1px solid #333' }}>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Vị trí</h3>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Location</h3>
                   </div>
                   <div
                     style={{ ...styles.googleRow, borderBottom: 'none' }}
@@ -1385,15 +1385,15 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                     onClick={() => setIsEditing(true)}
                   >
                     <div style={{ ...styles.infoValue, fontStyle: (isOwnProfile ? currentUser?.location : profileUser?.location) ? 'normal' : 'italic', color: (isOwnProfile ? currentUser?.location : profileUser?.location) ? 'white' : '#737373' }}>
-                      {(isOwnProfile ? currentUser?.location : profileUser?.location) || "Nhấn vào đây để cập nhật vị trí."}
+                      {(isOwnProfile ? currentUser?.location : profileUser?.location) || "Click here to update location."}
                     </div>
                   </div>
                 </div>
 
-                {/* Section: Tiểu sử */}
+                {/* Section: Bio */}
                 <div style={styles.googleCard}>
                   <div style={{ padding: '20px 24px', borderBottom: '1px solid #333' }}>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Tiểu sử</h3>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Bio</h3>
                   </div>
                   <div 
                     style={{...styles.googleRow, borderBottom: 'none'}} 
@@ -1401,7 +1401,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
                     onClick={() => setIsEditing(true)}
                   >
                     <div style={{...styles.infoValue, fontStyle: (isOwnProfile ? currentUser?.bio : profileUser?.bio) ? 'normal' : 'italic', color: (isOwnProfile ? currentUser?.bio : profileUser?.bio) ? 'white' : '#737373'}}>
-                      {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || "Hãy nhấn vào đây để nhập tiểu sử."}
+                      {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || "Click here to enter bio."}
                     </div>
                   </div>
                 </div>
@@ -1451,7 +1451,7 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               ) : (
                 <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
                   <Music size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                  <p>Người dùng này chưa tải lên bài hát nào.</p>
+                  <p>User has not uploaded any songs nào.</p>
                 </div>
               )}
               </div>
@@ -1482,14 +1482,14 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
               ) : (
                 <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
                   <ListMusic size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                  <p>Người dùng này chưa tạo danh sách phát nào.</p>
+                  <p>User has not created any playlists nào.</p>
                 </div>
               )}
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
                 <Music size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                <p>Nội dung cho tab này đang được cập nhật...</p>
+                <p>Content for this tab is being updated...</p>
               </div>
             )}
           </div>

@@ -169,16 +169,16 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#93c5fd', marginBottom: '8px' }}>
-              Thư viện cá nhân
+              Personal Library
             </p>
             <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.05em', color: 'white', marginBottom: '12px' }}>
-              Bài hát đã thích
+              Liked Songs
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 'bold', color: '#B0B0B0' }}>
               <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>TV</div>
               <span>TuneVault User</span>
               <span style={{ color: '#555' }}>•</span>
-              <span style={{ color: 'white' }}>{songs.length} giai điệu</span>
+              <span style={{ color: 'white' }}>{songs.length} tracks</span>
             </div>
           </div>
         </div>
@@ -254,10 +254,10 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
               onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
               onMouseLeave={(e) => e.currentTarget.style.color = '#B0B0B0'}
             >
-              <option value="recent" style={{ backgroundColor: '#181818', color: 'white' }}>Mới thêm</option>
-              <option value="oldest" style={{ backgroundColor: '#181818', color: 'white' }}>Cũ nhất</option>
-              <option value="title_asc" style={{ backgroundColor: '#181818', color: 'white' }}>Tên bài hát (A-Z)</option>
-              <option value="title_desc" style={{ backgroundColor: '#181818', color: 'white' }}>Tên bài hát (Z-A)</option>
+              <option value="recent" style={{ backgroundColor: '#181818', color: 'white' }}>Newest</option>
+              <option value="oldest" style={{ backgroundColor: '#181818', color: 'white' }}>Oldest</option>
+              <option value="title_asc" style={{ backgroundColor: '#181818', color: 'white' }}>Title (A-Z)</option>
+              <option value="title_desc" style={{ backgroundColor: '#181818', color: 'white' }}>Title (Z-A)</option>
             </select>
           </div>
         </div>
@@ -290,18 +290,18 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
               marginBottom: '8px',
             }}>
               <div style={{ textAlign: 'center' }}>#</div>
-              <div>Tiêu đề</div>
-              <div>Nghệ sĩ</div>
+              <div>Title</div>
+              <div>Artist</div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', paddingRight: '8px' }}><Clock size={16} /></div>
             </div>
 
           {loading ? (
-            <div className="text-center py-20 text-neutral-500 font-bold tracking-widest text-xs animate-pulse">ĐANG TẢI GIAI ĐIỆU CỦA BẠN...</div>
+            <div className="text-center py-20 text-neutral-500 font-bold tracking-widest text-xs animate-pulse">LOADING YOUR TRACKS...</div>
           ) : songs.length === 0 && !loading ? (
             <div className="text-center py-20">
               <Music size={64} className="mx-auto mb-4 text-neutral-800" />
-              <h3 className="text-xl font-bold">Bạn chưa thích bài hát nào</h3>
-              <p className="text-neutral-500 mt-2">Những bài hát bạn thích sẽ xuất hiện ở đây.</p>
+              <h3 className="text-xl font-bold">You haven't liked any songs yet</h3>
+              <p className="text-neutral-500 mt-2">Songs you like will appear here.</p>
             </div>
           ) : (
             songs.map((song, index) => {
@@ -353,9 +353,9 @@ const LikedSongs = ({ lastRefreshTime }: LikedSongsProps) => {
                     </div>
                   </div>
 
-                  {/* Cột Nghệ sĩ: Bây giờ đã hiển thị dữ liệu */}
+                  {/* Cột Artist: Bây giờ đã hiển thị dữ liệu */}
                   <div style={{ color: '#B0B0B0', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center' }}>
-                    {song.artist || 'Nghệ sĩ không xác định'}
+                    {song.artist || 'Unknown Artist'}
                   </div> 
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', color: '#737373', fontSize: '12px', fontWeight: '900', letterSpacing: '0.05em', paddingRight: '4px' }}>

@@ -60,10 +60,10 @@ const SharedWithMe = () => {
     e.stopPropagation(); // Ngăn không cho sự kiện click phát nhạc
     try {
       await api.post(`/media/save/${mediaId}`);
-      alert('Đã lưu bài hát vào thư viện của bạn!');
+      alert('Song saved to your library!');
       navigate('/'); // Chuyển hướng về trang chủ
     } catch (error: any) {
-      const message = error.response?.data?.message || "Không thể lưu bài hát này.";
+      const message = error.response?.data?.message || "Cannot save this song.";
       alert(message);
     }
   };
@@ -76,10 +76,10 @@ const SharedWithMe = () => {
     const hours = Math.round(minutes / 60);
     const days = Math.round(hours / 24);
 
-    if (seconds < 60) return "vừa xong";
-    if (minutes < 60) return `${minutes} phút trước`;
-    if (hours < 24) return `${hours} giờ trước`;
-    if (days === 1) return `hôm qua`;
+    if (seconds < 60) return "just now";
+    if (minutes < 60) return `${minutes} minutes ago`;
+    if (hours < 24) return `${hours} hours ago`;
+    if (days === 1) return `yesterday`;
     return date.toLocaleDateString('vi-VN');
   };
 
@@ -122,13 +122,13 @@ const SharedWithMe = () => {
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#6ee7b7', marginBottom: '8px' }}>
-              Hộp thư đến
+              Inbox
             </p>
             <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.05em', color: 'white', marginBottom: '12px' }}>
-              Được chia sẻ với tôi
+              Shared With Me
             </h1>
             <p style={{ color: '#B0B0B0', fontSize: '13px', fontWeight: 'bold' }}>
-              {items.length} bài hát được gửi đến bạn
+              {items.length} songs sent to you
             </p>
           </div>
         </div>
@@ -137,12 +137,12 @@ const SharedWithMe = () => {
         <div style={{ padding: '24px 32px 32px' }}>
           {loading ? (
             <div style={{ textAlign: 'center', padding: '80px', color: '#737373', fontSize: '12px', fontWeight: '900', letterSpacing: '0.2em' }} className="animate-pulse">
-              ĐANG TẢI...
+              LOADING...
             </div>
           ) : items.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '80px' }}>
               <Music size={64} style={{ color: '#262626', marginBottom: '24px', margin: '0 auto' }} />
-              <p style={{ color: '#737373', fontWeight: 'bold' }}>Hộp thư của bạn đang trống.</p>
+              <p style={{ color: '#737373', fontWeight: 'bold' }}>Your inbox is empty.</p>
             </div>
           ) : (
             <div style={{
@@ -156,9 +156,9 @@ const SharedWithMe = () => {
                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '8px',
               }}>
                 <div style={{ textAlign: 'center' }}>#</div>
-                <div>Tiêu đề</div>
-                <div>Người gửi</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> Ngày nhận</div>
+                <div>Title</div>
+                <div>Sender</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> Date Received</div>
                 <div></div>
               </div>
 
@@ -203,7 +203,7 @@ const SharedWithMe = () => {
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', opacity: 0 }} className="group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => handleSave(e, item.mediaId)}
-                      title="Lưu vào thư viện"
+                      title="Save to Library"
                       style={{ background: 'none', border: 'none', color: '#737373', cursor: 'pointer', padding: '8px' }}
                       onMouseEnter={(e) => e.currentTarget.style.color = '#22c55e'}
                       onMouseLeave={(e) => e.currentTarget.style.color = '#737373'}
@@ -212,7 +212,7 @@ const SharedWithMe = () => {
                     </button>
                     <button
                       onClick={() => handlePlay(item, items)}
-                      title="Phát nhạc"
+                      title="Play Music"
                       style={{ background: 'none', border: 'none', color: '#737373', cursor: 'pointer', padding: '8px' }}
                       onMouseEnter={(e) => e.currentTarget.style.color = '#3b82f6'}
                       onMouseLeave={(e) => e.currentTarget.style.color = '#737373'}

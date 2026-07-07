@@ -25,7 +25,7 @@ const ImportMusic = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setStatus({ type: 'info', message: 'Đang xử lý, vui lòng chờ...' });
+    setStatus({ type: 'info', message: 'Processing, please wait...' });
 
     if (activeTab === 'youtube') {
       try {
@@ -35,19 +35,19 @@ const ImportMusic = () => {
           artist: artist,
           genre: genre
         });
-        setStatus({ type: 'success', message: 'Yêu cầu nhập từ YouTube đã được gửi đi. Bài hát sẽ sớm xuất hiện trong thư viện.' });
+        setStatus({ type: 'success', message: 'Import request from YouTube has been sent. The song will appear in your library soon.' });
         setYoutubeUrl('');
         // Reset các trường tùy chọn
         setTitle('');
         setArtist('');
         setGenre('Pop');
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi nhập từ YouTube.';
+        const errorMessage = error.response?.data?.message || 'An error occurred while importing from YouTube.';
         setStatus({ type: 'error', message: errorMessage });
       }
     } else if (activeTab === 'upload') {
       if (!file) {
-        setStatus({ type: 'error', message: 'Vui lòng chọn một tệp nhạc.' });
+        setStatus({ type: 'error', message: 'Please select a music file.' });
         setIsLoading(false);
         return;
       }
@@ -64,13 +64,13 @@ const ImportMusic = () => {
             'Content-Type': 'multipart/form-data',
           },
         });
-        setStatus({ type: 'success', message: `Đã tải lên thành công bài hát "${title}".` });
+        setStatus({ type: 'success', message: `Successfully uploaded the song "${title}".` });
         // Reset form
         setFile(null);
         setTitle('');
         setArtist('');
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi tải tệp lên.';
+        const errorMessage = error.response?.data?.message || 'An error occurred while uploading the file.';
         setStatus({ type: 'error', message: errorMessage });
       }
     }
@@ -148,7 +148,7 @@ const ImportMusic = () => {
         }
       `}</style>
       <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2rem', color: 'white', textAlign: 'center', textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #3b82f6, 0 0 40px #3b82f6' }}>
-        Thêm nhạc mới
+        Add New Music
       </h1>
 
       {/* Tabs */}
@@ -187,7 +187,7 @@ const ImportMusic = () => {
             }}
           >
             {tab === 'youtube' ? <Youtube size={20} /> : <UploadCloud size={20} />}
-            {tab === 'youtube' ? 'YouTube' : 'Tải lên'}
+            {tab === 'youtube' ? 'YouTube' : 'Upload'}
           </button>
         ))}
       </div>
@@ -196,7 +196,7 @@ const ImportMusic = () => {
         {activeTab === 'youtube' ? (
           <div>
             <label htmlFor="youtubeUrl" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Dán link YouTube vào đây
+              Paste YouTube link here
             </label>
             <input
               id="youtubeUrl"
@@ -213,7 +213,7 @@ const ImportMusic = () => {
           // Tab Upload
           <div>
             <label htmlFor="fileUpload" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Chọn tệp nhạc
+              Select music file
             </label>
             <div
               style={{
@@ -255,8 +255,8 @@ const ImportMusic = () => {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                   <UploadCloud size={32} />
-                  <span style={{ fontWeight: 'bold' }}>Kéo thả hoặc nhấn để chọn tệp</span>
-                  <span style={{ fontSize: '12px' }}>Hỗ trợ các định dạng MP3, WAV, FLAC...</span>
+                  <span style={{ fontWeight: 'bold' }}>Drag and drop or click to select file</span>
+                  <span style={{ fontSize: '12px' }}>Supported formats: MP3, WAV, FLAC...</span>
                 </div>
               )}
             </div>
@@ -266,18 +266,18 @@ const ImportMusic = () => {
         {/* Các trường thông tin chung cho cả 2 tab */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <p style={{ fontSize: '0.875rem', color: '#737373', textAlign: 'center', fontStyle: 'italic' }}>
-              {activeTab === 'youtube' ? 'Bạn có thể tùy chỉnh thông tin dưới đây, nếu để trống hệ thống sẽ tự nhận dạng.' : 'Vui lòng điền thông tin cho bài hát.'}
+              {activeTab === 'youtube' ? 'You can customize the information below, if left blank the system will auto-detect.' : 'Please fill in the information for the song.'}
             </p>
           <div>
             <label htmlFor="title" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Tiêu đề
+              Title
             </label>
             <input
               id="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={activeTab === 'youtube' ? 'Để trống để tự nhận dạng' : 'Tên bài hát'}
+              placeholder={activeTab === 'youtube' ? 'Leave blank to auto-detect' : 'Song name'}
               style={{...inputStyle, fontSize: '1rem'}} className="input-neon"
               required={activeTab === 'upload'}
             />
@@ -285,21 +285,21 @@ const ImportMusic = () => {
 
           <div>
             <label htmlFor="artist" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Nghệ sĩ
+              Artist
             </label>
             <input
               id="artist"
               type="text"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
-              placeholder={activeTab === 'youtube' ? 'Để trống để tự nhận dạng' : 'Tên nghệ sĩ'}
+              placeholder={activeTab === 'youtube' ? 'Leave blank to auto-detect' : 'Artist name'}
               style={{...inputStyle, fontSize: '1rem'}} className="input-neon"
             />
           </div>
 
           <div>
             <label htmlFor="genre" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Thể loại
+              Genre
             </label>
             <select
               id="genre"
@@ -315,7 +315,7 @@ const ImportMusic = () => {
               <option>Chill Music</option>
               <option>Rap</option>
               <option>YouTube</option>
-              <option>Khác</option>
+              <option>Other</option>
             </select>
           </div>
         </div>
@@ -342,7 +342,7 @@ const ImportMusic = () => {
           className="hover:scale-[1.02] transition-all active:scale-95"
         >
           {isLoading && <Loader2 size={18} className="animate-spin" />}
-          {isLoading ? 'Đang xử lý...' : (activeTab === 'youtube' ? 'Nhập từ YouTube' : 'Tải lên')}
+          {isLoading ? 'Processing...' : (activeTab === 'youtube' ? 'Import from YouTube' : 'Upload')}
         </button>
       </form>
 

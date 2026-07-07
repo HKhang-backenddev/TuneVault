@@ -101,7 +101,7 @@ const Register = () => {
       const serverMessage = err.response?.data?.message;
       const validationErrors = err.response?.data?.errors ? Object.values(err.response.data.errors).flat().join(', ') : null;
       
-      setError(validationErrors || serverMessage || `Lỗi kết nối: ${err.message}. Hãy đảm bảo Backend đã chạy tại cổng 5132.`);
+      setError(validationErrors || serverMessage || `Connection error: ${err.message}. Make sure Backend is running on port 5132.`);
     } finally {
       setLoading(false);
     }
@@ -119,14 +119,14 @@ const Register = () => {
             </div>
             <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.7)]">TuneVault</h1>
           </div>
-          <p style={{ color: '#a3a3a3', fontSize: '14px' }}>Tạo tài khoản mới để bắt đầu nghe nhạc</p>
+          <p style={{ color: '#a3a3a3', fontSize: '14px' }}>Create a new account to start listening</p>
         </div>
 
         <form onSubmit={handleSubmit} style={styles.form}>
           {error && <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg mb-6 text-sm text-center font-medium">{error}</div>}
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Email của bạn là gì?</label>
+            <label style={styles.label}>What is your email?</label>
             <input 
               type="email" 
               style={styles.input} 
@@ -139,26 +139,26 @@ const Register = () => {
             />
           </div>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Tên hiển thị của bạn</label>
+            <label style={styles.label}>Your display name</label>
             <input 
               type="text" 
               style={styles.input}
               value={formData.displayName}
               onChange={(e) => setFormData({...formData, displayName: e.target.value})}
-              placeholder="Tên hiển thị trên hồ sơ"
+              placeholder="Display name on profile"
               required
               onFocus={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
               onBlur={(e) => e.currentTarget.style.borderColor = '#3f3f46'}
             />
           </div>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Tạo mật khẩu</label>
+            <label style={styles.label}>Create password</label>
             <input 
               type="password" 
               style={styles.input} 
               value={formData.password} // Sửa lại để liên kết đúng với formData.password
               onChange={(e) => setFormData({...formData, password: e.target.value})} // Sửa lại để cập nhật đúng
-              placeholder="Mật khẩu"
+              placeholder="Password"
               required 
               onFocus={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
               onBlur={(e) => e.currentTarget.style.borderColor = '#3f3f46'}
@@ -171,11 +171,11 @@ const Register = () => {
             style={{ ...styles.buttonPrimary, opacity: loading ? 0.7 : 1 }}
             className="hover:scale-[1.01] transition-all active:scale-95 tracking-widest text-xs"
           >
-            {loading ? "ĐANG XỬ LÝ..." : "ĐĂNG KÝ"}
+            {loading ? "PROCESSING..." : "SIGN UP"}
           </button>
 
           <div className="mt-8 pt-6 border-t border-neutral-800 text-center">
-            <p className="text-neutral-400 text-sm">Bạn đã có tài khoản? <Link to="/login" className="text-blue-500 hover:text-blue-400 font-bold hover:underline transition-colors">Đăng nhập tại đây</Link></p>
+            <p className="text-neutral-400 text-sm">Already have an account? <Link to="/login" className="text-blue-500 hover:text-blue-400 font-bold hover:underline transition-colors">Login here</Link></p>
           </div>
         </form>
       </div>

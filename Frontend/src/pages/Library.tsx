@@ -55,13 +55,13 @@ const Library = () => {
   }, []);
 
   const handleDelete = async (id: string, title: string) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa bài hát "${title}"?`)) {
+    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
       try {
         await api.delete(`/media/${id}`);
         fetchSongs();
       } catch (error: any) {
         console.error("Failed to delete song", error);
-        alert(error.response?.data?.message || "Không thể xóa bài hát.");
+        alert(error.response?.data?.message || "Cannot delete song.");
       }
     }
   };
@@ -139,8 +139,8 @@ const Library = () => {
           </div>
           <div style={{ paddingBottom: '16px' }}>
             <p style={{ fontSize: '14px', fontWeight: '500', color: '#fff', margin: 0 }}>Playlist</p>
-            <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', margin: '8px 0', lineHeight: 1 }}>Thư viện</h1>
-            <p style={{ fontSize: '16px', color: '#b3b3b3', margin: 0 }}>{mySongs.length} bài hát</p>
+            <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', margin: '8px 0', lineHeight: 1 }}>Library</h1>
+            <p style={{ fontSize: '16px', color: '#b3b3b3', margin: 0 }}>{mySongs.length} songs</p>
           </div>
         </div>
       </div>
@@ -156,7 +156,7 @@ const Library = () => {
       <div style={{ padding: '16px 32px 8px', borderBottom: '1px solid #282828' }}>
         <div className="spotify-row" style={{ cursor: 'default' }}>
           <span style={{ color: '#b3b3b3', fontSize: '14px' }}>#</span>
-          <span style={{ color: '#b3b3b3', fontSize: '14px' }}>Tiêu đề</span>
+          <span style={{ color: '#b3b3b3', fontSize: '14px' }}>Title</span>
           <span style={{ color: '#b3b3b3', fontSize: '14px' }}>Album</span>
           <span style={{ color: '#b3b3b3', fontSize: '14px', textAlign: 'right' }}>⏱</span>
         </div>
@@ -177,7 +177,7 @@ const Library = () => {
                 <img src={song.thumbnailUrl} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} alt="" />
                 <div style={{ fontSize: '16px', fontWeight: '500', color: isCurrent ? '#1DB954' : '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px' }}>{song.title}</div>
               </div>
-              <div style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghệ sĩ không xác định'}</div>
+              <div style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
                 <button onClick={(e) => handleToggleLike(e, song)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: song.isLiked ? '#1DB954' : '#b3b3b3' }} onMouseEnter={(e) => { if (!song.isLiked) e.currentTarget.style.color = '#fff'; }} onMouseLeave={(e) => { if (!song.isLiked) e.currentTarget.style.color = '#b3b3b3'; }}>
                   <Heart size={18} fill={song.isLiked ? "currentColor" : "none"} />
@@ -194,21 +194,21 @@ const Library = () => {
             <div style={{ width: '200px', height: '200px', backgroundColor: '#282828', borderRadius: '50%', margin: '0 auto 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Music size={80} style={{ color: '#535353' }} />
             </div>
-            <p style={{ color: '#fff', fontSize: '32px', fontWeight: '700', margin: '0 0 8px' }}>Thư viện của bạn đang trống</p>
-            <p style={{ color: '#b3b3b3', fontSize: '16px', margin: '0 0 24px' }}>Hãy thêm nhạc để xây dựng bộ sưu tập của bạn</p>
-            <button onClick={() => window.location.href = '/import'} style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>Tải nhạc ngay</button>
+            <p style={{ color: '#fff', fontSize: '32px', fontWeight: '700', margin: '0 0 8px' }}>Your library is empty</p>
+            <p style={{ color: '#b3b3b3', fontSize: '16px', margin: '0 0 24px' }}>Add music to build your collection</p>
+            <button onClick={() => window.location.href = '/import'} style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>Upload Music</button>
           </div>
         )}
       </div>
 
       {menuConfig && (
         <div style={{ position: 'fixed', backgroundColor: '#282828', border: '1px solid #404040', borderRadius: '4px', padding: '4px 0', zIndex: 100, minWidth: '180px', left: menuConfig.x, top: menuConfig.y, boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-          <button onClick={() => { console.log("Thêm vào hàng chờ:", menuConfig.song.title); }} style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', color: '#fff', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', textAlign: 'left' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3e3e3e'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-            <ListPlus size={18} /> Thêm vào hàng chờ
+          <button onClick={() => { console.log("Add to queue:", menuConfig.song.title); }} style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', color: '#fff', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', textAlign: 'left' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3e3e3e'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+            <ListPlus size={18} /> Add to queue
           </button>
           <div style={{ height: '1px', backgroundColor: '#404040', margin: '4px 0' }}></div>
           <button onClick={() => handleDelete(menuConfig.song.id, menuConfig.song.title)} style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', color: '#ff4d4d', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', textAlign: 'left' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3e3e3e'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-            <Trash2 size={18} /> Xóa khỏi thư viện
+            <Trash2 size={18} /> Remove from library
           </button>
         </div>
       )}

@@ -48,13 +48,13 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa bài hát "${title}" khỏi thư viện không?`)) {
+    if (window.confirm(`Are you sure you want to delete the song "${title}" from your library?`)) {
       try {
         await api.delete(`/media/${id}`); // Gọi API DELETE từ MediaController
-        fetchHistory(); // Tải lại lịch sử sau khi xóa thành công
+        fetchHistory(); // Downloading...i lịch sử sau khi xóa thành công
       } catch (error: any) {
         console.error("Failed to delete song", error);
-        const msg = error.response?.data?.message || "Có lỗi xảy ra khi xóa bài hát.";
+        const msg = error.response?.data?.message || "An error occurred while deleting the song.";
         alert(msg);
       }
     }
@@ -113,16 +113,16 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#93c5fd', marginBottom: '8px' }}>
-              Quản lý tải xuống
+              Download Manager
             </p>
             <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.05em', color: 'white', marginBottom: '12px' }}>
-              Lịch sử tải nhạc
+              Music Download History
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 'bold', color: '#B0B0B0' }}>
               <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>TV</div>
               <span>TuneVault User</span>
               <span style={{ color: '#555' }}>•</span>
-              <span style={{ color: 'white' }}>{history.length} bài hát đã tải</span>
+              <span style={{ color: 'white' }}>{history.length} songs downloaded</span>
             </div>
           </div>
         </div>
@@ -148,7 +148,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
               boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)'
             }}
           >
-            <Play size={16} fill="white" /> Nhập thêm nhạc
+            <Play size={16} fill="white" /> Import More Music
           </button>
         </div>
 
@@ -164,12 +164,12 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
           }}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '80px', color: '#737373', fontSize: '12px', fontWeight: '900', letterSpacing: '0.2em' }} className="animate-pulse">
-                ĐANG TẢI LỊCH SỬ...
+                LOADING HISTORY...
               </div>
             ) : history.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px' }}>
                 <Music size={64} style={{ color: '#262626', marginBottom: '24px' }} />
-                <p style={{ color: '#737373', fontWeight: 'bold' }}>Chưa có bài hát nào được tải.</p>
+                <p style={{ color: '#737373', fontWeight: 'bold' }}>No songs have been downloaded yet..</p>
               </div>
             ) : (
               <>
@@ -188,10 +188,10 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
                   marginBottom: '8px',
                 }}>
                   <div style={{ textAlign: 'center' }}>#</div>
-                  <div>Thông tin bài hát</div>
-                  <div>Thời lượng</div>
-                  <div>Ngày thêm</div>
-                  <div>Trạng thái</div>
+                  <div>Song Information</div>
+                  <div>Duration</div>
+                  <div>Date Added</div>
+                  <div>Status</div>
                   <div style={{ textAlign: 'right' }}></div>
                 </div>
 
@@ -266,7 +266,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
                         onMouseLeave={(e) => e.currentTarget.style.color = '#737373'}
-                        title="Xóa khỏi lịch sử"
+                        title="Delete from history"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -287,19 +287,19 @@ const StatusBadge = ({ status }: { status: string }) => {
     case 'Completed':
       return (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-          <CheckCircle2 size={10} /> Xong
+          <CheckCircle2 size={10} /> Done
         </span>
       );
     case 'Downloading':
       return (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-          <Loader2 size={10} className="animate-spin" /> Tải...
+          <Loader2 size={10} className="animate-spin" /> Downloading...
         </span>
       );
     case 'Error':
       return (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-          <AlertCircle size={10} /> Lỗi
+          <AlertCircle size={10} /> Error
         </span>
       );
     default:

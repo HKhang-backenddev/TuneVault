@@ -54,7 +54,7 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
       <div style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
         <SearchIcon style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#b3b3b3' }} size={18} />
         <input
-          type="text" placeholder="Tìm kiếm bài hát, nghệ sĩ..."
+          type="text" placeholder="Search songs, artists..."
           style={{ width: '100%', backgroundColor: '#242424', borderRadius: '24px', padding: '10px 16px 10px 48px', fontSize: '14px', color: 'white', outline: 'none' }}
           value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -111,7 +111,7 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
           }}
           style={{ width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #1DB954' }}
           className="flex-shrink-0 flex items-center justify-center font-bold text-sm cursor-pointer transition-all text-white overflow-hidden hover:scale-110"
-          title="Xem hồ sơ của bạn"
+          title="View your profile"
         >
           {user?.avatarUrl ? (
             <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -144,7 +144,7 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
                   }
                 }}
               >
-                {user?.displayName || 'Người dùng'}
+                {user?.displayName || 'User'}
               </p>
               <p style={{ fontSize: '12px', color: '#b3b3b3', margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email || `@${user?.username}`}</p>
             </div>
@@ -162,21 +162,21 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#282828'; e.currentTarget.style.color = 'white'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#b3b3b3'; }}
               >
-                <UserIcon size={16} style={{ color: '#1DB954' }} /> Hồ sơ của tôi
+                <UserIcon size={16} style={{ color: '#1DB954' }} /> My Profile
               </button>
               <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                 <button onClick={() => { setShowUserMenu(false); avatarInputRef.current?.click(); }} style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', borderRadius: '4px', transition: 'all 0.2s ease', color: '#b3b3b3', background: '#282828', border: 'none', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#333'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#282828'; }}>
                   <Camera size={14} /> Avatar
                 </button>
                 <button onClick={() => { setShowUserMenu(false); bannerInputRef.current?.click(); }} style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', borderRadius: '4px', transition: 'all 0.2s ease', color: '#b3b3b3', background: '#282828', border: 'none', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#333'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#282828'; }}>
-                  <ImageIcon size={14} /> Ảnh bìa
+                  <ImageIcon size={14} /> Banner
                 </button>
               </div>
             </div>
             <div style={{ borderTop: '1px solid #282828', margin: '0 8px' }}></div>
             <div style={{ padding: '8px' }}>
               <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', padding: '10px 12px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px', borderRadius: '4px', transition: 'all 0.2s ease', color: '#f87171', fontWeight: 'bold', background: 'transparent', border: 'none', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#282828'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}>
-                <LogOut size={16} /> Đăng xuất
+                <LogOut size={16} /> Log Out
               </button>
             </div>
           </div>

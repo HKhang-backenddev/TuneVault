@@ -26,7 +26,7 @@ const Search = () => {
         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
         <input
           type="text"
-          placeholder="Bạn muốn nghe gì?"
+          placeholder="What do you want to listen to?"
           className="w-full bg-neutral-800 rounded-full py-3 pl-12 pr-4 text-sm text-white placeholder:text-neutral-500 focus:ring-2 ring-white outline-none"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -52,12 +52,12 @@ const Search = () => {
       ) : (
         <>
           <div className="max-w-5xl mx-auto mb-4 px-2">
-            <h2 className="text-2xl font-bold tracking-tight text-white">Duyệt tìm tất cả</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-white">Browse All</h2>
           </div>
           
           <div className="max-w-5xl mx-auto bg-black/30 backdrop-blur-sm p-3 rounded-3xl border border-white/5 shadow-inner">
             <div className="custom-scrollbar" style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', gap: '8px', paddingBottom: '8px', width: '100%', scrollSnapType: 'x mandatory' }}>
-              {['Pop', 'Hip-Hop', 'Indie', 'Podcast', 'Mới phát hành', 'Dành cho bạn'].map((genre, i) => (
+              {['Pop', 'Hip-Hop', 'Indie', 'Podcast', 'New Releases', 'For You'].map((genre, i) => (
                 <div 
                   key={genre} 
                   style={{ 

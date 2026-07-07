@@ -23,7 +23,7 @@ const PlayerBar = () => {
   }, []);
 
   if (!currentTrack) {
-    return null; // Không hiển thị PlayerBar nếu không có bài hát nào đang phát
+    return null; // Do not display PlayerBar if no song is playing
   }
 
   // Hàm trợ giúp để định dạng thời gian (ví dụ: 03:45)
@@ -150,7 +150,7 @@ const PlayerBar = () => {
             zIndex: 1001,
           }}
           className="hover:bg-neutral-700 transition-colors"
-          title="Thoát / Đóng trình phát"
+          title="Exit / Close Player"
         >
           <X size={16} />
         </button>
@@ -159,12 +159,12 @@ const PlayerBar = () => {
           <img src={currentTrack.thumbnailUrl} alt={currentTrack.title} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' }} />
           <div style={{ overflow: 'hidden' }}>
             <p className="text-white font-bold text-[11px] truncate hover:text-[#1DB954] cursor-pointer">{currentTrack.title}</p>
-            <p className="text-[#b3b3b3] text-[10px] truncate hover:text-white cursor-pointer">{currentTrack.artist || 'Nghệ sĩ'}</p>
+            <p className="text-[#b3b3b3] text-[10px] truncate hover:text-white cursor-pointer">{currentTrack.artist || 'Artist'}</p>
           </div>
           <button 
             onClick={(e) => handleToggleLike(e)}
             className={`ml-2 ${currentTrack.isLiked ? 'text-[#1DB954]' : 'text-[#b3b3b3] hover:text-white'}`}
-            title={currentTrack.isLiked ? "Bỏ thích" : "Yêu thích"}
+            title={currentTrack.isLiked ? "Unlike" : "Like"}
           >
             <Heart size={18} fill={currentTrack.isLiked ? "currentColor" : "none"} className="player-button" />
           </button>
@@ -212,17 +212,17 @@ const PlayerBar = () => {
           <button 
             onClick={handleShare}
             className="text-[#b3b3b3] hover:text-white player-button p-1"
-            title="Chia sẻ bài hát"
+            title="Share Song"
           >
             <Share2 size={16} />
           </button>
           
-          {/* Tốc độ phát */}
+          {/* Playback Speed */}
           <div className="relative" ref={speedMenuRef}>
             <button
               onClick={() => setShowSpeedMenu(!showSpeedMenu)}
               className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#282828] hover:bg-[#333] transition-colors text-[#b3b3b3] hover:text-white text-xs"
-              title="Tốc độ phát"
+              title="Playback Speed"
             >
               <Gauge size={14} />
               <span style={{ minWidth: '30px' }}>
@@ -245,7 +245,7 @@ const PlayerBar = () => {
                       playbackRate === speed ? 'text-[#1DB954]' : 'text-[#b3b3b3]'
                     }`}
                   >
-                    {speed === 1 ? 'Bình thường' : `${speed}x`}
+                    {speed === 1 ? 'Normal' : `${speed}x`}
                   </button>
                 ))}
               </div>

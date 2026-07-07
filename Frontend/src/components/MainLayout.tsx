@@ -7,14 +7,14 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
   const location = useLocation();
 
   const menuItems = [
-    { name: 'Trang chu', icon: Home, path: '/app' },
-    { name: 'Tim kiem', icon: Search, path: '/app/search' },
+    { name: 'Home', icon: Home, path: '/app' },
+    { name: 'Search', icon: Search, path: '/app/search' },
   ];
 
   const libraryItems = [
-    { name: 'Thu vien cua ban', icon: Library, path: '/app/library', color: '#1DB954' },
-    { name: 'Da thich', icon: Heart, path: '/app/liked', color: '#1DB954' },
-    { name: 'Lich su nghe', icon: History, path: '/app/history', color: '#b3b3b3' },
+    { name: 'Your Library', icon: Library, path: '/app/library', color: '#1DB954' },
+    { name: 'Liked Songs', icon: Heart, path: '/app/liked', color: '#1DB954' },
+    { name: 'Listening History', icon: History, path: '/app/history', color: '#b3b3b3' },
   ];
 
   return (
@@ -70,7 +70,7 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
         })}
       </div>
 
-      {/* Thu vien */}
+      {/* Library */}
       <div style={{ 
         flex: 1,
         backgroundColor: '#121212',
@@ -100,7 +100,7 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
             onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#b3b3b3'}
           >
             <Library size={22} />
-            <span style={{ fontSize: '14px', fontWeight: '700' }}>Thu vien</span>
+            <span style={{ fontSize: '14px', fontWeight: '700' }}>Library</span>
           </Link>
           <button style={{
             width: '32px',

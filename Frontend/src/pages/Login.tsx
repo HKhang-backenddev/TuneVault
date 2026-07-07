@@ -113,7 +113,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
         : (resData.token || resData.accessToken || resData.data?.token);
       
       if (!token) {
-        throw new Error("Không nhận được mã xác thực từ máy chủ.");
+        throw new Error("Unable to receive authentication token from server.");
       }
 
       setIsSuccess(true);
@@ -125,14 +125,14 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
       onLoginSuccess(token);
 
     } catch (err: any) {
-      console.error("Lỗi đăng nhập:", err);
+      console.error("Login error:", err);
       
       // Lấy thông báo chi tiết từ server nếu có
       const message = err.response?.data?.message 
                    || err.response?.data 
-                   || "Lỗi hệ thống (500). Kiểm tra Terminal của Backend C#.";
+                   || "System error (500). Check the Backend C# Terminal.";
                    
-      setError(typeof message === 'string' ? message : "Lỗi xác thực người dùng.");
+      setError(typeof message === 'string' ? message : "Authentication error.");
     } finally {
       setLoading(false);
     }
@@ -150,15 +150,15 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
             </div>
             <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.7)]">TuneVault</h1>
           </div>
-          <p style={{ color: '#a3a3a3', fontSize: '14px' }}>Sử dụng tài khoản của bạn để tiếp tục</p>
+          <p style={{ color: '#a3a3a3', fontSize: '14px' }}>Use your account to continue</p>
         </div>
         
         <form onSubmit={handleSubmit} style={styles.form}>
           {error && <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg mb-6 text-sm text-center font-medium">{error}</div>}
-          {isSuccess && <div className="bg-green-500/10 border border-green-500/20 text-green-500 p-3 rounded-lg mb-6 text-sm text-center font-medium">Đăng nhập thành công!</div>}
+          {isSuccess && <div className="bg-green-500/10 border border-green-500/20 text-green-500 p-3 rounded-lg mb-6 text-sm text-center font-medium">Login successful!</div>}
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}><User size={14} /> Tài khoản</label>
+            <label style={styles.label}><User size={14} /> Username</label>
             <div style={styles.inputIconGroup} className="focus-within-red">
               <input 
                 disabled={isSuccess}
@@ -167,7 +167,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                placeholder="Email hoặc tên đăng nhập"
+                placeholder="Email or username"
                 onFocus={(e) => (e.currentTarget.parentElement!.style.borderColor = '#3b82f6')}
                 onBlur={(e) => (e.currentTarget.parentElement!.style.borderColor = '#262626')}
               />
@@ -175,7 +175,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}><Lock size={14} /> Mật khẩu</label>
+            <label style={styles.label}><Lock size={14} /> Password</label>
             <div style={styles.inputIconGroup}>
               <input 
                 disabled={isSuccess}
@@ -197,11 +197,11 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
             style={{ ...styles.buttonPrimary, backgroundColor: isSuccess ? '#16a34a' : '#3b82f6', opacity: loading ? 0.7 : 1 }}
             className="hover:scale-[1.02] transition-all active:scale-95 tracking-widest text-sm flex items-center justify-center gap-2"
           >
-            {isSuccess ? 'ĐANG VÀO...' : (loading ? <Loader2 className="animate-spin" size={20} /> : <>TIẾP THEO <ArrowRight size={18} /></>)}
+            {isSuccess ? 'ENTERING...' : (loading ? <Loader2 className="animate-spin" size={20} /> : <>NEXT <ArrowRight size={18} /></>)}
           </button>
 
           <div className="mt-8 pt-6 border-t border-neutral-800 text-center">
-            <p className="text-neutral-400 text-sm">Bạn chưa có tài khoản? <Link to="/register" className="text-blue-500 hover:text-blue-400 font-bold hover:underline transition-colors">Đăng ký ngay</Link></p>
+            <p className="text-neutral-400 text-sm">Don't have an account? <Link to="/register" className="text-blue-500 hover:text-blue-400 font-bold hover:underline transition-colors">Sign up here</Link></p>
           </div>
         </form>
       </div>

@@ -51,7 +51,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       setSearchResults(prev => prev.map(item => item.id === id ? { ...item, isLiked: liked } : item));
       if (currentTrack?.id === id) updateLikedStatus(liked);
       try { window.dispatchEvent(new CustomEvent('favoritesUpdated')); } catch {}
-    } catch (err) { console.error("Loi khi tha tim:", err); }
+    } catch (err) { console.error("Error toggling like:", err); }
   };
 
   useEffect(() => {
@@ -73,7 +73,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         const genreMap = new Map<string, MediaItem[]>();
         
         libraryItems.forEach(song => {
-          const genre = song.genre || song.genreName || 'Khac';
+          const genre = song.genre || song.genreName || 'Other';
           if (!genreMap.has(genre)) {
             genreMap.set(genre, []);
           }
@@ -91,7 +91,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         
         setSections(sectionsData);
       } catch (err) { 
-        console.error("Loi fetch data:", err); 
+        console.error("Error fetching data:", err); 
       }
       setLoading(false);
     };
@@ -108,7 +108,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         ]);
         setSearchResults(songRes.data?.items || []);
         setUserResults(userRes.data || []);
-      } catch (err) { console.error("Loi tim kiem:", err); }
+      } catch (err) { console.error("Error searching:", err); }
     };
     const timer = setTimeout(search, 300);
     return () => clearTimeout(timer);
@@ -159,7 +159,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           </button>
         </div>
         <div style={{ fontSize: '16px', fontWeight: '600', color: isCurrent ? '#1DB954' : '#fff', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-        <div style={{ fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
+        <div style={{ fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
       </div>
     );
   };
@@ -196,14 +196,14 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
           <Loader2 size={48} style={{ color: '#1DB954', animation: 'spin 1s linear infinite' }} />
-          <p style={{ color: '#b3b3b3', fontSize: '16px' }}>Dang tai nhac...</p>
+          <p style={{ color: '#b3b3b3', fontSize: '16px' }}>Loading music...</p>
         </div>
       ) : searchQuery ? (
         <div>
-          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#fff', marginBottom: '24px' }}>Ket qua tim kiem cho "{searchQuery}"</h2>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#fff', marginBottom: '24px' }}>Search results for "{searchQuery}"</h2>
           {userResults.length > 0 && (
             <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Nghe si</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Artists</h3>
               <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }} className="spotify-scroll">
                 {userResults.map(u => <UserCard key={u.id} user={u} />)}
               </div>
@@ -211,7 +211,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           )}
           {searchResults.length > 0 ? (
             <div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Bai hat</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Songs</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '24px' }}>
                 {searchResults.map(song => <SongCard key={song.id} song={song} playlist={searchResults} />)}
               </div>
@@ -219,14 +219,14 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           ) : (
             <div style={{ textAlign: 'center', padding: '80px 0' }}>
               <SearchIcon size={64} style={{ color: '#535353', marginBottom: '16px' }} />
-              <p style={{ color: '#b3b3b3', fontSize: '18px' }}>Khong tim thay ket qua nao</p>
+              <p style={{ color: '#b3b3b3', fontSize: '18px' }}>No results found</p>
             </div>
           )}
         </div>
       ) : (
         <div>
           <h1 style={{ fontSize: '36px', fontWeight: '900', color: '#fff', marginBottom: '32px' }}>
-            Xin chao, {user?.displayName || 'ban'}!
+            Welcome, {user?.displayName || 'there'}!
           </h1>
 
           {/* HIEN THI TAT CA - GRID CO SCROLL DOC */}
@@ -235,7 +235,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             return allSongs.length > 0 && (
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', margin: 0 }}>Tat ca bai hat</h2>
+                  <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', margin: 0 }}>All Songs</h2>
                   <button 
                     onClick={() => playTrack(allSongs[0], allSongs)}
                     style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -262,7 +262,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                     >
                       <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} alt="" />
                       <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-                      <div style={{ fontSize: '10px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
+                      <div style={{ fontSize: '10px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
                     </div>
                   ))}
                 </div>
@@ -301,7 +301,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                   >
                     <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} alt="" />
                     <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-                    <div style={{ fontSize: '10px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Nghe si'}</div>
+                    <div style={{ fontSize: '10px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
                   </div>
                 ))}
               </div>
@@ -311,10 +311,10 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           {sections.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#181818', borderRadius: '8px' }}>
               <Music size={64} style={{ color: '#535353', marginBottom: '16px' }} />
-              <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>Chua co nhac</h2>
-              <p style={{ color: '#b3b3b3', marginBottom: '16px' }}>Hay them nhac de bat dau</p>
+              <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>No music yet</h2>
+              <p style={{ color: '#b3b3b3', marginBottom: '16px' }}>Add some music to get started</p>
               <Link to="/app/import" style={{ backgroundColor: '#1DB954', color: 'black', padding: '12px 24px', borderRadius: '20px', fontWeight: '700', textDecoration: 'none' }}>
-                Them nhac
+                Add Music
               </Link>
             </div>
           )}
