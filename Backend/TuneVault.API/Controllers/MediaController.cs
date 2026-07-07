@@ -326,7 +326,7 @@ public class MediaController : BaseApiController
                 id = m.Id,
                 title = m.Title,
                 artist = m.Artist?.Name ?? "Nghệ sĩ không xác định",
-                url = $"/api/media/stream/{m.Id}`",
+                url = $"/api/media/stream/{m.Id}",
                 thumbnailUrl = m.ThumbnailUrl ?? "",
                 durationInSeconds = m.DurationInSeconds,
                 genre = m.Genre,
