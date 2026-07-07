@@ -229,7 +229,7 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
             Xin chao, {user?.displayName || 'ban'}!
           </h1>
 
-          {/* HIEN THI TAT CA - GRID */}
+          {/* HIEN THI TAT CA - GRID CO SCROLL DOC */}
           {(() => {
             const allSongs = sections.flatMap(s => s.items);
             return allSongs.length > 0 && (
@@ -243,7 +243,17 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                     <Play size={14} fill="black" />
                   </button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
+                {/* Grid co scroll doc */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
+                  gap: '10px',
+                  maxHeight: 'calc(100vh - 280px)',
+                  overflowY: 'auto',
+                  paddingRight: '8px',
+                }}
+                className="spotify-scrollbar"
+                >
                   {allSongs.map(song => (
                     <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '6px', padding: '10px', cursor: 'pointer' }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
@@ -272,11 +282,21 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
                   <Play size={14} fill="black" />
                 </button>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
+              {/* Grid co scroll doc */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
+                gap: '10px',
+                maxHeight: 'calc(100vh - 280px)',
+                overflowY: 'auto',
+                paddingRight: '8px',
+              }}
+              className="spotify-scrollbar"
+              >
                 {section.items.map(song => (
                   <div key={song.id} style={{ backgroundColor: '#181818', borderRadius: '6px', padding: '10px', cursor: 'pointer' }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181828'}
                     onClick={() => playTrack(song, section.items)}
                   >
                     <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} alt="" />
