@@ -151,6 +151,7 @@ public class MediaController : BaseApiController
             Genre = string.IsNullOrWhiteSpace(genre) ? "Pop" : genre,
             OwnerId = userId,
             ArtistId = artistEntity?.Id,
+            Artist = artistEntity,
             CreatedAt = DateTime.UtcNow
         };
 
