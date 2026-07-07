@@ -127,7 +127,7 @@ export const AppHeader = ({ user, handleLogout, goHome, showUserMenu, setShowUse
 
         {showUserMenu && (
           <div style={{
-            position: 'absolute', top: '56px', right: 0, width: '280px', zIndex: 1001,
+            position: 'absolute', top: '56px', right: 0, width: '280px', zIndex: 9999,
             backgroundColor: '#181818', borderRadius: '8px',
             border: '1px solid #282828',
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',

@@ -82,7 +82,7 @@ export const ShareSidebar = ({ user }: { user: User | null }) => {
       backdropFilter: 'blur(20px)',
       overflow: 'hidden',
       animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-      zIndex: 1000,
+      zIndex: 900,
     }}>
       <style>{`
         @keyframes slideUp {
