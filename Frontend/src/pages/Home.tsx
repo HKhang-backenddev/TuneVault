@@ -66,6 +66,16 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
       setLoading(true);
       try {
         const libraryRes = await api.get('/media/library?pageSize=500');
+
+        // Fetch admin songs first
+        const adminRes = await api.get('/media/admin-songs?pageSize=50');
+        let adminItems: MediaItem[] = [];
+        if (Array.isArray(adminRes.data?.items)) {
+          adminItems = adminRes.data.items;
+        } else if (Array.isArray(adminRes.data)) {
+          adminItems = adminRes.data;
+        }
+
         
         let libraryItems: MediaItem[] = [];
         if (Array.isArray(libraryRes.data)) {
@@ -89,6 +99,11 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
         
         // Create sections from genre map
         const sectionsData: { title: string; items: MediaItem[] }[] = [];
+
+        // Add Admin's Featured Songs section at the top if admin has songs
+        if (adminItems.length > 0) {
+          sectionsData.push({ title: "🎵 Admin's Picks", items: adminItems });
+        }
         
         genreMap.forEach((items, genre) => {
           if (items.length > 0) {

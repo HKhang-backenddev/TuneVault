@@ -63,6 +63,57 @@ public class MediaController : BaseApiController
         return Ok(new { items, total = result.Total, page = result.Page, pageSize = result.PageSize });
     }
 
+    /// <summary>Lấy danh sách nhạc của Admin để hiển thị trên Home của tất cả users.</summary>
+    [HttpGet("admin-songs")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAdminSongs([FromQuery] int pageSize = 50)
+    {
+        try
+        {
+            // Lấy tất cả users có role là Admin
+            var adminIds = _context.Users
+                .Where(u => u.Role == "Admin")
+                .Select(u => u.Id)
+                .ToList();
+
+            if (!adminIds.Any())
+            {
+                return Ok(new { items = new List<object>(), total = 0 });
+            }
+
+            // Lấy nhạc của các admin (sắp xếp theo ngày tạo mới nhất)
+            var adminSongs = _context.MediaItems
+                .Include(m => m.Artist)
+                .Where(m => adminIds.Contains(m.OwnerId))
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(pageSize)
+                .ToList();
+
+            // Map sang DTO
+            var items = adminSongs.Select(song => new
+            {
+                id = song.Id,
+                title = song.Title,
+                artist = song.Artist != null ? song.Artist.Name : "Unknown Artist",
+                artistName = song.Artist?.Name ?? "Unknown Artist",
+                thumbnailUrl = song.ThumbnailUrl ?? "",
+                genre = song.Genre,
+                genreName = song.Genre,
+                durationInSeconds = song.DurationInSeconds,
+                url = song.FilePath,
+                createdAt = song.CreatedAt,
+                isOwner = false,
+                ownerUsername = _context.Users.FirstOrDefault(u => u.Id == song.OwnerId)?.Username ?? "admin"
+            }).ToList();
+
+            return Ok(new { items, total = items.Count });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error fetching admin songs", error = ex.Message });
+        }
+    }
+
     /// <summary>Thư viện cá nhân — chỉ bài hát của user đang đăng nhập.</summary>
     [HttpGet("library")]
     [Authorize]
