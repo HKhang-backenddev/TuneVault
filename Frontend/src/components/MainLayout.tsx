@@ -7,18 +7,30 @@ import { ShareSidebar } from './ShareSidebar';
 const SidebarLibrary = ({ user }: { user: User | null }) => {
   const location = useLocation();
 
+  // Neon color palette for menu items
+  const neonColors = {
+    home: '#00FFFF',       // Cyan neon
+    search: '#FF00FF',      // Magenta neon
+    users: '#FFFF00',       // Yellow neon
+    profile: '#FF6B6B',     // Coral neon
+    liked: '#FF1493',       // Deep Pink neon
+    library: '#00FF7F',     // Spring Green neon
+    history: '#FFD700',     // Gold neon
+    shared: '#FF69B4',      // Hot Pink neon
+  };
+
   const menuItems = [
-    { name: 'Home', icon: Home, path: '/app' },
-    { name: 'Search Songs', icon: Search, path: '/app/search' },
-    { name: 'Find Users', icon: Users, path: '/app/users' },
-    { name: 'My Profile', icon: UserIcon, path: user ? `/app/profile/${user.username}` : '/app', color: '#c084fc' },
+    { name: 'Home', icon: Home, path: '/app', color: neonColors.home, glow: 'rgba(0, 255, 255, 0.5)' },
+    { name: 'Search Songs', icon: Search, path: '/app/search', color: neonColors.search, glow: 'rgba(255, 0, 255, 0.5)' },
+    { name: 'Find Users', icon: Users, path: '/app/users', color: neonColors.users, glow: 'rgba(255, 255, 0, 0.5)' },
+    { name: 'My Profile', icon: UserIcon, path: user ? `/app/profile/${user.username}` : '/app', color: neonColors.profile, glow: 'rgba(255, 107, 107, 0.5)' },
   ];
 
   const libraryItems = [
-    { name: 'Liked Songs', icon: Heart, path: '/app/liked', color: '#1ed760' },
-    { name: 'Your Library', icon: Library, path: '/app/library', color: '#00FFFF' },
-    { name: 'Download History', icon: History, path: '/app/history', color: '#b3b3b3' },
-    { name: 'Shared With Me', icon: ListMusic, path: '/app/shared-with-me', color: '#b3b3b3' },
+    { name: 'Liked Songs', icon: Heart, path: '/app/liked', color: neonColors.liked, glow: 'rgba(255, 20, 147, 0.5)' },
+    { name: 'Your Library', icon: Library, path: '/app/library', color: neonColors.library, glow: 'rgba(0, 255, 127, 0.5)' },
+    { name: 'Download History', icon: History, path: '/app/history', color: neonColors.history, glow: 'rgba(255, 215, 0, 0.5)' },
+    { name: 'Shared With Me', icon: ListMusic, path: '/app/shared-with-me', color: neonColors.shared, glow: 'rgba(255, 105, 180, 0.5)' },
   ];
 
   return (
@@ -33,7 +45,7 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
       boxShadow: '5px 0 30px rgba(131, 58, 180, 0.15)',
     }}>
 
-      {/* Main Menu with Neon Hover */}
+      {/* Main Menu with Neon Effects */}
       <div style={{ padding: '16px 12px 8px' }}>
         {menuItems.map(item => {
           const isActive = location.pathname === item.path;
@@ -47,27 +59,33 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
                 gap: '16px',
                 padding: '14px 18px',
                 borderRadius: '10px',
-                color: isActive ? '#fff' : '#b3b3b3',
-                backgroundColor: isActive ? 'rgba(131, 58, 180, 0.25)' : 'transparent',
+                color: isActive ? item.color : '#b3b3b3',
+                backgroundColor: isActive ? `${item.color}20` : 'transparent',
                 textDecoration: 'none',
                 transition: 'all 0.3s ease',
                 fontWeight: isActive ? '700' : '500',
                 fontSize: '16px',
                 position: 'relative',
                 overflow: 'hidden',
+                border: isActive ? `1px solid ${item.color}50` : '1px solid transparent',
               }}
               onMouseEnter={(e) => { 
-                if (!isActive) { 
-                  (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(131, 58, 180, 0.15)'; 
-                  (e.currentTarget as HTMLElement).style.color = '#fff';
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(131, 58, 180, 0.3)';
-                }
+                (e.currentTarget as HTMLElement).style.backgroundColor = `${item.color}15`;
+                (e.currentTarget as HTMLElement).style.color = item.color;
+                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 20px ${item.glow}, inset 0 0 15px ${item.glow}`;
+                (e.currentTarget as HTMLElement).style.borderColor = `${item.color}40`;
               }}
               onMouseLeave={(e) => { 
-                if (!isActive) { 
-                  (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; 
-                  (e.currentTarget as HTMLElement).style.color = '#b3b3b3'; 
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                  (e.currentTarget as HTMLElement).style.color = '#b3b3b3';
                   (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
+                } else {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = `${item.color}20`;
+                  (e.currentTarget as HTMLElement).style.color = item.color;
+                  (e.currentTarget as HTMLElement).style.borderColor = `${item.color}50`;
+                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 15px ${item.glow}`;
                 }
               }}
             >
@@ -79,16 +97,17 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
                   transform: 'translateY(-50%)',
                   width: '4px',
                   height: '60%',
-                  background: 'linear-gradient(180deg, #833ab4, #fd1d1d)',
+                  background: item.color,
                   borderRadius: '0 4px 4px 0',
-                  boxShadow: '0 0 15px rgba(131, 58, 180, 0.8)',
+                  boxShadow: `0 0 15px ${item.color}`,
                 }} />
               )}
-              <item.icon size={24} style={{ 
-                filter: isActive || item.color ? `drop-shadow(0 0 8px ${item.color || 'rgba(131, 58, 180, 0.8)'})` : 'none', color: item.color || (isActive ? '#fff' : '#b3b3b3')
+              <item.icon size={24} style={{
+                filter: `drop-shadow(0 0 8px ${item.color})`,
+                color: item.color,
               }} />
-              <span style={{ 
-                textShadow: isActive ? '0 0 10px rgba(131, 58, 180, 0.5)' : 'none'
+              <span style={{
+                textShadow: isActive ? `0 0 10px ${item.glow}` : 'none'
               }}>{item.name}</span>
             </Link>
           );
@@ -190,79 +209,76 @@ const SidebarLibrary = ({ user }: { user: User | null }) => {
                   gap: '12px',
                   padding: '10px 12px',
                   borderRadius: '8px',
-                  color: isActive ? '#fff' : '#b3b3b3',
-                  backgroundColor: isActive ? 'rgba(131, 58, 180, 0.2)' : 'transparent',
+                  color: isActive ? item.color : '#b3b3b3',
+                  backgroundColor: isActive ? `${item.color}15` : 'transparent',
                   textDecoration: 'none',
                   transition: 'all 0.3s ease',
                   marginBottom: '4px',
-                  border: isActive ? '1px solid rgba(131, 58, 180, 0.4)' : '1px solid transparent',
+                  border: isActive ? `1px solid ${item.color}40` : '1px solid transparent',
                 }}
-                onMouseEnter={(e) => { 
-                  if (!isActive) { 
-                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(131, 58, 180, 0.15)'; 
-                    (e.currentTarget as HTMLElement).style.color = '#fff';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(131, 58, 180, 0.3)';
-                    (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(131, 58, 180, 0.2)';
-                  }
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = `${item.color}10`;
+                  (e.currentTarget as HTMLElement).style.color = item.color;
+                  (e.currentTarget as HTMLElement).style.borderColor = `${item.color}30`;
+                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 15px ${item.glow}`;
                 }}
-                onMouseLeave={(e) => { 
-                  if (!isActive) { 
-                    (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; 
-                    (e.currentTarget as HTMLElement).style.color = '#b3b3b3'; 
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                    (e.currentTarget as HTMLElement).style.color = '#b3b3b3';
                     (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
                     (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                  } else {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = `${item.color}15`;
+                    (e.currentTarget as HTMLElement).style.color = item.color;
+                    (e.currentTarget as HTMLElement).style.borderColor = `${item.color}40`;
+                    (e.currentTarget as HTMLElement).style.boxShadow = `0 0 10px ${item.glow}`;
                   }
                 }}
               >
                 <div style={{
                   width: '52px',
                   height: '52px',
-                  background: item.name === 'Liked Songs'
-                    ? 'linear-gradient(135deg, #833ab4, #fd1d1d)'
-                    : item.name === 'Your Library'
-                    ? 'linear-gradient(135deg, #00FFFF, #00d4aa)'
-                    : 'linear-gradient(135deg, #333, #444)',
+                  background: `linear-gradient(135deg, ${item.color}, ${item.color}80)`,
                   borderRadius: '6px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  boxShadow: item.name === 'Liked Songs' || item.name === 'Your Library'
-                    ? '0 4px 15px rgba(131, 58, 180, 0.4)'
-                    : '0 4px 8px rgba(0,0,0,0.3)',
+                  boxShadow: `0 4px 15px ${item.glow}`,
+                  border: `1px solid ${item.color}60`,
                 }}>
-                  <item.icon 
-                    size={24} 
-                    color={item.color} 
-                    fill={item.color === '#1ed760' || item.color === '#00FFFF' ? item.color : 'none'}
+                  <item.icon
+                    size={24}
+                    color="#fff"
+                    fill="#fff"
                     style={{
-                      filter: item.color === '#1ed760' || item.color === '#00FFFF' 
-                        ? `drop-shadow(0 0 5px ${item.color})` 
-                        : 'none'
+                      filter: `drop-shadow(0 0 5px ${item.color})`,
                     }}
                   />
                 </div>
                 <div style={{ overflow: 'hidden' }}>
-                  <span style={{ 
-                    fontSize: '15px', 
-                    fontWeight: '500', 
-                    display: 'block', 
-                    whiteSpace: 'nowrap', 
-                    overflow: 'hidden', 
+                  <span style={{
+                    fontSize: '15px',
+                    fontWeight: '500',
+                    display: 'block',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    color: isActive ? '#fff' : '#b3b3b3',
+                    color: isActive ? item.color : '#b3b3b3',
+                    textShadow: isActive ? `0 0 10px ${item.glow}` : 'none',
                   }}>{item.name}</span>
-                  <span style={{ 
-                    fontSize: '11px', 
-                    color: '#888', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '4px', 
-                    marginTop: '2px' 
+                  <span style={{
+                    fontSize: '11px',
+                    color: '#888',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    marginTop: '2px'
                   }}>
                     {item.name === 'Liked Songs' && (
                       <>
-                        <span style={{ color: '#1ed760' }}>♥</span> Playlist • 
+                        <span style={{ color: item.color }}>♥</span> Playlist •
                       </>
                     )}
                     {item.name === 'Your Library' && 'Playlist • '}
