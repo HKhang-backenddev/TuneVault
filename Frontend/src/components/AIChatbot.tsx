@@ -204,16 +204,24 @@ Hoặc bạn có thể mô tả chi tiết hơn để tôi hiểu nhé!`;
 
   return (
     <>
+      <style>{`
+        @keyframes pulse-glow {
+          0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.4); }
+          50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.9), 0 0 80px rgba(59, 130, 246, 0.6); }
+        }
+      `}</style>
+      
       {/* Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-24 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 animate-pulse"
+        className="fixed bottom-28 right-6 z-[9999] w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300"
         style={{
           boxShadow: isOpen 
-            ? '0 0 20px rgba(139, 92, 246, 0.6)' 
-            : '0 0 30px rgba(139, 92, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.2)',
+            ? '0 0 20px rgba(139, 92, 246, 0.8)' 
+            : '0 0 30px rgba(139, 92, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.4)',
+          animation: 'pulse-glow 2s ease-in-out infinite',
         }}
-        title="TuneVault AI Assistant"
+        title="TuneVault AI Assistant 🤖"
       >
         {isOpen ? (
           <X size={24} className="text-white" />
