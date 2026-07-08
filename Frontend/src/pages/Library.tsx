@@ -164,26 +164,6 @@ const Library = () => {
         .hide-on-hover { transition: opacity 0.2s; }
       `}</style>
 
-      {/* DEBUG: Show role status */}
-      <div style={{ 
-        padding: '12px 24px', 
-        backgroundColor: isAdmin ? 'rgba(0, 255, 136, 0.2)' : 'rgba(255, 77, 77, 0.2)',
-        borderBottom: `1px solid ${isAdmin ? '#00FF88' : '#ff4d4d'}`,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
-      }}>
-        <span style={{ color: isAdmin ? '#00FF88' : '#ff4d4d', fontWeight: 'bold' }}>
-          {isAdmin ? '✅ BẠN LÀ ADMIN' : '❌ BẠN KHÔNG PHẢI ADMIN'}
-        </span>
-        <span style={{ color: '#888' }}>|</span>
-        <a 
-          href="/app/admin" 
-          style={{ color: '#00FFFF', textDecoration: 'underline', fontSize: '14px' }}
-        >
-          {isAdmin ? 'Chỉnh sửa bài hát' : 'Nhấn vào đây để trở thành Admin'}
-        </a>
-      </div>
 
       {/* Header - Neon Purple/Pink */}
       <div style={{ padding: '24px 32px', background: 'linear-gradient(180deg, #8800FF 0%, #1a1a2e 100%)', borderBottom: '1px solid rgba(136, 0, 255, 0.3)', boxShadow: '0 0 30px rgba(136, 0, 255, 0.3)' }}>
