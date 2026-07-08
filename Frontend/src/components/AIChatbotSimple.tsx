@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
+import api from '../../axios';
 
 interface Message {
   id: number;
@@ -10,11 +11,12 @@ interface Message {
 const AIChatbotSimple = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       role: 'ai',
-      text: '👋 Xin chào! Tôi là TuneVault AI Assistant.\n\nTôi có thể giúp bạn:\n🎵 Tìm bài hát\n📚 Tạo playlist\n❤️ Quản lý yêu thích\n📤 Chia sẻ nhạc\n\nBạn cần gì?'
+      text: '👋 Xin chào! Tôi là TuneVault AI Assistant (Powered by Groq Llama).\n\nTôi có thể giúp bạn:\n🎵 Tìm bài hát\n📚 Tạo playlist\n❤️ Quản lý yêu thích\n📤 Chia sẻ nhạc\n\nBạn cần gì?'
     }
   ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -27,47 +29,41 @@ const AIChatbotSimple = () => {
     scrollToBottom();
   }, [messages]);
 
-  const getAIResponse = (userText: string): string => {
-    const text = userText.toLowerCase();
+  const handleSend = async () => {
+    if (!input.trim() || isTyping) return;
     
-    if (text.includes('xin chào') || text.includes('hello') || text.includes('hi')) {
-      return 'Chào bạn! 👋 Rất vui được gặp bạn!';
-    }
-    if (text.includes('tìm') || text.includes('search')) {
-      return 'Để tìm bài hát, click vào Search Songs ở menu bên trái và gõ tên bài hát hoặc nghệ sĩ.';
-    }
-    if (text.includes('playlist')) {
-      return 'Để tạo playlist mới, vào Your Library và click nút + ở góc trên bên phải.';
-    }
-    if (text.includes('yêu thích') || text.includes('like')) {
-      return 'Click vào icon trái tim ❤️ trên bài hát để thêm vào yêu thích.';
-    }
-    if (text.includes('chia sẻ') || text.includes('share')) {
-      return 'Click vào icon Share trên Player Bar để chia sẻ bài hát cho bạn bè.';
-    }
-    return 'Tôi có thể giúp bạn về:\n🎵 Tìm bài hát\n📚 Tạo playlist\n❤️ Yêu thích\n📤 Chia sẻ nhạc\n\nBạn cần gì?';
-  };
-
-  const handleSend = () => {
-    if (!input.trim()) return;
+    const userMessage = input.trim();
     
     const newUserMsg: Message = {
       id: Date.now(),
       role: 'user',
-      text: input.trim()
+      text: userMessage
     };
     
     setMessages(prev => [...prev, newUserMsg]);
     setInput('');
+    setIsTyping(true);
     
-    setTimeout(() => {
+    try {
+      const response = await api.post('/AI/chat', { message: userMessage });
+      const aiText = response.data.response || 'Xin lỗi, tôi không thể trả lời lúc này.';
+      
       const aiResponse: Message = {
         id: Date.now() + 1,
         role: 'ai',
-        text: getAIResponse(input)
+        text: aiText
       };
       setMessages(prev => [...prev, aiResponse]);
-    }, 500);
+    } catch (error) {
+      const errorMsg: Message = {
+        id: Date.now() + 1,
+        role: 'ai',
+        text: 'Xin lỗi, tôi đang gặp sự cố kết nối. Vui lòng thử lại sau.'
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -189,6 +185,23 @@ const AIChatbotSimple = () => {
                 {msg.text}
               </div>
             ))}
+            
+            {/* Typing indicator */}
+            {isTyping && (
+              <div style={{
+                background: '#2d2d44',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                borderBottomLeftRadius: '4px',
+                maxWidth: '85%',
+                alignSelf: 'flex-start',
+                color: '#888',
+                fontSize: '14px',
+              }}>
+                💭 AI đang nhập...
+              </div>
+            )}
+            
             <div ref={messagesEndRef} />
           </div>
 
