@@ -1,0 +1,4 @@
+# Backend files - only deploy frontend
+Backend/
+*.csproj
+*.sln
