@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import api from './axios';
 import PlayerBar from './Components/PlayerBar'; // Đảm bảo đường dẫn này đúng
-import AIChatbot from './components/AIChatbot';
+import AIChatbot from './components/AIChatbotSimple';
 import Home from './pages/Home';
 import Notifications from './pages/Notifications';
 import Search from './pages/Search';
