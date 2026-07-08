@@ -74,70 +74,115 @@ const AIChatbotSimple = () => {
 
   return (
     <div>
-      {/* Chat Button */}
+      {/* Chat Button with Neon Effects */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: 'fixed',
-          bottom: '120px',
+          bottom: '130px',
           right: '24px',
-          width: '64px',
-          height: '64px',
+          width: '70px',
+          height: '70px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          border: 'none',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+          border: '3px solid rgba(255, 255, 255, 0.3)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 4px 20px rgba(102, 126, 234, 0.6)',
+          boxShadow: '0 0 30px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1)',
           zIndex: 9999,
+          transition: 'all 0.3s ease',
+          animation: isOpen ? 'none' : 'pulse-neon 2s ease-in-out infinite',
         }}
-        title="AI Assistant"
+        title="AI Assistant - Powered by Groq Llama"
       >
-        <MessageCircle size={28} color="white" />
+        {/* Glow ring */}
+        <div style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          border: '2px solid rgba(102, 126, 234, 0.5)',
+          animation: 'rotate-ring 3s linear infinite',
+        }} />
+        
+        {/* Icon */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '2px',
+        }}>
+          <MessageCircle size={30} color="white" style={{ filter: 'drop-shadow(0 0 5px white)' }} />
+          <span style={{
+            fontSize: '8px',
+            color: 'white',
+            fontWeight: 'bold',
+            textShadow: '0 0 5px rgba(255,255,255,0.8)',
+          }}>AI</span>
+        </div>
       </button>
+      
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes pulse-neon {
+          0%, 100% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.5); }
+          50% { box-shadow: 0 0 50px rgba(102, 126, 234, 1), 0 0 100px rgba(118, 75, 162, 0.8); }
+        }
+        @keyframes rotate-ring {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
 
       {/* Chat Window */}
       {isOpen && (
         <div style={{
           position: 'fixed',
-          bottom: '200px',
+          bottom: '220px',
           right: '24px',
-          width: '380px',
-          height: '500px',
-          background: '#1a1a2e',
-          borderRadius: '16px',
-          border: '2px solid #667eea',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+          width: '400px',
+          height: '550px',
+          background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
+          borderRadius: '20px',
+          border: '2px solid rgba(102, 126, 234, 0.5)',
+          boxShadow: '0 0 40px rgba(102, 126, 234, 0.3), 0 20px 60px rgba(0,0,0,0.6)',
           zIndex: 9999,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
         }}>
-          {/* Header */}
+          {/* Header with Neon Effect */}
           <div style={{
-            padding: '16px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            padding: '20px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              {/* Avatar */}
               <div style={{
-                width: '40px',
-                height: '40px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '50%',
                 background: 'rgba(255,255,255,0.2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                border: '2px solid rgba(255,255,255,0.3)',
+                boxShadow: '0 0 15px rgba(255,255,255,0.3)',
               }}>
-                <MessageCircle size={22} color="white" />
+                <MessageCircle size={24} color="white" />
               </div>
               <div>
-                <h3 style={{ color: 'white', margin: 0, fontSize: '16px' }}>TuneVault AI</h3>
-                <p style={{ color: '#90EE90', margin: 0, fontSize: '12px' }}>● Online</p>
+                <h3 style={{ color: 'white', margin: 0, fontSize: '18px', fontWeight: 'bold' }}>TuneVault AI 🤖</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '8px', height: '8px', background: '#22c55e', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 8px #22c55e' }} />
+                  <p style={{ color: 'rgba(255,255,255,0.9)', margin: 0, fontSize: '12px' }}>Powered by Groq Llama</p>
+                </div>
               </div>
             </div>
             <button
@@ -146,12 +191,18 @@ const AIChatbotSimple = () => {
                 background: 'rgba(255,255,255,0.2)',
                 border: 'none',
                 borderRadius: '50%',
-                width: '32px',
-                height: '32px',
+                width: '36px',
+                height: '36px',
                 cursor: 'pointer',
                 color: 'white',
                 fontSize: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
               }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
             >
               ✕
             </button>
