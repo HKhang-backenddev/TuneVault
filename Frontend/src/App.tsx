@@ -184,6 +184,7 @@ const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, setShowUser
         </MainLayout>
       </div>
       <PlayerBar />
+      <AIChatbot />
     </div>
   );
 };
@@ -574,7 +575,6 @@ function App() {
 
         <Route path="*" element={<Navigate to="/app" replace />} />
       </Routes>
-      <AIChatbot />
     </AudioProvider>
   );
 }
