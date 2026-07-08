@@ -1,0 +1,20 @@
+{
+  "name": "TuneVault - Music Streaming",
+  "short_name": "TuneVault",
+  "description": "Ứng dụng nghe nhạc trực tuyến với AI Assistant",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["music", "entertainment"],
+  "lang": "vi"
+}
