@@ -1,0 +1,30 @@
+# Environment variables (API keys, secrets)
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+bin/
+obj/
+dist/
+build/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NuGet
+packages/
+*.nupkg
+
+# Node
+node_modules/
