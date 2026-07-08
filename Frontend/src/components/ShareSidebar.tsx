@@ -1,13 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import api from '../axios';
-import { Music, Share2, X, User as UserIcon, Loader2 } from 'lucide-react';
+import { Music, Share2, X, User as UserIcon, Loader2, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAudio, Track } from '../Contexts/AudioContext';
 import { User } from '@shared-types/user';
-
-type Status = {
-  type: 'success' | 'error' | 'info';
-  message: string;
-}
 
 interface ShareSidebarAudioContext {
   songForShare: Track | null;
@@ -18,17 +13,11 @@ export const ShareSidebar = ({ user }: { user: User | null }) => {
   const { songForShare, selectSongForShare } = useAudio() as ShareSidebarAudioContext;
   const [receiverUsername, setReceiverUsername] = useState('');
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<Status | null>(null);
+  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  // State để quản lý hiệu ứng hover và active cho các nút bằng inline style
-  const [isReceiverInputFocused, setIsReceiverInputFocused] = useState(false);
-  const [isCloseButtonHovered, setIsCloseButtonHovered] = useState(false);
-  const [isSubmitButtonHovered, setIsSubmitButtonHovered] = useState(false);
-  const [isSubmitButtonActive, setIsSubmitButtonActive] = useState(false);
 
   useEffect(() => {
     if (songForShare) {
-      // Reset state khi có bài hát mới được chọn
       setReceiverUsername('');
       setStatus(null);
       setBusy(false);
@@ -37,291 +26,379 @@ export const ShareSidebar = ({ user }: { user: User | null }) => {
   }, [songForShare]);
 
   const handleShare = async (e?: React.FormEvent) => {
-    // Ngăn form submit và tải lại trang
-    if (e) {
-      e.preventDefault();
-    }
+    if (e) e.preventDefault();
 
     setStatus(null);
     const receiver = receiverUsername.trim();
+    
     if (!songForShare) {
-      setStatus({ type: 'error', message: 'Chưa có bài hát để chia sẻ.' });
+      setStatus({ type: 'error', message: 'No song selected to share.' });
       return;
     }
     if (!receiver) {
-      setStatus({ type: 'error', message: 'Vui lòng nhập username hoặc email người nhận.' });
+      setStatus({ type: 'error', message: 'Please enter recipient username or email.' });
       inputRef.current?.focus();
       return;
     }
 
     if (busy) return;
     setBusy(true);
+    
     try {
       await api.post('/MediaItems/share', {
         receiverUsername: receiver,
         mediaId: songForShare.id
       });
 
-      // Reset form và hiển thị thông báo thành công
+      setStatus({ type: 'success', message: `Shared successfully with @${receiver}!` });
       setReceiverUsername('');
-      setStatus({ type: 'success', message: `Đã gửi thành công cho '${receiver}'!` });
-      inputRef.current?.focus();
-      // Tự động đóng sidebar sau 2 giây
-      const timer = setTimeout(() => {
+      
+      setTimeout(() => {
         selectSongForShare(null);
-      }, 2000);
+      }, 2500);
 
     } catch (e: any) {
-      // Hiển thị lỗi từ backend trả về
-      const msg = e?.response?.data?.message || e?.message || 'Chia sẻ thất bại. Vui lòng thử lại.';
-      const statusCode = e?.response?.status;
-      setStatus({
-        type: 'error',
-        message: statusCode ? `Chia sẻ thất bại (${statusCode}): ${msg}` : `Chia sẻ thất bại: ${msg}`
-      });
+      const msg = e?.response?.data?.message || 'Share failed. Please try again.';
+      setStatus({ type: 'error', message: msg });
     } finally {
       setBusy(false);
     }
   };
 
-  // Nếu không có bài hát nào được chọn để chia sẻ, không hiển thị gì cả
   if (!songForShare) {
     return null;
   }
 
-  // --- INLINE STYLES ĐỂ ĐẢM BẢO HIỆU ỨNG HIỂN THỊ ---
-
-  const mainContainerStyle: React.CSSProperties = {
-    width: '300px',
-    flexShrink: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: '24px',
-    border: '2px solid transparent',
-    backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-    backgroundOrigin: 'border-box',
-    backgroundClip: 'padding-box, border-box',
-    backgroundSize: '200% 100%',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-    backdropFilter: 'blur(12px)',
-    animation: 'animated-border-share 8s linear infinite',
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    alignSelf: 'flex-start',
-    position: 'sticky',
-    top: '24px',
-  };
-
-  const closeButtonStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '16px',
-    right: '16px',
-    padding: '8px',
-    borderRadius: '9999px',
-    color: isCloseButtonHovered ? 'white' : '#a3a3a3',
-    backgroundColor: isCloseButtonHovered ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-    transition: 'all 0.2s ease',
-    border: 'none',
-    cursor: 'pointer',
-    zIndex: 10,
-  };
-
-  const submitButtonStyle: React.CSSProperties = {
-    width: '100%',
-    backgroundImage: 'linear-gradient(to right, #a855f7, #3b82f6, #22d3ee)', // from-purple-500 via-blue-500 to-cyan-400
-    backgroundSize: '200% auto',
-    backgroundPosition: isSubmitButtonHovered ? 'right center' : 'left center', // hover:bg-right
-    color: 'white',
-    fontWeight: 'bold',
-    padding: '12px 0', // py-3
-    borderRadius: '0.75rem', // rounded-xl
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5rem', // gap-2
-    transition: 'all 0.5s ease',
-    border: 'none',
-    transform: isSubmitButtonHovered && !isSubmitButtonActive ? 'scale(1.05)' : 'scale(1)', // hover:scale-105 active:scale-100
-    boxShadow: isSubmitButtonHovered ? '0 0 25px rgba(96, 165, 250, 0.8)' : 'none', // hover:shadow-[...]
-    opacity: (busy || !songForShare) ? 0.5 : 1,
-    cursor: (busy || !songForShare) ? 'not-allowed' : 'pointer',
-  };
-
-  const headerStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: '16px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    color: '#a3a3a3',
-    fontSize: '0.75rem',
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    cursor: 'default',
-    marginBottom: '4px',
-  };
-
-  const infoBoxStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    padding: '12px',
-  };
-
-  const songTitleStyle: React.CSSProperties = {
-    color: 'white',
-    fontWeight: 600,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  };
-
-  const songArtistStyle: React.CSSProperties = {
-    color: '#a3a3a3',
-    fontSize: '0.875rem',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    marginTop: '4px',
-  };
-
-  const receiverInputStyle: React.CSSProperties = {
-    width: '100%',
-    backgroundColor: 'transparent',
-    border: 'none',
-    outline: 'none',
-    color: 'white',
-    padding: '12px 0',
-    fontSize: '0.875rem',
-  };
-
-  // Giao diện được thiết kế lại để giống với các khung thông tin khác
   return (
-    <>
+    <div style={{
+      position: 'fixed',
+      bottom: '100px',
+      right: '24px',
+      width: '380px',
+      backgroundColor: 'rgba(26, 26, 46, 0.95)',
+      borderRadius: '20px',
+      border: '1px solid rgba(131, 58, 180, 0.4)',
+      boxShadow: '0 25px 80px rgba(131, 58, 180, 0.3), 0 0 60px rgba(253, 29, 29, 0.15)',
+      backdropFilter: 'blur(20px)',
+      overflow: 'hidden',
+      animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      zIndex: 900,
+    }}>
       <style>{`
-        @keyframes animated-border-share {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(30px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes glow {
+          0%, 100% { box-shadow: 0 0 20px rgba(30, 215, 96, 0.4); }
+          50% { box-shadow: 0 0 40px rgba(30, 215, 96, 0.8); }
+        }
+        @keyframes spin {
+          100% { transform: rotate(360deg); }
         }
       `}</style>
-      <div
-        className="animate-in fade-in-50 slide-in-from-right-4 duration-300"
-        style={mainContainerStyle}>
+
+      {/* Header with Gradient */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(131, 58, 180, 0.6) 0%, rgba(253, 29, 29, 0.4) 100%)',
+        padding: '24px',
+        position: 'relative'
+      }}>
         <button
           onClick={() => selectSongForShare(null)}
-          title="Đóng"
-          style={closeButtonStyle}
-          onMouseEnter={() => setIsCloseButtonHovered(true)}
-          onMouseLeave={() => setIsCloseButtonHovered(false)}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            border: 'none',
+            color: '#fff',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
         >
           <X size={18} />
         </button>
-        {/* --- Header --- */}
-        <div style={headerStyle}>
-          <h3 style={{ fontSize: '2rem', fontWeight: 900, color: 'white', textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #3b82f6, 0 0 40px #3b82f6' }} className="flex items-center gap-3 text-center">
-            Gửi tặng giai điệu
-          </h3>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #1ed760, #00d4aa)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 8px 24px rgba(30, 215, 96, 0.4)'
+          }}>
+            <Share2 size={28} style={{ color: '#000' }} />
+          </div>
+          <div>
+            <h2 style={{ 
+              margin: 0, 
+              fontSize: '22px', 
+              fontWeight: 'bold', 
+              color: '#fff',
+              textShadow: '0 0 20px rgba(131, 58, 180, 0.6)'
+            }}>
+              Share Song
+            </h2>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+              Send this track to a friend
+            </p>
+          </div>
         </div>
+      </div>
 
-        {/* --- Form Section --- 
-            Sử dụng thẻ <form> để đúng ngữ nghĩa và cấu trúc.
-            Thêm flex-1 và flex-col để form chiếm hết không gian còn lại và đẩy nút bấm xuống dưới.
-        */}
-        <form onSubmit={handleShare} className="flex flex-col flex-1 gap-5">
-          <fieldset className="flex flex-col gap-2 border-0 p-0 m-0">
-            <label style={labelStyle}>
-              <Music size={14} className="text-purple-400"/>
-              Đang chia sẻ
-            </label>
-            <div style={infoBoxStyle}>
-              <p style={songTitleStyle} title={songForShare.title}>
-                {songForShare.title}
-              </p>
-              <p style={songArtistStyle} title={songForShare.artist}>
-                {songForShare.artist || 'Nghệ sĩ không xác định'}
-              </p>
+      {/* Song Card */}
+      <div style={{
+        padding: '20px 24px',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          padding: '14px',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          borderRadius: '12px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          {songForShare.thumbnailUrl ? (
+            <img 
+              src={songForShare.thumbnailUrl} 
+              alt={songForShare.title}
+              style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+              }}
+            />
+          ) : (
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Music size={24} style={{ color: '#fff' }} />
             </div>
-          </fieldset>
-
-          {user && (
-            <fieldset className="flex flex-col gap-2 border-0 p-0 m-0">
-              <label style={labelStyle}>
-                <UserIcon size={14} className="text-green-400"/>
-                Người gửi
-              </label>
-              <div style={infoBoxStyle}>
-                <p style={songTitleStyle}>@{user.username}</p>
-              </div>
-            </fieldset>
           )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ 
+              margin: 0, 
+              fontWeight: 'bold', 
+              fontSize: '15px', 
+              color: '#fff',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {songForShare.title}
+            </p>
+            <p style={{ 
+              margin: '4px 0 0', 
+              fontSize: '13px', 
+              color: 'rgba(255,255,255,0.6)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {songForShare.artist || 'Unknown Artist'}
+            </p>
+          </div>
+          <div style={{
+            padding: '6px 12px',
+            borderRadius: '20px',
+            backgroundColor: 'rgba(131, 58, 180, 0.3)',
+            border: '1px solid rgba(131, 58, 180, 0.5)'
+          }}>
+            <Music size={14} style={{ color: '#c084fc' }} />
+          </div>
+        </div>
+      </div>
 
-          <fieldset className="flex flex-col gap-2 border-0 p-0 m-0">
-            <label htmlFor="receiverInput" style={labelStyle}>
-              <UserIcon size={14} className="text-blue-400"/>
-              Gửi tới
+      {/* Form */}
+      <form onSubmit={handleShare} style={{ padding: '0 24px 24px' }}>
+        {/* Sender Info */}
+        {user && (
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              color: 'rgba(255,255,255,0.5)',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              marginBottom: '8px'
+            }}>
+              From
             </label>
             <div style={{
-              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 14px',
+              backgroundColor: 'rgba(30, 215, 96, 0.1)',
+              borderRadius: '10px',
+              border: '1px solid rgba(30, 215, 96, 0.3)'
             }}>
-              <UserIcon size={16} style={{
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: user.avatarUrl ? `url(${user.avatarUrl}) center/cover` : 'linear-gradient(135deg, #833ab4, #fd1d1d)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {!user.avatarUrl && <UserIcon size={16} style={{ color: '#fff' }} />}
+              </div>
+              <span style={{ color: '#1ed760', fontWeight: 'bold', fontSize: '14px' }}>
+                @{user.username}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Receiver Input */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{
+            display: 'block',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            color: 'rgba(255,255,255,0.5)',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            marginBottom: '8px'
+          }}>
+            Send To
+          </label>
+          <div style={{
+            position: 'relative',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '12px',
+            border: '2px solid rgba(131, 58, 180, 0.4)',
+            transition: 'all 0.3s',
+            overflow: 'hidden'
+          }}>
+            <UserIcon 
+              size={18} 
+              style={{
                 position: 'absolute',
-                left: '16px',
+                left: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: isReceiverInputFocused ? '#60a5fa' : '#71717a',
-                pointerEvents: 'none',
-                transition: 'color 0.3s ease',
-              }} />
-              <input
-                ref={inputRef}
-                value={receiverUsername}
-                id="receiverInput"
-                onChange={(e) => setReceiverUsername(e.target.value)}
-                placeholder="Tên người nhận (username/email)"
-                style={receiverInputStyle}
-                disabled={busy}
-                required
-                onFocus={() => setIsReceiverInputFocused(true)}
-                onBlur={() => setIsReceiverInputFocused(false)}
-              />
-            </div>
-          </fieldset>
-
-          {/* --- Vùng hiển thị trạng thái và nút bấm --- 
-              Sử dụng mt-auto để đẩy vùng này xuống cuối cùng của form.
-          */}
-          <div className="mt-auto pt-2 pb-2">
-            {status && (
-              <div className={`text-sm font-semibold p-3 rounded-xl border mb-4 ${status.type === 'success' ? 'text-green-300 bg-green-500/10 border-green-500/30' : 'text-red-300 bg-red-500/10 border-red-500/30'}`}>
-                {status.message}
-              </div>
-            )}
-            <button
-              type="submit"
-              disabled={busy || !songForShare}
-              style={submitButtonStyle}
-              onMouseEnter={() => setIsSubmitButtonHovered(true)}
-              onMouseLeave={() => {
-                setIsSubmitButtonHovered(false);
-                setIsSubmitButtonActive(false); // Reset active state on leave
+                color: 'rgba(255,255,255,0.4)'
+              }} 
+            />
+            <input
+              ref={inputRef}
+              value={receiverUsername}
+              onChange={(e) => setReceiverUsername(e.target.value)}
+              placeholder="Username or email"
+              disabled={busy}
+              required
+              style={{
+                width: '100%',
+                padding: '14px 14px 14px 46px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: '#fff',
+                fontSize: '15px',
               }}
-              onMouseDown={() => setIsSubmitButtonActive(true)}
-              onMouseUp={() => setIsSubmitButtonActive(false)}
-            >
-              {busy ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={12} />}
-              {busy ? 'Đang gửi...' : 'Gửi Giai Điệu'}
-            </button>
+            />
           </div>
-        </form>
-      </div>
-    </>
+        </div>
+
+        {/* Status Message */}
+        {status && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '12px 16px',
+            borderRadius: '10px',
+            marginBottom: '16px',
+            backgroundColor: status.type === 'success' 
+              ? 'rgba(30, 215, 96, 0.15)' 
+              : 'rgba(255, 77, 77, 0.15)',
+            border: `1px solid ${status.type === 'success' ? 'rgba(30, 215, 96, 0.4)' : 'rgba(255, 77, 77, 0.4)'}`,
+            animation: status.type === 'success' ? 'glow 2s infinite' : 'none'
+          }}>
+            {status.type === 'success' ? (
+              <CheckCircle size={20} style={{ color: '#1ed760', flexShrink: 0 }} />
+            ) : (
+              <AlertCircle size={20} style={{ color: '#ff4d4d', flexShrink: 0 }} />
+            )}
+            <span style={{
+              fontSize: '13px',
+              color: status.type === 'success' ? '#1ed760' : '#ff4d4d',
+              fontWeight: '500'
+            }}>
+              {status.message}
+            </span>
+          </div>
+        )}
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={busy || !songForShare}
+          style={{
+            width: '100%',
+            padding: '14px',
+            borderRadius: '12px',
+            background: busy 
+              ? 'rgba(131, 58, 180, 0.5)' 
+              : 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
+            border: 'none',
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: '15px',
+            cursor: busy ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            transition: 'all 0.3s',
+            boxShadow: busy ? 'none' : '0 8px 30px rgba(131, 58, 180, 0.4)',
+            opacity: busy ? 0.7 : 1
+          }}
+          onMouseEnter={(e) => { if (!busy) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(131, 58, 180, 0.6)'; }}}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = busy ? 'none' : '0 8px 30px rgba(131, 58, 180, 0.4)'; }}
+        >
+          {busy ? (
+            <>
+              <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+              Sending...
+            </>
+          ) : (
+            <>
+              <Send size={18} />
+              Send Song
+            </>
+          )}
+        </button>
+      </form>
+    </div>
   );
 };

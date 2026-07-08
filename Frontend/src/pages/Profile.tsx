@@ -1,37 +1,34 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Mail, Calendar, ShieldCheck, ArrowLeft, Music, ListMusic, Users, Settings, Camera, Image as ImageIcon, Loader2, Globe, Twitter, Github, MapPin, Info, Edit, Save, X, CheckCircle2, Cake, VenetianMask, Play, Clock, Heart, UserPlus, UserCheck, LogOut } from 'lucide-react';
+import { User, Calendar, ShieldCheck, Music, ListMusic, Camera, Globe, Twitter, Github, MapPin, Edit, Save, X, UserPlus, UserCheck, LogOut, ExternalLink, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../axios';
-import { useAudio } from '../Contexts/AudioContext'; // Import useAudio
+import { useAudio } from '../Contexts/AudioContext';
 
 interface ProfileProps {
-  currentUser: { // Đổi tên để phân biệt với user đang xem
+  currentUser: {
     displayName: string;
     email?: string;
-    // Đảm bảo username luôn có để hiển thị @username
-    id: string; // Thêm ID để xử lý follow
+    id: string;
     username: string;
     avatarUrl?: string;
     bannerUrl?: string;
     createdAt?: string;
     bio?: string;
-    location?: string; // New field
-    websiteUrl?: string; // New field
-    twitterUrl?: string; // New field
-    githubUrl?: string; // New field
-    gender?: string; // New field
-    dateOfBirth?: string; // New field
-    lastUpdatedAt?: string; // New field
-    // Thêm các trường thống kê
+    location?: string;
+    websiteUrl?: string;
+    twitterUrl?: string;
+    githubUrl?: string;
+    gender?: string;
+    dateOfBirth?: string;
+    lastUpdatedAt?: string;
     followerCount?: number;
     followingCount?: number;
     isFollowing?: boolean;
-  } | null; // Người dùng đang đăng nhập
-  onUpdate?: () => void; // Hàm để fetch lại profile của currentUser
-  onLogout?: () => void; // Thêm prop để nhận hàm đăng xuất
+  } | null;
+  onUpdate?: () => void;
+  onLogout?: () => void;
 }
 
-// Thêm kiểu dữ liệu cho bài hát và playlist
 interface MediaItem {
   id: string;
   title: string;
@@ -51,52 +48,50 @@ interface PlaylistItem {
 
 const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
   const navigate = useNavigate();
-  const { username } = useParams<{ username: string }>(); // Lấy username từ URL
-
-  const [profileUser, setProfileUser] = useState<ProfileProps['currentUser']>(null); // State cho người dùng đang xem
+  const { username } = useParams<{ username: string }>();
+  const [profileUser, setProfileUser] = useState<ProfileProps['currentUser']>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [activeTab, setActiveTab] = useState('home'); // Đổi mặc định sang 'home' để thấy thông tin ngay
+  const [activeTab, setActiveTab] = useState('overview');
   const [uploading, setUploading] = useState(false);
-  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [isHoveringAvatar, setIsHoveringAvatar] = useState(false);
   const [isHoveringBanner, setIsHoveringBanner] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info', text: string } | null>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
-
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info', text: string } | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUsername, setEditedUsername] = useState('');
-  const [editedEmail, setEditedEmail] = useState('');
-  const [editedDisplayName, setEditedDisplayName] = useState('');
-  const [editedAvatarUrl, setEditedAvatarUrl] = useState('');
-  const [editedBannerUrl, setEditedBannerUrl] = useState('');
   const [editedBio, setEditedBio] = useState('');
   const [editedLocation, setEditedLocation] = useState('');
   const [editedWebsite, setEditedWebsite] = useState('');
-  const [editedTwitter, setEditedTwitter] = useState('');
-  const [editedGithub, setEditedGithub] = useState('');
-  const [editedGender, setEditedGender] = useState('');
-  const [editedDateOfBirth, setEditedDateOfBirth] = useState('');
-
-  // State cho các tab mới
   const [userSongs, setUserSongs] = useState<MediaItem[]>([]);
   const [userPlaylists, setUserPlaylists] = useState<PlaylistItem[]>([]);
-  // State riêng cho trạng thái follow để cập nhật tức thì
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
-  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+  const { playTrack, currentTrack, isPlaying } = useAudio();
 
-  const { playTrack, currentTrack, isPlaying } = useAudio(); // Lấy context từ AudioProvider
-  
-  // SỬA LỖI: Xác định xem có đang xem hồ sơ của chính mình hay không một cách trực tiếp hơn.
   const isOwnProfile = currentUser?.username === username;
 
-  // Hàm fetch profile của người dùng dựa trên username từ URL
+  const formatTime = (seconds?: number) => {
+    if (!seconds || isNaN(seconds)) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const fetchProfileData = async () => {
-    if (!username || !currentUser) return;
-    // Nếu là hồ sơ của chính mình, không cần fetch lại, chỉ cần dùng `currentUser`.
-    if (isOwnProfile) {
+    if (!username && currentUser) {
+      setProfileUser(currentUser);
+      setIsFollowing(currentUser?.isFollowing || false);
+      setFollowerCount(currentUser?.followerCount || 0);
+      setIsLoading(false);
+      return;
+    }
+    
+    if (!username) {
+      setIsLoading(false);
+      return;
+    }
+    
+    if (isOwnProfile && currentUser) {
       setProfileUser(currentUser);
       setIsFollowing(currentUser?.isFollowing || false);
       setFollowerCount(currentUser?.followerCount || 0);
@@ -108,1392 +103,993 @@ const Profile = ({ currentUser, onUpdate, onLogout }: ProfileProps) => {
     try {
       const res = await api.get(`/User/profile/${username}`);
       setProfileUser(res.data);
-      // Cập nhật state follow
       setIsFollowing(res.data.isFollowing || false);
       setFollowerCount(res.data.followerCount || 0);
     } catch (error) {
-      console.error("Không thể tải hồ sơ người dùng:", error);
-      setStatusMessage({ type: 'error', text: 'Không thể tải hồ sơ người dùng. Vui lòng thử lại.' });
+      console.error("Unable to load user profile:", error);
     } finally {
       setIsLoading(false);
     }
-    };
+  };
 
-  // Effect chính để tải dữ liệu profile khi username thay đổi
   useEffect(() => {
     fetchProfileData();
-  }, [username, currentUser]); // Thêm currentUser để re-render khi nó thay đổi
+  }, [username, currentUser]);
 
-  // Fetch dữ liệu cho các tab khi component được tải
   useEffect(() => {
     const fetchDataForTabs = async () => {
       if (profileUser) {
         try {
-          // Lấy danh sách bài hát đã tải lên (giống trang Library)
           const songsRes = await api.get('/media');
           setUserSongs(songsRes.data?.items || []);
-
-          // SỬA LỖI: Gọi đúng API để lấy playlist của người dùng đang xem, không phải của 'mine'
-          // Endpoint này cần được tạo ở backend, ví dụ: /playlists/user/{username}
-          // Tạm thời, chúng ta sẽ giả sử nó là /playlists/user/{profileUser.id}
           const endpoint = isOwnProfile ? '/playlists/mine' : `/playlists/user/${profileUser.id}`;
-          const playlistsRes = await api.get(endpoint); 
+          const playlistsRes = await api.get(endpoint);
           setUserPlaylists(playlistsRes.data || []);
         } catch (error) {
-          console.warn("Lỗi khi tải dữ liệu cho các tab (có thể do endpoint playlist chưa tồn tại):", error);
+          console.warn("Error loading tab data:", error);
         }
       }
     };
     if (profileUser) {
       fetchDataForTabs();
     }
-  }, [profileUser]); // Chạy lại khi profileUser thay đổi
+  }, [profileUser]);
 
-
-  // Xóa thông báo sau một khoảng thời gian
   useEffect(() => {
     if (statusMessage) {
       const timer = setTimeout(() => setStatusMessage(null), 5000);
       return () => clearTimeout(timer);
     }
-    return () => {};
   }, [statusMessage]);
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
+  const handleAvatarClick = () => fileInputRef.current?.click();
+  const handleBannerClick = () => bannerInputRef.current?.click();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const currentToken = localStorage.getItem('token');
     if (!currentToken || currentToken === "dev-token-bypass") {
-      setStatusMessage({ type: 'error', text: "Chế độ khách không thể tải ảnh. Vui lòng đăng nhập!" });
-      setUploading(false);
+      setStatusMessage({ type: 'error', text: "Please log in to upload avatar!" });
       e.target.value = '';
       return;
     }
-
     setUploading(true);
-
-    // 1. Xem trước ảnh ngay lập tức để người dùng thấy thay đổi tức thì
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setEditedAvatarUrl(result);
-    };
-    reader.readAsDataURL(file);
-
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
-      // 2. Gửi file lên server - ĐỂ AXIOS TỰ XỬ LÝ CONTENT-TYPE (QUAN TRỌNG)
-      const response = await api.post('/User/avatar', formData);
-      
-      // 3. Nếu thành công, ưu tiên dùng URL từ server trả về
-      if (response.data?.url) {
-        setEditedAvatarUrl(response.data.url);
-        // Đồng bộ ngay vào LocalStorage để không bị mất khi F5
-        const savedData = localStorage.getItem('manual_profile_data');
-        if (savedData) {
-          const parsed = JSON.parse(savedData);
-          localStorage.setItem('manual_profile_data', JSON.stringify({ ...parsed, avatarUrl: response.data.url }));
-        }
-      }
-
-      setStatusMessage({ type: 'success', text: "Cập nhật ảnh đại diện thành công!" });
-      if (onUpdate) onUpdate(); // Làm mới dữ liệu ở App.tsx
+      await api.post('/User/avatar', formData);
+      setStatusMessage({ type: 'success', text: "Avatar updated!" });
+      if (onUpdate) onUpdate();
     } catch (err: any) {
-      console.error("Lỗi upload avatar:", err);
-      const errorMsg = err.response?.status === 401 
-        ? "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại." 
-        : "Không thể tải ảnh lên Server. Ảnh đã được lưu tạm cục bộ.";
-      setStatusMessage({ type: 'error', text: errorMsg });
-
-      if (onUpdate) onUpdate(); // Vẫn gọi onUpdate để cập nhật UI với Base64
+      setStatusMessage({ type: 'error', text: "Cannot upload avatar" });
     } finally {
       setUploading(false);
-      e.target.value = ''; // Reset input để có thể chọn lại cùng 1 file
+      e.target.value = '';
     }
-  };
-
-  const handleBannerClick = () => {
-    bannerInputRef.current?.click();
   };
 
   const handleBannerChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const currentToken = localStorage.getItem('token');
-    if (!currentToken || currentToken === "dev-token-bypass" || currentToken === "null" || currentToken === "undefined") {
-      setStatusMessage({ type: 'error', text: "Bạn cần đăng nhập để tải ảnh bìa lên." });
-      setUploadingBanner(false);
-      e.target.value = '';
-      return;
-    }
-
-    setUploadingBanner(true);
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setEditedBannerUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
+    setUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await api.post('/User/banner', formData);
-      
-      if (response.data?.url) {
-        setEditedBannerUrl(response.data.url);
-      }
-
+      await api.post('/User/banner', formData);
+      setStatusMessage({ type: 'success', text: "Banner updated!" });
       if (onUpdate) onUpdate();
     } catch (err) {
-      console.error("Lỗi upload banner:", err); // Log lỗi chi tiết để debug
-      if ((err as any).response?.status === 401) {
-        setStatusMessage({ type: 'error', text: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại để tải ảnh bìa." });
-        // KHÔNG XÓA TOKEN Ở ĐÂY, ĐỂ APP.TSX QUYẾT ĐỊNH LOGOUT
-      } else {
-        setStatusMessage({ type: 'info', text: "Server chưa chạy hoặc có lỗi. Ảnh bìa đã được lưu tạm vào trình duyệt." });
-        if (onUpdate) onUpdate();
-      }
+      setStatusMessage({ type: 'error', text: "Cannot upload banner" });
     } finally {
-      setUploadingBanner(false);
+      setUploading(false);
       e.target.value = '';
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    if (!profileUser || !currentUser) {
+      navigate('/app/login');
+      return;
+    }
+    const newFollowingState = !isFollowing;
+    setIsFollowing(newFollowingState);
+    setFollowerCount(prev => newFollowingState ? prev + 1 : prev - 1);
+    try {
+      await api.post(`/User/${profileUser.id}/follow`);
+      fetchProfileData();
+    } catch (error) {
+      setIsFollowing(!newFollowingState);
+      setFollowerCount(prev => newFollowingState ? prev - 1 : prev + 1);
     }
   };
 
   const handleSaveProfile = async () => {
-    const profileData = {
-      username: editedUsername,
-      email: editedEmail,
-      displayName: editedDisplayName,
-      bio: editedBio,
-      location: editedLocation,
-      websiteUrl: editedWebsite,
-      twitterUrl: editedTwitter,
-      githubUrl: editedGithub,
-      avatarUrl: editedAvatarUrl, // Luôn gửi giá trị đã chỉnh sửa, kể cả chuỗi rỗng
-      bannerUrl: editedBannerUrl, // Luôn gửi giá trị đã chỉnh sửa, kể cả chuỗi rỗng
-      gender: editedGender,
-      dateOfBirth: editedDateOfBirth ? new Date(editedDateOfBirth).toISOString() : null
-    };
-
-    // Hàm lưu dữ liệu vào localStorage
-    const saveToLocalStorage = () => {
-      localStorage.setItem(`profile_offline_${currentUser?.id}`, JSON.stringify(profileData));
-    };
-
     try {
-      await api.put('/User/profile', profileData);
+      await api.put('/User/profile', {
+        bio: editedBio,
+        location: editedLocation,
+        websiteUrl: editedWebsite
+      });
       setIsEditing(false);
-      setStatusMessage({ type: 'success', text: "Hồ sơ đã được đồng bộ với máy chủ!" });
-      // Update state user (username/email) ngay để UI header & phần hiển thị email phản ánh đúng sau khi sửa
-      if (onUpdate) await onUpdate(); // App.tsx truyền fetchProfile
-      // Đồng bộ lại local form model theo user mới (tránh trường hợp UI hiển thị chậm)
-      setEditedEmail(profileData.email ?? '');
-      setEditedUsername(profileData.username ?? '');
-      // Xóa dữ liệu offline sau khi đồng bộ thành công
-      localStorage.removeItem(`profile_offline_${currentUser?.id}`);
-    } catch (err: any) {
-      const isAuthError = err.response?.status === 401;
-      if (isAuthError) {
-        setStatusMessage({ type: 'error', text: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại để lưu dữ liệu." });
-        if (onUpdate) onUpdate(); // Kích hoạt App.tsx để xử lý logout và redirect
-      } else {
-        console.warn("Server không phản hồi, dữ liệu đã được lưu tạm vào trình duyệt.");
-        saveToLocalStorage(); // Lưu vào localStorage khi có lỗi
-        setStatusMessage({ type: 'info', text: "Đã lưu thay đổi vào máy (Chế độ Offline)." });
-        if (onUpdate) onUpdate();
-        setIsEditing(false);
-      }
-      setEditedAvatarUrl(profileData.avatarUrl || '');
+      setStatusMessage({ type: 'success', text: "Profile updated!" });
+      if (onUpdate) onUpdate();
+    } catch (err) {
+      setStatusMessage({ type: 'error', text: "Cannot update profile" });
     }
-  };
-
-  const handleCancelEdit = () => {
-    // Khi hủy, ưu tiên tải lại từ profileUser (dữ liệu từ server hoặc state)
-    setIsEditing(false);
-    if (profileUser) {
-      setEditedUsername(profileUser.username || '');
-      setEditedEmail(profileUser.email || '');
-      setEditedDisplayName(profileUser.displayName || profileUser.username || '');
-      setEditedAvatarUrl(profileUser.avatarUrl || '');
-      setEditedBannerUrl(profileUser.bannerUrl || '');
-      setEditedBio(profileUser.bio || '');
-      setEditedLocation(profileUser.location || 'Việt Nam');
-      setEditedWebsite(profileUser.websiteUrl || '');
-      setEditedTwitter(profileUser.twitterUrl || '');
-      setEditedGithub(profileUser.githubUrl || '');
-      setEditedGender(profileUser.gender || '');
-      setEditedDateOfBirth(profileUser.dateOfBirth ? new Date(profileUser.dateOfBirth).toISOString().split('T')[0] : '');
-    }
-  };
-
-  const handleFollowToggle = async () => { 
-    if (!profileUser || !currentUser) {
-      navigate('/app/login'); // Yêu cầu đăng nhập nếu chưa đăng nhập
-      return;
-    }
-    try {
-      // Cập nhật UI ngay lập tức để tạo cảm giác phản hồi nhanh
-      const newFollowingState = !isFollowing;
-      setIsFollowing(newFollowingState);
-      setFollowerCount(prev => newFollowingState ? prev + 1 : prev - 1);
-
-      // Gửi request lên server
-      const response = await api.post(`/User/${profileUser.id}/follow`);
-      
-      // Cập nhật lại state từ server để đảm bảo đồng bộ (nếu cần)
-      setIsFollowing(response.data.isFollowing);
-      // Gọi lại fetchProfileData để cập nhật followerCount chính xác từ server
-      fetchProfileData();
-    } catch (error) {
-      console.error("Lỗi khi theo dõi:", error);
-      // Hoàn tác lại UI nếu có lỗi
-      setIsFollowing(prev => !prev);
-      setFollowerCount(prev => isFollowing ? prev - 1 : prev + 1);
-      setStatusMessage({ type: 'error', text: "Đã xảy ra lỗi. Vui lòng thử lại." });
-    }
-  };
-
-  const handleStartEditing = () => {
-    if (profileUser) {
-      setEditedUsername(profileUser.username || '');
-      setEditedEmail(profileUser.email || '');
-      setEditedDisplayName(profileUser.displayName || profileUser.username || '');
-      setEditedAvatarUrl(profileUser.avatarUrl || '');
-      setEditedBannerUrl(profileUser.bannerUrl || '');
-      setEditedBio(profileUser.bio || '');
-      setEditedLocation(profileUser.location || 'Việt Nam');
-      setEditedWebsite(profileUser.websiteUrl || '');
-      setEditedTwitter(profileUser.twitterUrl || '');
-      setEditedGithub(profileUser.githubUrl || '');
-      setEditedGender(profileUser.gender || '');
-      setEditedDateOfBirth(profileUser.dateOfBirth ? new Date(profileUser.dateOfBirth).toISOString().split('T')[0] : '');
-    }
-    setIsEditing(true);
-  };
-
-  const handleFetchLocation = async () => {
-    if (!navigator.geolocation) {
-      setStatusMessage({ type: 'error', text: 'Trình duyệt của bạn không hỗ trợ định vị.' });
-      return;
-    }
-
-    setIsFetchingLocation(true);
-    setStatusMessage({ type: 'info', text: 'Đang lấy vị trí của bạn...' });
-
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords;
-      try {
-        // Sử dụng dịch vụ miễn phí để chuyển đổi tọa độ sang địa chỉ
-        const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=vi`);
-        const data = await response.json();
-        const locationString = `${data.city || ''}, ${data.countryName || ''}`.replace(/^, |, $/g, '');
-        setEditedLocation(locationString || 'Không xác định được');
-        setStatusMessage({ type: 'success', text: 'Đã lấy vị trí thành công!' });
-      } catch (error) {
-        setStatusMessage({ type: 'error', text: 'Không thể chuyển đổi tọa độ.' });
-      } finally {
-        setIsFetchingLocation(false);
-      }
-    }, (error) => {
-      setStatusMessage({ type: 'error', text: `Lỗi định vị: ${error.message}` });
-      setIsFetchingLocation(false);
-    });
-  };
-
-  // Hàm định dạng thời gian cho bài hát
-  const formatTime = (seconds?: number) => {
-    if (!seconds || isNaN(seconds)) return "0:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const styles = {
-    container: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '0 16px',
-      paddingBottom: '120px', // Thêm khoảng đệm dưới để không bị PlayerBar che
-    },
-    infoGrid: { // Thêm thuộc tính này để sửa lỗi Property 'infoGrid' does not exist
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '20px',
-      marginTop: '20px',
-    },
-    googleCard: {
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      borderRadius: '12px',
-      backdropFilter: 'blur(5px)',
-      border: '1px solid #333',
-      overflow: 'hidden',
-      marginBottom: '24px',
-    },
-    googleRow: {
-      display: 'flex',
-      padding: '20px 24px',
-      borderBottom: '1px solid #262626',
-      alignItems: 'center',
-      transition: 'background-color 0.2s',
-      cursor: 'pointer',
-    },
-    infoLabel: {
-      flex: '0 0 250px',
-      fontSize: '14px',
-      color: '#aaa',
-      fontWeight: 'bold',
-      textTransform: 'uppercase' as const,
-      letterSpacing: '0.8px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-    },
-    infoValue: {
-      flex: 1,
-      fontSize: '16px',
-      color: 'white',
-      fontWeight: '500' as const,
-    },
-    banner: {
-      width: '100%',
-      height: '240px',
-      borderRadius: '12px',
-      background: (editedBannerUrl || profileUser?.bannerUrl)
-        ? `url(${editedBannerUrl || profileUser?.bannerUrl}) center/cover no-repeat` 
-        : 'linear-gradient(90deg, #1f1f1f 0%, #450a0a 100%)',
-      marginTop: '16px',
-      position: 'relative' as const,
-      cursor: 'pointer',
-      overflow: 'hidden',
-      border: '1px solid rgba(255,255,255,0.1)',
-    },
-    bannerOverlay: {
-      position: 'absolute' as const,
-      inset: 0,
-      backgroundColor: 'rgba(0,0,0,0.4)',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
-      justifyContent: 'center',
-      opacity: isHoveringBanner || uploadingBanner ? 1 : 0.4, // Always visible, but more opaque on hover/upload
-      transition: 'opacity 0.3s ease',
-      color: 'white',
-      gap: '8px',
-    },
-    profileHeader: {
-      padding: '24px 0',
-      display: 'flex',
-      gap: '24px',
-      alignItems: 'flex-start',
-      flexWrap: 'wrap' as const,
-    },
-    avatarContainer: {
-      flexShrink: 0,
-      position: 'relative' as const,
-    },
-    avatar: {
-      width: '48px',
-      height: '48px',
-      borderRadius: '50%',
-      backgroundColor: '#1f1f1f',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '18px',
-      fontWeight: 'bold',
-      color: '#ffffff',
-      border: '3px solid #3b82f6',
-      overflow: 'hidden',
-      cursor: 'pointer',
-      position: 'relative' as const,
-      boxShadow: '0 0 25px rgba(59, 130, 246, 0.6)',
-    },
-    avatarOverlay: {
-      position: 'absolute' as const,
-      inset: 0,
-      backgroundColor: 'rgba(0,0,0,0.4)', 
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '0',
-      opacity: isHoveringAvatar || uploading ? 1 : 0, // Ẩn hẳn khi không tương tác để thấy rõ ảnh
-      transition: 'opacity 0.2s',
-      color: 'white',
-    },
-    mainInfo: {
-      flex: 1,
-      minWidth: '300px',
-    },
-    name: {
-      fontSize: '36px',
-      fontWeight: '900',
-      color: '#ffffff',
-      margin: 0,
-    },
-    handle: {
-      fontSize: '14px',
-      color: '#aaa',
-      margin: '4px 0 12px',
-      display: 'flex',
-      gap: '8px',
-    },
-    statsContainer: {
-      display: 'flex',
-      gap: '16px',
-      fontSize: '14px',
-      color: '#aaa',
-      marginBottom: '16px',
-    },
-    actionButtons: {
-      display: 'flex',
-      gap: '12px',
-      marginTop: '16px',
-      flexWrap: 'wrap' as const,
-    },
-    btnSecondary: {
-      backgroundColor: 'transparent',
-      color: 'white',
-      padding: '10px 24px',
-      borderRadius: '999px',
-      fontSize: '14px',
-      fontWeight: '600',
-      border: '1.5px solid rgba(255,255,255,0.2)',
-      cursor: 'pointer',
-      transition: 'all 0.25s ease',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      backdropFilter: 'blur(4px)',
-      position: 'relative' as const,
-      overflow: 'hidden',
-    },
-    tabsContainer: {
-      display: 'flex',
-      borderBottom: '1px solid #262626',
-      marginBottom: '28px',
-      gap: '4px',
-    },
-    tab: {
-      padding: '10px 20px',
-      fontSize: '13px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      color: '#777',
-      borderBottom: '2px solid transparent',
-      transition: 'all 0.2s ease',
-      backgroundColor: 'transparent',
-      borderTop: 'none',
-      borderLeft: 'none',
-      borderRight: 'none',
-      borderRadius: '8px 8px 0 0',
-      marginBottom: '-1px',
-      letterSpacing: '0.3px',
-    },
-    activeTab: {
-      color: '#fff',
-      borderBottomColor: 'transparent', // Bỏ border dưới
-      backgroundColor: 'rgba(59, 130, 246, 0.15)',
-    },
-    infoSection: {
-      display: 'grid',
-      gridTemplateColumns: '1fr', // Thay đổi ở đây: chỉ một cột
-      gap: '24px',
-    },
-    infoBox: {
-      padding: '24px',
-      backgroundColor: 'rgba(18, 18, 18, 0.75)',
-      borderRadius: '16px',
-      border: '1px solid #262626',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '16px',
-    },
-    iconWrapper: {
-      width: '44px',
-      height: '44px',
-      borderRadius: '12px',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#60a5fa',
-      flexShrink: 0,
-    },
-    fullWidthInfo: {
-      gridColumn: '1 / -1',
-      padding: '28px',
-      backgroundColor: 'rgba(18, 18, 18, 0.75)',
-      backdropFilter: 'blur(8px)',
-      borderRadius: '16px',
-      border: '1px solid #262626',
-    },
-    socialLink: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      color: '#aaa',
-      textDecoration: 'none',
-      fontSize: '14px',
-      transition: 'color 0.2s',
-    },
-    inputField: {
-      width: '100%',
-      backgroundColor: '#1a1a1a',
-      color: 'white',
-      border: '2px solid #333',
-      borderRadius: '8px',
-      padding: '10px 12px',
-      fontSize: '16px',
-      outline: 'none',
-      transition: 'border-color 0.2s, box-shadow 0.2s',
-    },
-    textareaField: {
-      width: '100%',
-      backgroundColor: '#1a1a1a',
-      color: 'white',
-      border: '2px solid #333',
-      borderRadius: '8px',
-      padding: '10px 12px',
-      fontSize: '16px',
-      outline: 'none',
-      resize: 'vertical' as const,
-      minHeight: '100px',
-      transition: 'border-color 0.2s, box-shadow 0.2s',
-    },
-    btnPrimary: {
-      backgroundColor: 'transparent', // Chuyển sang trong suốt
-      color: 'white',
-      padding: '10px 28px',
-      borderRadius: '999px',
-      fontSize: '14px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.25s ease',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      border: '1.5px solid #3b82f6', // Thêm viền neon
-      boxShadow: '0 0 15px rgba(59, 130, 246, 0.3)', // Thêm bóng mờ
-      letterSpacing: '0.3px',
-    },
-    formCard: {
-      backgroundColor: 'rgba(18, 18, 18, 0.7)',
-      borderRadius: '16px',
-      backdropFilter: 'blur(10px)',
-      padding: '32px',
-      border: '2px solid #60a5fa',
-      boxShadow: '0 0 40px rgba(96, 165, 250, 0.3)',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '20px',
-      marginTop: '24px',
-    },
-    labelHeader: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      color: '#60a5fa',
-      fontSize: '12px',
-      fontWeight: 'bold',
-      textTransform: 'uppercase' as const,
-      letterSpacing: '1px',
-      marginBottom: '8px',
-    },
-    formRow: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '20px',
-    },
-    inputIconGroup: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      backgroundColor: '#1a1a1a',
-      borderRadius: '8px',
-      padding: '0 12px',
-      border: '2px solid #333',
-      transition: 'all 0.2s',
-    },
-    formInputNoBorder: {
-      flex: 1,
-      backgroundColor: 'transparent',
-      border: 'none',
-      color: 'white',
-      padding: '12px 0',
-      fontSize: '15px',
-      outline: 'none',
-    },
-    guestContainer: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '70vh',
-      color: '#737373',
-      gap: '20px',
-      textAlign: 'center' as const,
-      backgroundColor: 'rgba(0,0,0,0.7)',
-      borderRadius: '24px',
-      margin: '20px',
-      border: '1px solid #262626',
-    },
-  };
-
-  const token = localStorage.getItem('token') || '';
-  const isGuest = !currentUser && (token === '' || token === 'null');
-
-  // Hàm trợ giúp đổi màu border khi focus
-  const inputFocusStyle = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    e.currentTarget.style.borderColor = '#60a5fa';
-    e.currentTarget.style.boxShadow = '0 0 15px rgba(96, 165, 250, 0.3)';
-  };
-  const inputBlurStyle = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    e.currentTarget.style.borderColor = '#3f3f46';
-    e.currentTarget.style.boxShadow = 'none';
   };
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <Loader2 className="animate-spin text-blue-500" size={48} />
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#121212', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center' 
+      }}>
+        <div style={{ 
+          width: '48px', 
+          height: '48px', 
+          border: '4px solid #333', 
+          borderTopColor: '#1ed760',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
-  return (
-    <div style={styles.container}>
-      <style>{`
-        @keyframes neon-shift-profile {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-        .neon-title {
-          background: linear-gradient(
-            90deg, 
-            #3b82f6 0%, 
-            #93c5fd 25%, 
-            #3b82f6 50%, 
-            #93c5fd 75%, 
-            #3b82f6 100%
-          );
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: neon-shift-profile 4s linear infinite;
-          filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.6));
-          display: inline-block;
-        }
-        .google-row-hover:hover {
-          background-color: rgba(255, 255, 255, 0.05) !important;
-        }
-        .btn-primary-profile {
-          background: transparent;
-          color: white;
-          padding: 10px 28px;
-          border-radius: 999px;
-          font-size: 14px;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          letter-spacing: 0.3px;
-          border: 1.5px solid #3b82f6;
-          box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-          transition: all 0.25s ease;
-        }
-        .btn-primary-profile:hover {
-          transform: scale(1.04);
-          box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
-          background: rgba(59, 130, 246, 0.2);
-        }
-        .btn-primary-profile:active {
-          transform: scale(0.97);
-        }
-        .btn-secondary-profile, .form-cancel-btn {
-          background: transparent;
-          color: white;
-          padding: 10px 24px;
-          border-radius: 999px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          border: 1.5px solid rgba(255,255,255,0.2);
-          transition: all 0.25s ease;
-          backdrop-filter: blur(4px);
-        }
-        .btn-secondary-profile:hover {
-          border-color: rgba(255,255,255,0.4);
-          background: rgba(255,255,255,0.06);
-          transform: scale(1.03);
-        }
-        .btn-secondary-profile:active, .form-cancel-btn:active {
-          transform: scale(0.97);
-        }
-        .btn-following {
-          background: rgba(255,255,255,0.1);
-          border-color: rgba(255,255,255,0.3);
-          color: white;
-        }
-        .btn-following:hover {
-          border-color: #ef4444;
-          color: #ef4444;
-          background: rgba(239, 68, 68, 0.08);
-        }
-        .tab-btn-profile:hover {
-          color: #aaa !important;
-        }
-        .stat-item-profile {
-          transition: all 0.2s ease;
-          cursor: default;
-        }
-        .stat-item-profile:hover {
-          color: white;
-          transform: translateY(-1px);
-        }
-        .form-save-btn {
-          background: #16a34a;
-          color: white;
-          padding: 10px 28px;
-          border-radius: 999px;
-          font-size: 14px;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          transition: all 0.25s ease;
-          box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
-        }
-        .form-save-btn:hover {
-          transform: scale(1.04);
-          box-shadow: 0 6px 24px rgba(22, 163, 74, 0.5);
-          background: #15803d;
-        }
-        .form-save-btn:active {
-          transform: scale(0.97);
-        }
-        .form-cancel-btn:hover {
-          border-color: #ef4444;
-          color: #ef4444;
-          background: rgba(239, 68, 68, 0.08);
-        }
-        .song-row {
-          transition: all 0.2s ease;
-          cursor: pointer;
-        }
-        .song-row:hover {
-          background-color: rgba(255, 255, 255, 0.04) !important;
-        }
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border-profile {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-      `}</style>
+  const displayUser = isOwnProfile ? currentUser : profileUser;
+  const bannerUrl = displayUser?.bannerUrl || null;
+  const avatarUrl = displayUser?.avatarUrl || null;
+  const displayName = displayUser?.displayName || displayUser?.username || 'User';
+  const userBio = displayUser?.bio || 'No bio yet';
+  const userLocation = displayUser?.location || null;
+  const totalSongs = userSongs.length;
+  const totalPlaylists = userPlaylists.length;
 
-      {/* Global Notification Toast */}
+  if (!displayUser && !isLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#121212',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff'
+      }}>
+        <h1 style={{ fontSize: '48px', marginBottom: '16px' }}>User not found</h1>
+        <button 
+          onClick={() => navigate('/app')}
+          style={{
+            padding: '12px 32px',
+            borderRadius: '24px',
+            backgroundColor: '#1ed760',
+            border: 'none',
+            color: '#000',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+        >
+          Go Home
+        </button>
+      </div>
+    );
+  }
+
+  if (!displayUser) return null;
+
+  return (
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#121212',
+      color: '#fff'
+    }}>
+      <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
+      <input type="file" ref={bannerInputRef} onChange={handleBannerChange} accept="image/*" style={{ display: 'none' }} />
+
       {statusMessage && (
-        <div className={`fixed top-20 right-8 z-[60] animate-in fade-in slide-in-from-right-4 duration-300`}>
-          <div className={`p-4 rounded-xl shadow-2xl border flex items-center gap-3 min-w-[300px] ${statusMessage.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' : statusMessage.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
-            {statusMessage.type === 'error' && <X size={20} className="text-red-400" />}
-            {statusMessage.type === 'success' && <CheckCircle2 size={20} className="text-green-400" />}
-            {statusMessage.type === 'info' && <Info size={20} className="text-blue-400" />}
-            <span className="font-bold text-sm">{statusMessage.text}</span>
-          </div>
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          padding: '16px 24px',
+          borderRadius: '8px',
+          backgroundColor: statusMessage.type === 'success' ? 'rgba(30, 215, 96, 0.95)' : 
+                           statusMessage.type === 'error' ? 'rgba(255, 59, 48, 0.95)' : 
+                           'rgba(30, 132, 255, 0.95)',
+          color: '#fff',
+          fontWeight: 'bold',
+          zIndex: 1000,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+        }}>
+          {statusMessage.text}
         </div>
       )}
 
-      {/* Banner */}
-      <div
-        style={{...styles.banner, cursor: isOwnProfile ? 'pointer' : 'default'}}
-        onClick={handleBannerClick}
-        onMouseEnter={() => setIsHoveringBanner(true)}
-        onMouseLeave={() => setIsHoveringBanner(false)}
-      >
-        <div style={styles.bannerOverlay}>
-          {uploadingBanner ? (
-            <Loader2 className="animate-spin" size={32} />
-          ) : isOwnProfile ? (
-            <>
-              <Camera size={32} />
-              <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Thay đổi ảnh bìa</span>
-            </>
-          ) : (
-            <div /> // Empty div to maintain layout
-          )}
-        </div>
-        <input 
-          type="file" 
-          ref={bannerInputRef} 
-          style={{ display: 'none' }} 
-          accept="image/*" 
-          onChange={handleBannerChange} 
-        />
-      </div>
-
       {/* Profile Header */}
-      <div style={styles.profileHeader}>
-        <div style={styles.avatarContainer}>
+      <div style={{
+        position: 'relative',
+        background: `linear-gradient(180deg, rgba(131, 58, 180, 0.9) 0%, rgba(225, 48, 108, 0.6) 30%, rgba(245, 130, 131, 0.4) 60%, #121212 100%)`,
+        paddingBottom: '32px'
+      }}>
+        <div 
+          style={{
+            height: '400px',
+            background: bannerUrl ? `url(${bannerUrl}) center/cover` : 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+            position: 'relative',
+            cursor: isOwnProfile ? 'pointer' : 'default'
+          }}
+          onClick={isOwnProfile ? handleBannerClick : undefined}
+          onMouseEnter={() => setIsHoveringBanner(true)}
+          onMouseLeave={() => setIsHoveringBanner(false)}
+        >
+          {isOwnProfile && isHoveringBanner && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              <Camera size={48} style={{ color: '#fff' }} />
+              <span style={{ color: '#fff', fontSize: '14px' }}>Change Banner</span>
+            </div>
+          )}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '200px',
+            background: 'linear-gradient(transparent, rgba(18,18,18,0.95))'
+          }} />
+        </div>
+
+        <div style={{ 
+          position: 'absolute', 
+          bottom: '32px', 
+          left: '32px', 
+          display: 'flex', 
+          alignItems: 'flex-end', 
+          gap: '24px' 
+        }}>
           <div 
-            style={{...styles.avatar, cursor: isOwnProfile ? 'pointer' : 'default'}}
-            onClick={handleAvatarClick}
+            style={{ 
+              position: 'relative',
+              cursor: isOwnProfile ? 'pointer' : 'default'
+            }}
+            onClick={isOwnProfile ? handleAvatarClick : undefined}
             onMouseEnter={() => setIsHoveringAvatar(true)}
             onMouseLeave={() => setIsHoveringAvatar(false)}
           >
-            {(editedAvatarUrl || profileUser?.avatarUrl) ? (
-              <img src={editedAvatarUrl || profileUser?.avatarUrl} alt="Avatar" style={{ width: '200%', height: '200%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ fontSize: '50px', fontWeight: 'bold', color: '#ffffff' }}>
-                {String(profileUser?.displayName || editedDisplayName || 'U').charAt(0).toUpperCase()}
-              </span>
-            )}
-            
-            <div style={styles.avatarOverlay}> {/* Opacity is now handled directly in styles.avatarOverlay */}
-              {uploading ? (
-                <Loader2 className="animate-spin" size={90} />
-              ) : (
-                isOwnProfile && <>
-                  <Camera size={50} />
-                </>
-              )}
+            <div style={{
+              width: '240px',
+              height: '240px',
+              borderRadius: '50%',
+              background: avatarUrl ? `url(${avatarUrl}) center/cover` : 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+              border: '5px solid #121212',
+              boxShadow: '0 0 50px rgba(131, 58, 180, 0.8), 0 0 100px rgba(253, 29, 29, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {!avatarUrl && <User size={110} style={{ color: '#fff', opacity: 0.9 }} />}
             </div>
-          </div>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            style={{ display: 'none' }} 
-            accept="image/*" 
-            onChange={handleFileChange} 
-          />
-        </div>
-        
-        <div style={styles.mainInfo}>
-          <h1 style={styles.name}>{(isOwnProfile ? currentUser?.displayName : profileUser?.displayName) || 'Người dùng mới'}</h1>
-          <div style={styles.handle}>
-            <span>@{(isOwnProfile ? currentUser?.username : profileUser?.username) || 'username'}</span>
-            <span>•</span>
-            <span>Thành viên từ {(isOwnProfile ? currentUser?.createdAt : profileUser?.createdAt) ? new Date((isOwnProfile ? currentUser?.createdAt : profileUser?.createdAt)!).toLocaleDateString('vi-VN') : 'gần đây'}</span>
-          </div>
-          <div style={styles.statsContainer}>
-            <span><strong>{userSongs.length}</strong> bài hát</span>
-            <span><strong>{userPlaylists.length}</strong> danh sách phát</span>
-            <span><strong>{followerCount}</strong> người theo dõi</span>
-            <span>Đang theo dõi <strong>{(isOwnProfile ? currentUser?.followingCount : profileUser?.followingCount) || 0}</strong> người dùng</span>
-          </div>
-          <div style={styles.actionButtons}>
-            {!isEditing && isOwnProfile && (
-              <>
-                <button 
-                  className="btn-primary-profile"
-                  onClick={handleStartEditing}
-                >
-                  <Edit size={16} /> Tùy chỉnh hồ sơ
-                </button>
-              </>
+            {isOwnProfile && isHoveringAvatar && (
+              <div style={{
+                position: 'absolute',
+                inset: '5px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Camera size={40} style={{ color: '#fff' }} />
+              </div>
             )}
-            {/* Nút Đăng xuất mới */}
-            {onLogout && isOwnProfile && (
-              <button className="btn-secondary-profile" onClick={onLogout} style={{ borderColor: '#ef4444', color: '#f87171', background: 'rgba(239, 68, 68, 0.05)' }}>
-                <LogOut size={16} /> Đăng xuất
-              </button>
-            )}
-            {!isOwnProfile && (
-              <button
-                className={`btn-secondary-profile ${isFollowing ? 'btn-following' : ''}`}
-                onClick={handleFollowToggle}
-              >
-                {isFollowing ? <UserCheck size={16} /> : <UserPlus size={16} />}
-                {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
-              </button>
-            )}
-            {isOwnProfile && <button className="btn-secondary-profile" onClick={() => navigate('/app/library')}>Quản lý bài hát</button>}
+          </div>
+
+          <div style={{ paddingBottom: '8px' }}>
+            <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', margin: 0 }}>Profile</p>
+            <h1 style={{ 
+              fontSize: '72px', 
+              fontWeight: '900', 
+              color: '#fff', 
+              margin: '0 0 12px 0',
+              textShadow: '0 0 40px rgba(131, 58, 180, 0.9)',
+              lineHeight: 1
+            }}>{displayName}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e0e0e0', fontSize: '14px' }}>
+              <span style={{ color: '#1ed760', fontSize: '10px' }}>●</span>
+              <span>{totalSongs} songs</span>
+              <span> - </span>
+              <span>{totalPlaylists} playlists</span>
+              <span> - </span>
+              <span style={{ fontWeight: 'bold' }}>{followerCount} followers</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Khung Form Chỉnh sửa Hồ sơ */}
-      {isEditing && (
-        <div style={styles.formCard}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 className="section-title-neon" style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Thông tin cá nhân</h2>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button className="form-save-btn" onClick={handleSaveProfile}>
-                <Save size={16} /> Lưu thay đổi
-              </button>
-              <button className="form-cancel-btn" onClick={handleCancelEdit}>
-                <X size={16} /> Hủy
-              </button>
-            </div>
-          </div>
+      {/* Action Buttons */}
+      <div style={{ 
+        padding: '24px 32px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '16px',
+        backgroundColor: '#121212'
+      }}>
+        {!isOwnProfile && (
+          <button
+            onClick={handleFollowToggle}
+            style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '50%',
+              backgroundColor: '#1ed760',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 30px rgba(30, 215, 96, 0.6)'
+            }}
+          >
+            {isFollowing ? <UserCheck size={26} style={{ color: '#000' }} /> : <UserPlus size={26} style={{ color: '#000' }} />}
+          </button>
+        )}
+        
+        {isOwnProfile && (
+          <>
+            <button
+              onClick={() => { setIsEditing(true); setEditedBio(userBio || ''); setEditedLocation(userLocation || ''); setEditedWebsite(displayUser?.websiteUrl || ''); }}
+              style={{
+                padding: '12px 32px',
+                borderRadius: '24px',
+                backgroundColor: 'transparent',
+                border: '2px solid #b3b3b3',
+                color: '#fff',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Edit size={18} /> Edit Profile
+            </button>
+            <button
+              onClick={onLogout}
+              style={{
+                padding: '12px 32px',
+                borderRadius: '24px',
+                backgroundColor: 'transparent',
+                border: '2px solid #b3b3b3',
+                color: '#fff',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <LogOut size={18} /> Logout
+            </button>
+          </>
+        )}
+      </div>
 
-          {/* FORM THÔNG TIN TÀI KHOẢN (EDIT MODE) */}
-          <div style={{
-            background: 'linear-gradient(145deg, #0a0a0a, #111827)', // Giữ nguyên
-            padding: '30px',
-            borderRadius: '20px',
-            border: '2px solid #60a5fa',
-            boxShadow: '0 0 40px rgba(96, 165, 250, 0.3), inset 0 0 15px rgba(96, 165, 250, 0.1)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '24px',
-            marginBottom: '30px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <ShieldCheck size={20} color="#60a5fa" />
-              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '900', color: '#60a5fa', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                Xác thực tài khoản hệ thống
-              </h3>
-            </div>
+      {/* Tabs */}
+      <div style={{ 
+        padding: '0 32px', 
+        display: 'flex', 
+        gap: '40px',
+        borderBottom: '1px solid #282828',
+        backgroundColor: '#121212'
+      }}>
+        {['overview', 'songs', 'playlists'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: '20px 0',
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: activeTab === tab ? '#fff' : '#b3b3b3',
+              fontWeight: 'bold',
+              fontSize: '16px',
+              cursor: 'pointer',
+              position: 'relative',
+              textTransform: 'capitalize'
+            }}
+          >
+            {tab}
+            {activeTab === tab && (
+              <div style={{
+                position: 'absolute',
+                bottom: '-1px',
+                left: 0,
+                right: 0,
+                height: '3px',
+                background: 'linear-gradient(90deg, #833ab4, #fd1d1d, #fcb045)',
+                boxShadow: '0 0 15px rgba(131, 58, 180, 0.8)'
+              }} />
+            )}
+          </button>
+        ))}
+      </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div>
-                <label style={{ display: 'block', color: '#aaa', fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase' }}>
-                  Link Ảnh đại diện (URL)
-                </label>
-                <div style={{ backgroundColor: '#000', border: '1px solid #333', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Camera size={16} color="#60a5fa" />
-                  <input type="text" style={{ background: 'transparent', border: 'none', color: '#fff', outline: 'none', width: '100%', fontSize: '14px' }} value={editedAvatarUrl} onChange={(e) => setEditedAvatarUrl(e.target.value)} placeholder="Dán link ảnh tại đây..." />
-                </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', color: '#aaa', fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase' }}>
-                  Link Ảnh bìa (URL)
-                </label>
-                <div style={{ backgroundColor: '#000', border: '1px solid #333', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <ImageIcon size={16} color="#60a5fa" />
-                  <input type="text" style={{ background: 'transparent', border: 'none', color: '#fff', outline: 'none', width: '100%', fontSize: '14px' }} value={editedBannerUrl} onChange={(e) => setEditedBannerUrl(e.target.value)} placeholder="Dán link ảnh bìa tại đây..." />
-                </div>
-              </div>
-            </div>
-            <p style={{ margin: 0, fontSize: '11px', color: '#555', fontStyle: 'italic' }}>* Bạn có thể dán link ảnh trực tiếp vào đây nếu tính năng tải tệp lên gặp sự cố.</p>
-          </div>
-
-          <div style={styles.formRow}>
-            <div>
-              <label style={styles.labelHeader}><User size={14}/> Tên tài khoản (Email)</label>
-              <div style={styles.inputIconGroup} className="focus-within-red">
-                <input
-                  type="email"
-                  style={styles.formInputNoBorder}
-                  value={editedEmail}
-                  onChange={(e) => setEditedEmail(e.target.value)}
-                  placeholder="email@example.com"
-                />
-              </div>
-            </div>
-            <div>
-              <label style={styles.labelHeader}><User size={14}/> Tên hiển thị</label>
-              <div style={styles.inputIconGroup} className="focus-within-red">
-                <input
-                  type="text"
-                  style={styles.formInputNoBorder}
-                  value={editedDisplayName}
-                  onChange={(e) => setEditedDisplayName(e.target.value)}
-                  placeholder="Tên của bạn"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div style={styles.formRow}>
-            <div>
-              <label style={styles.labelHeader}><VenetianMask size={14}/> Giới tính</label>
-              <div style={styles.inputIconGroup}>
-                <input
-                  type="text"
-                  style={styles.formInputNoBorder}
-                  value={editedGender}
-                  onChange={(e) => setEditedGender(e.target.value)}
-                  placeholder="Không muốn tiết lộ"
-                />
-              </div>
-            </div>
-            <div>
-              <label style={styles.labelHeader}><Cake size={14}/> Ngày sinh</label>
-              <div style={styles.inputIconGroup}>
-                <input
-                  type="date"
-                  style={{
-                    ...styles.formInputNoBorder,
-                    colorScheme: 'dark', // Đảm bảo giao diện date picker có nền tối
-                  }}
-                  value={editedDateOfBirth}
-                  onChange={(e) => setEditedDateOfBirth(e.target.value)}
-                  placeholder="DD/MM/YYYY"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label style={styles.labelHeader}><MapPin size={14}/> Vị trí</label>
-            <div style={{...styles.inputIconGroup, gap: '4px'}}>
-              <input
-                type="text"
-                style={styles.formInputNoBorder}
-                value={editedLocation}
-                onChange={(e) => setEditedLocation(e.target.value)}
-                placeholder="Thành phố, Quốc gia"
-              />
-              <button
-                onClick={handleFetchLocation}
-                disabled={isFetchingLocation}
-                style={{
-                  background: 'transparent', border: 'none', color: '#60a5fa',
-                  padding: '8px', borderRadius: '6px', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '4px'
-                }}
-                className="hover:bg-blue-500/10"
-                title="Tự động lấy vị trí hiện tại"
-              >
-                {isFetchingLocation
-                  ? <Loader2 size={16} className="animate-spin" />
-                  : <MapPin size={16} />
-                }
-              </button>
-            </div>
-          </div>
-          <div>
-            <label style={styles.labelHeader}><Info size={14}/> Tiểu sử</label>
-            <textarea
-              style={{...styles.textareaField, borderColor: '#333'}}
-              value={editedBio}
-              onChange={(e) => setEditedBio(e.target.value)}
-              placeholder="Hãy chia sẻ một chút về bản thân bạn hoặc gu âm nhạc của bạn..."
-              onFocus={inputFocusStyle}
-              onBlur={inputBlurStyle}
-            />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <label style={styles.labelHeader}>Liên kết mạng xã hội</label>
+      {/* Content */}
+      <div style={{ padding: '32px' }}>
+        {activeTab === 'overview' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             
-            <div style={styles.inputIconGroup}>
-              <Globe size={18} color="#aaa" />
-              <input 
-                type="url" style={styles.formInputNoBorder} value={editedWebsite} 
-                onChange={e => setEditedWebsite(e.target.value)} placeholder="https://your-website.com" 
-              />
-            </div>
-
-            <div style={styles.inputIconGroup}>
-              <Twitter size={18} color="#1DA1F2" />
-              <input 
-                type="url" style={styles.formInputNoBorder} value={editedTwitter} 
-                onChange={e => setEditedTwitter(e.target.value)} placeholder="https://twitter.com/your-username" 
-              />
-            </div>
-
-            <div style={styles.inputIconGroup}>
-              <Github size={18} color="#fff" />
-              <input 
-                type="url" style={styles.formInputNoBorder} value={editedGithub} 
-                onChange={e => setEditedGithub(e.target.value)} placeholder="https://github.com/your-username" 
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!isEditing && (
-        <>
-          <div style={{ color: '#aaa', fontSize: '14px', maxWidth: '600px', marginTop: '16px', paddingLeft: '24px', fontStyle: (isOwnProfile ? currentUser?.bio : profileUser?.bio) ? 'normal' : 'italic' }}>
-            {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || `Chào mừng bạn đến với hồ sơ của ${(isOwnProfile ? currentUser?.displayName : profileUser?.displayName) || 'bạn'}.`}
-          </div>
-
-          {/* Tabs */}
-          <div style={styles.tabsContainer}>
-            {(['home', 'songs', 'playlists', 'about'] as const).map((tab) => (
-              <button 
-                key={tab}
-                style={{ ...styles.tab, ...(activeTab === tab ? styles.activeTab : {}) }}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab === 'home' ? 'Trang chủ' : tab === 'songs' ? 'Bài hát' : tab === 'playlists' ? 'Danh sách phát' : 'Giới thiệu'}
-              </button>
-            ))}
-          </div>
-
-          {/* Khung chứa nội dung các Tab */}
-          <div style={{
-            padding: '28px',
-            backgroundColor: 'rgba(0, 0, 0, 0.6)', // Tăng độ trong suốt
-            borderRadius: '24px',
-            border: '2px solid transparent',
-            backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-            backgroundOrigin: 'border-box',
-            backgroundClip: 'padding-box, border-box',
-            backgroundSize: '200% 100%',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-            animation: 'animated-border-profile 8s linear infinite',
-            marginTop: '1rem',
-          }}>
-            {/* Tab Content */}
-            {activeTab === 'about' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div style={styles.infoSection}>
-                <div style={styles.infoBox}>
-                  <div style={styles.iconWrapper}><Mail size={20} /></div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>EMAIL</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.email : profileUser?.email) || 'Chưa cung cấp'}</p>
-                  </div>
-                </div>
-                <div style={styles.infoBox}>
-                  <div style={styles.iconWrapper}><Calendar size={20} /></div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>NGÀY THAM GIA</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.createdAt : profileUser?.createdAt) ? new Date((isOwnProfile ? currentUser?.createdAt : profileUser?.createdAt)!).toLocaleString('vi-VN') : 'Hôm nay'}</p>
-                  </div>
-                </div>
-                {profileUser?.lastUpdatedAt && (
-                  <div style={styles.infoBox}>
-                    <div style={styles.iconWrapper}><Save size={20} /></div>
-                    <div>
-                      <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>CẬP NHẬT LẦN CUỐI</p>
-                      <p style={{ color: '#fff', margin: 0 }}>{new Date(profileUser.lastUpdatedAt).toLocaleString('vi-VN')}</p>
-                    </div>
-                  </div>
-                )}
-                <div style={styles.infoBox}>
-                  <div style={styles.iconWrapper}><MapPin size={20} /></div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>VỊ TRÍ</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.location : profileUser?.location) || 'Chưa cung cấp'}</p>
-                  </div>
-                </div>
-                <div style={styles.infoBox}>
-                  <div style={styles.iconWrapper}><Cake size={20} /></div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>NGÀY SINH</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.dateOfBirth : profileUser?.dateOfBirth) ? new Date((isOwnProfile ? currentUser?.dateOfBirth : profileUser?.dateOfBirth)!).toLocaleDateString('vi-VN') : 'Chưa cung cấp'}</p>
-                  </div>
-                </div>
-                <div style={styles.infoBox}>
-                  <div style={styles.iconWrapper}><VenetianMask size={20} /></div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>GIỚI TÍNH</p>
-                    <p style={{ color: '#fff', margin: 0 }}>{(isOwnProfile ? currentUser?.gender : profileUser?.gender) || 'Chưa cung cấp'}</p>
-                  </div>
-                </div>
-                <div style={styles.infoBox}>
-                  <div style={styles.iconWrapper}><ShieldCheck size={20} /></div>
-                  <div>
-                    <p style={{ fontSize: '12px', color: '#737373', fontWeight: 'bold' }}>BẢO MẬT</p>
-                    <p style={{ color: '#93c5fd', margin: 0 }}>Tài khoản đã xác minh</p>
-                  </div>
-                </div>
-              </div>
-
-              <div style={styles.fullWidthInfo}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                  <Info size={18} style={{ color: '#60a5fa' }} />
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Tiểu sử</h3>
-                </div>
-                <p style={{ color: '#aaa', lineHeight: '1.6', margin: 0 }}>
-                  {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || "Người dùng này chưa cập nhật tiểu sử."}
-                </p>
-              </div>
-
-              <div style={styles.fullWidthInfo}>
-                <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: 'bold' }}>Liên kết mạng xã hội</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px' }}>
-                  {profileUser?.websiteUrl && (
-                    <a href={profileUser.websiteUrl} target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
-                      <Globe size={20} /> <span>Website</span>
-                    </a>
-                  )}
-                  {profileUser?.twitterUrl && (
-                    <a href={profileUser.twitterUrl} target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
-                      <Twitter size={20} /> <span>Twitter</span>
-                    </a>
-                  )}
-                  {profileUser?.githubUrl && (
-                    <a href={profileUser.githubUrl} target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
-                      <Github size={20} /> <span>Github</span>
-                    </a>
-                  )}
-                </div>
-                </div>
-              </div>
-            ) : activeTab === 'home' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* TOP TRACKS - Horizontal Scroll */}
+            {userSongs.length > 0 && (
               <div>
-                <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>Thông tin cá nhân</h2>
-                <p style={{ color: '#aaa', fontSize: '14px', marginBottom: '24px' }}>
-                  Thông tin cơ bản như tên và ảnh mà bạn sử dụng trên dịch vụ TuneVault.
+                <h2 style={{ 
+                  fontSize: '32px', 
+                  fontWeight: 'bold', 
+                  marginBottom: '24px', 
+                  color: '#fff',
+                  textShadow: '0 0 30px rgba(131, 58, 180, 0.6)'
+                }}>
+                  Top Tracks
+                </h2>
+                <div style={{
+                  display: 'flex',
+                  gap: '20px',
+                  overflowX: 'auto',
+                  paddingBottom: '24px',
+                  paddingLeft: '4px',
+                  scrollSnapType: 'x mandatory'
+                }}>
+                  <style>{`
+                    div::-webkit-scrollbar { height: 6px; }
+                    div::-webkit-scrollbar-track { background: #1a1a1a; border-radius: 3px; }
+                    div::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+                    .track-card:hover .play-overlay { opacity: 1 !important; transform: translateY(0) scale(1) !important; }
+                    @keyframes bounce { from { height: 4px; } to { height: 14px; } }
+                  `}</style>
+                  {userSongs.slice(0, 12).map((song, index) => {
+                    const isCurrent = currentTrack?.id === song.id;
+                    return (
+                      <div
+                        key={song.id}
+                        onClick={() => playTrack(song, userSongs)}
+                        className="track-card"
+                        style={{
+                          minWidth: '180px',
+                          maxWidth: '180px',
+                          background: isCurrent 
+                            ? 'linear-gradient(145deg, rgba(30, 215, 96, 0.15), rgba(131, 58, 180, 0.15))' 
+                            : 'linear-gradient(145deg, #1e1e1e, #252525)',
+                          padding: '14px',
+                          borderRadius: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          border: isCurrent ? '1px solid rgba(30, 215, 96, 0.5)' : '1px solid transparent',
+                          boxShadow: isCurrent ? '0 0 25px rgba(30, 215, 96, 0.25)' : 'none',
+                          scrollSnapAlign: 'start',
+                          position: 'relative'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isCurrent) {
+                            e.currentTarget.style.transform = 'translateY(-10px) scale(1.03)';
+                            e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.5)';
+                            e.currentTarget.style.boxShadow = '0 15px 35px rgba(131, 58, 180, 0.35), 0 0 50px rgba(253, 29, 29, 0.15)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isCurrent) {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.borderColor = 'transparent';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }
+                        }}
+                      >
+                        {/* Rank Badge */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '8px',
+                          left: '8px',
+                          width: '26px',
+                          height: '26px',
+                          borderRadius: '50%',
+                          background: index === 0 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 
+                                     index === 1 ? 'linear-gradient(135deg, #C0C0C0, #A8A8A8)' :
+                                     index === 2 ? 'linear-gradient(135deg, #CD7F32, #A0522D)' :
+                                     'rgba(0,0,0,0.6)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 'bold',
+                          fontSize: '11px',
+                          color: index < 3 ? '#000' : '#fff',
+                          zIndex: 2,
+                          boxShadow: index < 3 ? '0 2px 8px rgba(0,0,0,0.4)' : 'none'
+                        }}>
+                          {index + 1}
+                        </div>
+                        
+                        {/* Now Playing Animation */}
+                        {isCurrent && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            display: 'flex',
+                            gap: '2px',
+                            alignItems: 'flex-end',
+                            height: '16px'
+                          }}>
+                            <div style={{ width: '3px', height: '6px', backgroundColor: '#1ed760', animation: 'bounce 0.4s infinite alternate', borderRadius: '1px' }} />
+                            <div style={{ width: '3px', height: '12px', backgroundColor: '#1ed760', animation: 'bounce 0.4s 0.1s infinite alternate', borderRadius: '1px' }} />
+                            <div style={{ width: '3px', height: '8px', backgroundColor: '#1ed760', animation: 'bounce 0.4s 0.2s infinite alternate', borderRadius: '1px' }} />
+                          </div>
+                        )}
+                        
+                        {/* Thumbnail */}
+                        <div style={{
+                          width: '100%',
+                          aspectRatio: '1/1',
+                          background: `url(${song.thumbnailUrl}) center/cover`,
+                          borderRadius: '8px',
+                          marginBottom: '14px',
+                          position: 'relative',
+                          boxShadow: '0 6px 20px rgba(0,0,0,0.5)'
+                        }}>
+                          <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            borderRadius: '8px',
+                            background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.5) 100%)'
+                          }} />
+                          
+                          {/* Play Button */}
+                          <div 
+                            className="play-overlay"
+                            style={{
+                              position: 'absolute',
+                              bottom: '6px',
+                              right: '6px',
+                              width: '46px',
+                              height: '46px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #1ed760, #00d4aa)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              opacity: 0,
+                              transform: 'translateY(8px) scale(0.9)',
+                              transition: 'all 0.3s ease',
+                              boxShadow: '0 6px 20px rgba(30, 215, 96, 0.5)'
+                            }}
+                          >
+                            <Play size={22} fill="#000" style={{ color: '#000', marginLeft: '2px' }} />
+                          </div>
+                        </div>
+                        
+                        <p style={{ 
+                          fontWeight: 'bold', 
+                          color: isCurrent ? '#1ed760' : '#fff', 
+                          margin: '0 0 6px 0', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis',
+                          fontSize: '14px'
+                        }}>
+                          {song.title}
+                        </p>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ 
+                            fontSize: '12px', 
+                            color: '#999',
+                            flex: 1,
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            whiteSpace: 'nowrap',
+                            maxWidth: '110px'
+                          }}>
+                            {song.artist}
+                          </span>
+                          <span style={{ 
+                            fontSize: '11px', 
+                            color: isCurrent ? '#1ed760' : '#666',
+                            fontFamily: 'monospace'
+                          }}>
+                            {formatTime(song.durationInSeconds)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* View All Button */}
+                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
+                  <button
+                    onClick={() => setActiveTab('songs')}
+                    style={{
+                      padding: '14px 48px',
+                      borderRadius: '30px',
+                      background: 'linear-gradient(135deg, rgba(131, 58, 180, 0.25), rgba(253, 29, 29, 0.25))',
+                      border: '1px solid rgba(131, 58, 180, 0.4)',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(131, 58, 180, 0.45), rgba(253, 29, 29, 0.45))';
+                      e.currentTarget.style.transform = 'scale(1.03)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(131, 58, 180, 0.25), rgba(253, 29, 29, 0.25))';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    View All {userSongs.length} Songs
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* About Section */}
+            <div>
+              <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px', color: '#fff' }}>
+                About
+              </h2>
+              <div style={{
+                backgroundColor: '#181818',
+                padding: '28px',
+                borderRadius: '12px',
+                maxWidth: '700px',
+                border: '1px solid #282828'
+              }}>
+                <p style={{ color: '#e0e0e0', lineHeight: 1.8, margin: 0, fontSize: '16px' }}>
+                  {userBio}
                 </p>
                 
-                {/* SECTION: THÔNG TIN TÀI KHOẢN THỦ CÔNG (VIEW MODE) */}
-                <div style={{
-                  background: 'linear-gradient(135deg, rgba(15, 15, 15, 0.7) 0%, rgba(17, 24, 39, 0.7) 100%)',
-                  borderRadius: '20px',
-                  backdropFilter: 'blur(10px)',
-                  border: '2px solid #3b82f6', // Giữ nguyên
-                  padding: '30px',
-                  marginBottom: '24px',
-                  boxShadow: '0 0 40px rgba(59, 130, 246, 0.2)',
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'column' as const,
-                  gap: '20px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3 style={{ margin: 0, fontSize: '13px', fontWeight: '900', color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '12px', letterSpacing: '2px' }}>
-                      <ShieldCheck size={20} /> HỒ SƠ TÀI KHOẢN THỦ CÔNG
-                    </h3>
-                    <button 
-                      onClick={() => setIsEditing(true)}
-                      style={{ ...styles.btnPrimary, padding: '6px 18px', fontSize: '11px', textTransform: 'uppercase' }}
-                    >
-                      Nhập thông tin
-                    </button>
+                {(displayUser?.websiteUrl || displayUser?.twitterUrl || displayUser?.githubUrl) && (
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '24px', flexWrap: 'wrap' }}>
+                    {displayUser?.websiteUrl && (
+                      <a href={displayUser.websiteUrl} target="_blank" rel="noopener noreferrer" style={{
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        color: '#1ed760', textDecoration: 'none', fontSize: '14px',
+                        padding: '8px 16px', backgroundColor: 'rgba(30, 215, 96, 0.1)',
+                        borderRadius: '20px'
+                      }}>
+                        <Globe size={18} /> Website <ExternalLink size={12} />
+                      </a>
+                    )}
+                    {displayUser?.twitterUrl && (
+                      <a href={displayUser.twitterUrl} target="_blank" rel="noopener noreferrer" style={{
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        color: '#1da1f2', textDecoration: 'none', fontSize: '14px',
+                        padding: '8px 16px', backgroundColor: 'rgba(29, 161, 242, 0.1)',
+                        borderRadius: '20px'
+                      }}>
+                        <Twitter size={18} /> Twitter
+                      </a>
+                    )}
+                    {displayUser?.githubUrl && (
+                      <a href={displayUser.githubUrl} target="_blank" rel="noopener noreferrer" style={{
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        color: '#fff', textDecoration: 'none', fontSize: '14px',
+                        padding: '8px 16px', backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '20px'
+                      }}>
+                        <Github size={18} /> GitHub
+                      </a>
+                    )}
                   </div>
+                )}
+              </div>
+            </div>
 
-                  <div style={{ background: 'rgba(0, 0, 0, 0.6)', padding: '20px', borderRadius: '14px', border: '1px solid #333' }}>
-                    <p style={{ margin: '0 0 10px 0', fontSize: '10px', color: '#60a5fa', fontWeight: '900', letterSpacing: '1px', opacity: 0.7 }}>TÊN ĐĂNG NHẬP / EMAIL</p>
-                    <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span>{(isOwnProfile ? currentUser?.email : profileUser?.email) || profileUser?.username || 'chưa_cung_cấp'}</span>
+            {/* Details */}
+            <div>
+              <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px', color: '#fff' }}>
+                Details
+              </h2>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '16px',
+                maxWidth: '800px'
+              }}>
+                {displayUser?.createdAt && (
+                  <div style={{ backgroundColor: '#181818', padding: '24px', borderRadius: '12px', border: '1px solid #282828' }}>
+                    <p style={{ fontSize: '12px', color: '#b3b3b3', fontWeight: 'bold', marginBottom: '10px', letterSpacing: '1px' }}>MEMBER SINCE</p>
+                    <p style={{ color: '#fff', fontSize: '18px', fontWeight: '600' }}>
+                      {new Date(displayUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </p>
                   </div>
+                )}
+                {userLocation && (
+                  <div style={{ backgroundColor: '#181818', padding: '24px', borderRadius: '12px', border: '1px solid #282828' }}>
+                    <p style={{ fontSize: '12px', color: '#b3b3b3', fontWeight: 'bold', marginBottom: '10px', letterSpacing: '1px' }}>LOCATION</p>
+                    <p style={{ color: '#fff', fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <MapPin size={20} style={{ color: '#ff6b6b' }} /> {userLocation}
+                    </p>
+                  </div>
+                )}
+                <div style={{ backgroundColor: '#181818', padding: '24px', borderRadius: '12px', border: '1px solid #282828' }}>
+                  <p style={{ fontSize: '12px', color: '#b3b3b3', fontWeight: 'bold', marginBottom: '10px', letterSpacing: '1px' }}>FOLLOWERS</p>
+                  <p style={{ color: '#fff', fontSize: '18px', fontWeight: '600' }}>{followerCount.toLocaleString()}</p>
                 </div>
-
-                {/* Section: Vị trí */}
-                <div style={styles.googleCard}>
-                  <div style={{ padding: '20px 24px', borderBottom: '1px solid #333' }}>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Vị trí</h3>
-                  </div>
-                  <div
-                    style={{ ...styles.googleRow, borderBottom: 'none' }}
-                    className="google-row-hover"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <div style={{ ...styles.infoValue, fontStyle: (isOwnProfile ? currentUser?.location : profileUser?.location) ? 'normal' : 'italic', color: (isOwnProfile ? currentUser?.location : profileUser?.location) ? 'white' : '#737373' }}>
-                      {(isOwnProfile ? currentUser?.location : profileUser?.location) || "Nhấn vào đây để cập nhật vị trí."}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section: Tiểu sử */}
-                <div style={styles.googleCard}>
-                  <div style={{ padding: '20px 24px', borderBottom: '1px solid #333' }}>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Tiểu sử</h3>
-                  </div>
-                  <div 
-                    style={{...styles.googleRow, borderBottom: 'none'}} 
-                    className="google-row-hover"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <div style={{...styles.infoValue, fontStyle: (isOwnProfile ? currentUser?.bio : profileUser?.bio) ? 'normal' : 'italic', color: (isOwnProfile ? currentUser?.bio : profileUser?.bio) ? 'white' : '#737373'}}>
-                      {(isOwnProfile ? currentUser?.bio : profileUser?.bio) || "Hãy nhấn vào đây để nhập tiểu sử."}
-                    </div>
-                  </div>
-                </div>
+                <div style={{ backgroundColor: '#181818', padding: '24px', borderRadius: '12px', border: '1px solid #282828' }}>
+                  <p style={{ fontSize: '12px', color: '#b3b3b3', fontWeight: 'bold', marginBottom: '10px', letterSpacing: '1px' }}>TOTAL SONGS</p>
+                  <p style={{ color: '#fff', fontSize: '18px', fontWeight: '600' }}>{totalSongs}</p>
                 </div>
               </div>
-            ) : activeTab === 'songs' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {userSongs.length > 0 ? (
-                userSongs.map((song, index) => {
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'songs' && (
+          <div>
+            <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '24px', color: '#fff' }}>
+              Songs
+            </h2>
+            {userSongs.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '50px 6fr 4fr 1fr',
+                  gap: '16px',
+                  padding: '12px 16px',
+                  borderBottom: '1px solid #282828',
+                  color: '#b3b3b3',
+                  fontSize: '14px'
+                }}>
+                  <span>#</span>
+                  <span>Title</span>
+                  <span>Album</span>
+                  <span style={{ textAlign: 'right' }}>Duration</span>
+                </div>
+                {userSongs.map((song, index) => {
                   const isCurrent = currentTrack?.id === song.id;
                   return (
                     <div
                       key={song.id}
-                      onClick={() => playTrack(song)}
+                      onClick={() => playTrack(song, userSongs)}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: '40px 5fr 3fr 1fr',
+                        gridTemplateColumns: '50px 6fr 4fr 1fr',
                         gap: '16px',
-                        padding: '12px 20px',
-                        borderRadius: '12px',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         alignItems: 'center',
-                        transition: 'all 0.2s ease',
-                        backgroundColor: isCurrent ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+                        transition: 'all 0.2s',
+                        backgroundColor: isCurrent ? 'rgba(30, 215, 96, 0.15)' : 'transparent'
                       }}
-                      onMouseEnter={(e) => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.08)'; }}
+                      onMouseEnter={(e) => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; }}
                       onMouseLeave={(e) => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'transparent'; }}
                     >
-                      <div style={{ color: isCurrent ? '#60a5fa' : '#737373', fontSize: '14px', fontFamily: 'monospace', textAlign: 'center' }}>
-                        {isCurrent && isPlaying ? <Music size={16} className="animate-pulse" /> : index + 1}
+                      <div style={{ 
+                        color: isCurrent ? '#1ed760' : '#b3b3b3', 
+                        fontSize: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {isCurrent && isPlaying ? (
+                          <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '16px' }}>
+                            <div style={{ width: '3px', height: '6px', backgroundColor: '#1ed760', animation: 'bounce 0.4s infinite alternate' }} />
+                            <div style={{ width: '3px', height: '12px', backgroundColor: '#1ed760', animation: 'bounce 0.4s 0.1s infinite alternate' }} />
+                            <div style={{ width: '3px', height: '8px', backgroundColor: '#1ed760', animation: 'bounce 0.4s 0.2s infinite alternate' }} />
+                          </div>
+                        ) : index + 1}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <img src={song.thumbnailUrl} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} alt={song.title} />
+                        <img src={song.thumbnailUrl} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} alt={song.title} />
                         <div>
-                          <p style={{ fontWeight: '600', color: isCurrent ? '#93c5fd' : 'white', margin: 0 }}>{song.title}</p>
-                          <p style={{ fontSize: '12px', color: '#aaa', margin: 0 }}>{song.artist}</p>
+                          <p style={{ fontWeight: '600', color: isCurrent ? '#1ed760' : '#fff', margin: 0 }}>{song.title}</p>
+                          <p style={{ fontSize: '14px', color: '#b3b3b3', margin: 0 }}>{song.artist}</p>
                         </div>
                       </div>
-                      <div style={{ fontSize: '14px', color: '#aaa' }}>{song.artist}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', color: '#aaa' }}>
-                        <Heart size={16} className={song.isLiked ? 'text-blue-500' : 'text-transparent'} fill={song.isLiked ? 'currentColor' : 'none'} />
-                        <span style={{ fontSize: '14px', fontFamily: 'monospace' }}>{formatTime(song.durationInSeconds)}</span>
+                      <div style={{ fontSize: '14px', color: '#b3b3b3' }}>Single</div>
+                      <div style={{ fontSize: '14px', color: '#b3b3b3', textAlign: 'right' }}>
+                        {formatTime(song.durationInSeconds)}
                       </div>
                     </div>
                   );
-                })
-              ) : (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
-                  <Music size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                  <p>Người dùng này chưa tải lên bài hát nào.</p>
-                </div>
-              )}
-              </div>
-            ) : activeTab === 'playlists' ? (
-              <div>
-              {userPlaylists.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '24px' }}>
-                  {userPlaylists.map(playlist => (
-                    <div 
-                      key={playlist.id} 
-                      onClick={() => navigate(`/playlist/${playlist.id}`)}
-                      style={{ backgroundColor: '#181818', padding: '16px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
-                    >
-                      {playlist.coverUrl ? (
-                        <img src={playlist.coverUrl} alt={playlist.title} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} />
-                      ) : (
-                        <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#333', borderRadius: '4px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <ListMusic size={48} color="#777" />
-                        </div>
-                      )}
-                      <p style={{ fontWeight: 'bold', color: 'white', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{playlist.title}</p>
-                      <p style={{ fontSize: '12px', color: '#aaa', margin: '4px 0 0' }}>{playlist.description || 'Playlist'}</p>
-                    </div>
-                  ))}
-                  </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
-                  <ListMusic size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                  <p>Người dùng này chưa tạo danh sách phát nào.</p>
-                </div>
-              )}
+                })}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
-                <Music size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                <p>Nội dung cho tab này đang được cập nhật...</p>
+              <div style={{ textAlign: 'center', padding: '100px', color: '#b3b3b3', backgroundColor: '#181818', borderRadius: '12px' }}>
+                <Music size={72} style={{ marginBottom: '20px', opacity: 0.5 }} />
+                <p style={{ fontSize: '20px', margin: 0 }}>No songs uploaded yet</p>
               </div>
             )}
           </div>
-        </>
+        )}
+
+        {activeTab === 'playlists' && (
+          <div>
+            <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '24px', color: '#fff' }}>
+              Playlists
+            </h2>
+            {userPlaylists.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '24px' }}>
+                {userPlaylists.map((playlist) => (
+                  <div
+                    key={playlist.id}
+                    onClick={() => navigate(`/playlist/${playlist.id}`)}
+                    style={{
+                      backgroundColor: '#181818',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#282828'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#181818'; }}
+                  >
+                    {playlist.coverUrl ? (
+                      <img src={playlist.coverUrl} alt={playlist.title} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '4px', marginBottom: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} />
+                    ) : (
+                      <div style={{ width: '100%', aspectRatio: '1/1', background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)', borderRadius: '4px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <ListMusic size={56} color="#fff" />
+                      </div>
+                    )}
+                    <p style={{ fontWeight: 'bold', color: '#fff', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {playlist.title}
+                    </p>
+                    <p style={{ fontSize: '14px', color: '#b3b3b3', margin: 0 }}>
+                      {playlist.description || 'Playlist'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '100px', color: '#b3b3b3', backgroundColor: '#181818', borderRadius: '12px' }}>
+                <ListMusic size={72} style={{ marginBottom: '20px', opacity: 0.5 }} />
+                <p style={{ fontSize: '20px', margin: 0 }}>No playlists created yet</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Edit Modal */}
+      {isEditing && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(15px)'
+        }} onClick={() => setIsEditing(false)}>
+          <div style={{
+            backgroundColor: '#1a1a2e',
+            borderRadius: '16px',
+            padding: '40px',
+            width: '100%',
+            maxWidth: '520px',
+            boxShadow: '0 0 60px rgba(131, 58, 180, 0.5)',
+            border: '1px solid rgba(131, 58, 180, 0.4)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+              <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#fff' }}>
+                Edit Profile
+              </h2>
+              <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '8px' }}>
+                <X size={28} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold' }}>Bio</label>
+                <textarea
+                  value={editedBio}
+                  onChange={(e) => setEditedBio(e.target.value)}
+                  placeholder="Tell something about yourself..."
+                  style={{
+                    width: '100%',
+                    height: '120px',
+                    padding: '16px',
+                    backgroundColor: '#121212',
+                    border: '1px solid rgba(131, 58, 180, 0.4)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    resize: 'none',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold' }}>Location</label>
+                <input
+                  type="text"
+                  value={editedLocation}
+                  onChange={(e) => setEditedLocation(e.target.value)}
+                  placeholder="Where are you from?"
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    backgroundColor: '#121212',
+                    border: '1px solid rgba(131, 58, 180, 0.4)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '10px', color: '#00FFFF', fontSize: '14px', fontWeight: 'bold' }}>Website</label>
+                <input
+                  type="url"
+                  value={editedWebsite}
+                  onChange={(e) => setEditedWebsite(e.target.value)}
+                  placeholder="https://yourwebsite.com"
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    backgroundColor: '#121212',
+                    border: '1px solid rgba(131, 58, 180, 0.4)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+              <button
+                onClick={() => setIsEditing(false)}
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  borderRadius: '30px',
+                  backgroundColor: 'transparent',
+                  border: '2px solid #b3b3b3',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  borderRadius: '30px',
+                  background: 'linear-gradient(135deg, #1ed760, #00FFFF)',
+                  border: 'none',
+                  color: '#000',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 30px rgba(30, 215, 96, 0.5)'
+                }}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

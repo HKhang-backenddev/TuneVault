@@ -13,7 +13,7 @@ const PlaylistDetail = () => {
     api.get(`/playlists/${id}`).then(res => setPlaylist(res.data));
   }, [id]);
 
-  if (!playlist) return <div className="p-8 text-neutral-400">Đang tải...</div>;
+  if (!playlist) return <div className="p-8 text-neutral-400">Loading...</div>;
 
   return (
     <div className="pb-24 bg-transparent">
@@ -31,7 +31,7 @@ const PlaylistDetail = () => {
       <div className="px-2">
         <div className="grid grid-cols-[16px_1fr_1fr_40px] gap-4 px-4 py-2 border-b border-neutral-800 text-neutral-400 text-sm mb-4">
           <div>#</div>
-          <div>Tiêu đề</div>
+          <div>Title</div>
           <div>Album</div>
           <div className="flex justify-center"><Clock className="w-4 h-4" /></div>
         </div>

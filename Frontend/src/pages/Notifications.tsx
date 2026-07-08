@@ -19,15 +19,15 @@ const getIconForType = (type: string, isRead: boolean) => {
 
   switch (type.toLowerCase()) {
     case 'follow':
-      return { icon: <UserPlus style={{ ...baseClasses, color: '#f472b6' }} />, text: "Theo dõi mới", color: '#f472b6' }; // Đổi sang màu hồng
+      return { icon: <UserPlus style={{ ...baseClasses, color: '#f472b6' }} />, text: "New Follow", color: '#f472b6' }; // Đổi sang màu hồng
     case 'download_success':
-      return { icon: <Download style={{ ...baseClasses, color: '#22c55e' }} />, text: "Tải xuống thành công", color: '#22c55e' }; // Đổi sang tông xanh lá khác
+      return { icon: <Download style={{ ...baseClasses, color: '#22c55e' }} />, text: "Download Successful", color: '#22c55e' }; // Đổi sang tông xanh lá khác
     case 'share':
-      return { icon: <Share2 style={{ ...baseClasses, color: '#22d3ee' }} />, text: "Chia sẻ bài hát", color: '#22d3ee' }; // Đổi sang màu xanh lam
+      return { icon: <Share2 style={{ ...baseClasses, color: '#22d3ee' }} />, text: "Song Shared", color: '#22d3ee' }; // Đổi sang màu xanh lam
     case 'error':
-      return { icon: <Bell style={{ ...baseClasses, color: '#ef4444' }} />, text: "Lỗi hệ thống", color: '#ef4444' }; // Đổi sang tông đỏ khác
+      return { icon: <Bell style={{ ...baseClasses, color: '#ef4444' }} />, text: "System Error", color: '#ef4444' }; // Đổi sang tông đỏ khác
     default:
-      return { icon: <Bell style={{ ...baseClasses, color: colorClass }} />, text: "Thông báo chung", color: '#a3a3a3' };
+      return { icon: <Bell style={{ ...baseClasses, color: colorClass }} />, text: "General Notification", color: '#a3a3a3' };
   }
 };
 
@@ -41,12 +41,12 @@ const formatRelativeTime = (dateString: string) => {
   const hours = Math.round(minutes / 60);
   const days = Math.round(hours / 24);
 
-  if (seconds < 5) return "vừa xong";
-  if (seconds < 60) return `${seconds} giây trước`;
-  if (minutes < 60) return `${minutes} phút trước`;
-  if (hours < 24) return `${hours} giờ trước`;
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${seconds} seconds ago`;
+  if (minutes < 60) return `${minutes} minutes ago`;
+  if (hours < 24) return `${hours} hours ago`;
   if (days === 1) return `hôm qua lúc ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
-  if (days < 7) return `${days} ngày trước`;
+  if (days < 7) return `${days} days ago`;
 
   return date.toLocaleDateString('vi-VN', {
     day: '2-digit',
@@ -104,7 +104,7 @@ const Notifications = () => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     } catch (error) {
       console.error("Failed to delete notification:", error);
-      alert("Không thể xóa thông báo. Vui lòng thử lại.");
+      alert("Cannot delete notification. Please try again.");
     } finally {
       setDeletingId(null);
     }
@@ -118,7 +118,7 @@ const Notifications = () => {
       const payload = JSON.parse(notification.payloadJson);
       mediaId = payload?.mediaId;
     } catch (e) {
-      console.error("Lỗi parse JSON từ payload thông báo:", e);
+      console.error("Error parsing notification payload JSON:", e);
       return;
     }
 
@@ -133,18 +133,18 @@ const Notifications = () => {
         playTrack({
           id: songData.id,
           title: songData.title,
-          artist: songData.artist || 'Nghệ sĩ không xác định',
+          artist: songData.artist || 'Unknown Artist',
           url: songData.url || `/api/media/stream/${songData.id}`,
           thumbnailUrl: songData.thumbnailUrl || '',
           durationSeconds: songData.durationInSeconds,
           isLiked: songData.isLiked
         });
       } else {
-        throw new Error("Không tìm thấy dữ liệu bài hát.");
+        throw new Error("Song data not found.");
       }
     } catch (error) {
-      console.error("Không thể phát bài hát được chia sẻ:", error);
-      alert("Không tìm thấy bài hát này. Có thể nó đã bị xóa.");
+      console.error("Cannot play shared song:", error);
+      alert("This song cannot be found. It may have been deleted.");
     }
     markAsRead(notification.id);
   };
@@ -156,7 +156,7 @@ const Notifications = () => {
     try {
       mediaId = JSON.parse(notification.payloadJson).mediaId;
     } catch (e) {
-      console.error("Lỗi parse JSON từ payload thông báo:", e);
+      console.error("Error parsing notification payload JSON:", e);
       return;
     }
 
@@ -164,11 +164,11 @@ const Notifications = () => {
 
     try {
       await api.post(`/media/save/${mediaId}`);
-      alert('Đã lưu bài hát vào thư viện của bạn!');
+      alert('Song saved to your library!');
       navigate('/'); // Chuyển hướng về trang chủ
     } catch (error) {
-      console.error("Không thể lưu bài hát:", error);
-      alert("Không thể lưu bài hát này. Có thể nó đã có trong thư viện của bạn.");
+      console.error("Cannot save song:", error);
+      alert("Cannot save this song. It may already be in your library.");
     }
   };
 
@@ -189,47 +189,30 @@ const Notifications = () => {
 
   return (
     <div style={{
-      maxWidth: '60rem',
-      margin: '2rem auto',
-      padding: '2rem',
-      paddingBottom: '6rem',
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      borderRadius: '24px',
-      border: '2px solid transparent', // Giữ nguyên để tạo không gian cho viền gradient
-      backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #ef4444, #c084fc, #3b82f6, #c084fc, #ef4444)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      backgroundSize: '200% 100%', // Tăng kích thước nền để có không gian di chuyển
-      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-      backdropFilter: 'blur(10px)',
-      animation: 'animated-border 8s linear infinite', // Áp dụng animation
+      width: '100%',
+      padding: '24px 32px',
+      backgroundColor: '#1a1a2e',
+      borderRadius: '12px',
+      boxShadow: '0 0 30px rgba(255, 0, 255, 0.3)',
     }}>
-       <style>{`
+      <style>{`
         @keyframes slide-up-fade-in {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-        .notification-card-clip {
-          clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
-        }
       `}</style>
-      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2.5rem', letterSpacing: '-0.05em', color: 'white', textAlign: 'center', textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #3b82f6, 0 0 40px #3b82f6' }}>
-        Hộp thư đến
+      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2.5rem', letterSpacing: '-0.05em', color: '#FF00FF', textAlign: 'center', textShadow: '0 0 20px rgba(255, 0, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.6)' }}>
+        Inbox
       </h1>
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5rem 0' }}>
-          <Loader2 style={{ width: '2.5rem', height: '2.5rem', color: '#3b82f6' }} className="animate-spin" />
+          <Loader2 style={{ width: '2.5rem', height: '2.5rem', color: '#FF00FF', filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.8))' }} className="animate-spin" />
         </div>
       ) : notifications.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '5rem 0', backgroundColor: 'rgba(10, 10, 10, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '1rem', border: '1px solid #262626', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <Bell size={48} style={{ color: '#404040' }} />
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#a3a3a3' }}>Hộp thư của bạn trống</h3>
-          <p style={{ fontSize: '0.875rem', color: '#737373' }}>Các thông báo mới sẽ xuất hiện ở đây.</p>
+        <div style={{ textAlign: 'center', padding: '5rem 0', backgroundColor: '#121212', borderRadius: '1rem', border: '1px solid rgba(255, 0, 255, 0.3)', boxShadow: '0 0 20px rgba(255, 0, 255, 0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <Bell size={48} style={{ color: '#FF00FF', filter: 'drop-shadow(0 0 15px rgba(255, 0, 255, 0.8))' }} />
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#fff', textShadow: '0 0 10px rgba(255, 0, 255, 0.5)' }}>Your inbox is empty</h3>
+          <p style={{ fontSize: '0.875rem', color: '#b3b3b3' }}>New notifications will appear here.</p>
         </div>
       ) : (
         <div 
@@ -245,7 +228,7 @@ const Notifications = () => {
             maxHeight: '70vh',
             overflowY: 'auto',
             padding: '8px',
-            margin: '-8px', // Bù lại padding để thanh cuộn sát viền
+            margin: '-8px',
           }}
           className="custom-scrollbar" // Áp dụng thanh cuộn tùy chỉnh nếu có
         >
@@ -257,7 +240,7 @@ const Notifications = () => {
               width: '100%', height: '32px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)',
-              border: 'none', color: '#3b82f6', cursor: 'pointer',
+              border: 'none', color: '#833ab4', cursor: 'pointer',
               opacity: canScroll.up && isListHovered ? 1 : 0,
               transition: 'opacity 0.2s ease',
             }}
@@ -317,7 +300,7 @@ const Notifications = () => {
                   lineHeight: '1.625',
                   color: n.isRead ? '#a3a3a3' : '#E5E7EB', // Màu sáng hơn cho dễ đọc
                 }}>
-                  {n.message || 'Thông báo không có nội dung.'}
+                  {n.message || 'Notification has no content.'}
                 </p>
               </div>
 
@@ -330,7 +313,7 @@ const Notifications = () => {
                     <button
                       onClick={() => handlePlaySharedSong(n)}
                         style={{
-                          backgroundColor: '#3b82f6',
+                          backgroundColor: '#833ab4',
                           color: 'white',
                           fontSize: '0.75rem',
                           fontWeight: 'bold',
@@ -346,18 +329,18 @@ const Notifications = () => {
                         className="hover:bg-blue-500"
                     >
                         <Play size={14} fill="currentColor" />
-                      Phát nhạc
+                      Play Music
                     </button>
                     <button
                       onClick={() => handleSaveSharedSong(n)}
-                      title="Lưu vào thư viện và về trang chủ"
+                      title="Save to library and go home"
                       style={{
                         backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', fontSize: '0.75rem', fontWeight: 'bold', padding: '0.5rem 0.75rem', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s ease', border: 'none', cursor: 'pointer'
                       }}
                       className="hover:bg-green-500/20 hover:text-green-400"
                     >
                       <Save size={14} />
-                      Lưu
+                      Save
                     </button>
                   </div>
                 )}
@@ -376,7 +359,7 @@ const Notifications = () => {
                           cursor: 'pointer',
                           transition: 'all 0.2s ease'
                         }}
-                        title="Đánh dấu đã đọc"
+                        title="Mark as read"
                       >
                         <Check size={14} />
                       </button>
@@ -394,7 +377,7 @@ const Notifications = () => {
                           transition: 'all 0.2s ease',
                           opacity: deletingId === n.id ? 0.5 : 1,
                       }}                      
-                      title="Xóa thông báo"
+                      title="Delete notification"
                       onMouseEnter={(e) => {
                         if (deletingId !== n.id) {
                           e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
@@ -421,7 +404,7 @@ const Notifications = () => {
               width: '100%', height: '32px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-              border: 'none', color: '#3b82f6', cursor: 'pointer',
+              border: 'none', color: '#833ab4', cursor: 'pointer',
               opacity: canScroll.down && isListHovered ? 1 : 0,
               transition: 'opacity 0.2s ease',
             }}

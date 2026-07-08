@@ -48,13 +48,13 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa bài hát "${title}" khỏi thư viện không?`)) {
+    if (window.confirm(`Are you sure you want to delete the song "${title}" from your library?`)) {
       try {
         await api.delete(`/media/${id}`); // Gọi API DELETE từ MediaController
-        fetchHistory(); // Tải lại lịch sử sau khi xóa thành công
+        fetchHistory(); // Downloading...i lịch sử sau khi xóa thành công
       } catch (error: any) {
         console.error("Failed to delete song", error);
-        const msg = error.response?.data?.message || "Có lỗi xảy ra khi xóa bài hát.";
+        const msg = error.response?.data?.message || "An error occurred while deleting the song.";
         alert(msg);
       }
     }
@@ -62,67 +62,49 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
 
   return (
     <div className="min-h-screen pb-32 flex justify-center">
-      <style>{`
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border-history {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-      `}</style>
-      {/* Main Content Card - Đồng bộ với LikedSongs */}
       <div style={{
         width: '100%',
-        maxWidth: '900px',
-        margin: '24px auto',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        border: '2px solid transparent',
-        borderRadius: '24px',
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-        backgroundOrigin: 'border-box',
-        backgroundClip: 'padding-box, border-box',
-        backgroundSize: '200% 100%',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(59, 130, 246, 0.2)',
-        animation: 'animated-border-history 8s linear infinite',
+        backgroundColor: '#1a1a2e',
+        borderRadius: '12px',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        boxShadow: '0 0 30px rgba(131, 58, 180, 0.3)',
       }}>
-        {/* Hero Header */}
+        {/* Hero Header - Neon Blue Style */}
         <div style={{
           padding: '32px',
           paddingTop: '48px',
           display: 'flex',
           alignItems: 'flex-end',
           gap: '24px',
-          background: 'linear-gradient(to bottom, rgba(30, 64, 175, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+          background: 'linear-gradient(180deg, #833ab4 0%, #1a1a2e 100%)',
+          borderBottom: '1px solid rgba(131, 58, 180, 0.2)',
         }}>
           <div style={{
-            width: '160px',
-            height: '160px',
-            background: 'linear-gradient(to bottom right, #1e40af, #172554)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.2)',
+            width: '192px',
+            height: '192px',
+            background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
+            boxShadow: '0 0 30px rgba(0, 204, 255, 0.8), 0 0 60px rgba(0, 102, 255, 0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            position: 'relative',
+            borderRadius: '8px',
           }}>
-            <History size={80} style={{ color: 'white', filter: 'drop-shadow(0 0 5px rgba(96, 165, 250, 0.6))' }} />
+            <History size={80} style={{ color: 'white', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }} />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#93c5fd', marginBottom: '8px' }}>
-              Quản lý tải xuống
+            <p style={{ fontSize: '12px', fontWeight: '700', color: '#000', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Download Manager
             </p>
-            <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.05em', color: 'white', marginBottom: '12px' }}>
-              Lịch sử tải nhạc
+            <h1 style={{ fontSize: '56px', fontWeight: '900', color: '#fff', marginBottom: '12px', textShadow: '0 0 20px rgba(0, 204, 255, 0.8), 0 0 40px rgba(0, 102, 255, 0.6)' }}>
+              Music Download History
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 'bold', color: '#B0B0B0' }}>
-              <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>TV</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#b3b3b3' }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, #FF00FF, #00FFFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white', fontWeight: 'bold' }}>TV</div>
               <span>TuneVault User</span>
-              <span style={{ color: '#555' }}>•</span>
-              <span style={{ color: 'white' }}>{history.length} bài hát đã tải</span>
+              <span style={{ color: '#833ab4' }}>•</span>
+              <span style={{ color: '#833ab4', textShadow: '0 0 10px rgba(0, 204, 255, 0.5)' }}>{history.length} songs downloaded</span>
             </div>
           </div>
         </div>
@@ -135,7 +117,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
               backgroundColor: '#3b82f6',
               color: 'white',
               padding: '10px 24px',
-              borderRadius: '24px',
+              borderRadius: '8px',
               fontSize: '13px',
               fontWeight: '900',
               textTransform: 'uppercase',
@@ -145,10 +127,10 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)'
+              boxShadow: '0 0 15px rgba(131, 58, 180, 0.4)'
             }}
           >
-            <Play size={16} fill="white" /> Nhập thêm nhạc
+            <Play size={16} fill="white" /> Import More Music
           </button>
         </div>
 
@@ -156,7 +138,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
         <div style={{ padding: '0 32px 32px' }}>
           <div style={{
             backgroundColor: 'rgba(24, 24, 24, 0.7)',
-            borderRadius: '24px',
+            borderRadius: '8px',
             padding: '16px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: 'inset 0 0 15px rgba(0,0,0,0.5)',
@@ -164,12 +146,12 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
           }}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '80px', color: '#737373', fontSize: '12px', fontWeight: '900', letterSpacing: '0.2em' }} className="animate-pulse">
-                ĐANG TẢI LỊCH SỬ...
+                LOADING HISTORY...
               </div>
             ) : history.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px' }}>
                 <Music size={64} style={{ color: '#262626', marginBottom: '24px' }} />
-                <p style={{ color: '#737373', fontWeight: 'bold' }}>Chưa có bài hát nào được tải.</p>
+                <p style={{ color: '#737373', fontWeight: 'bold' }}>No songs have been downloaded yet..</p>
               </div>
             ) : (
               <>
@@ -188,10 +170,10 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
                   marginBottom: '8px',
                 }}>
                   <div style={{ textAlign: 'center' }}>#</div>
-                  <div>Thông tin bài hát</div>
-                  <div>Thời lượng</div>
-                  <div>Ngày thêm</div>
-                  <div>Trạng thái</div>
+                  <div>Song Information</div>
+                  <div>Duration</div>
+                  <div>Date Added</div>
+                  <div>Status</div>
                   <div style={{ textAlign: 'right' }}></div>
                 </div>
 
@@ -266,7 +248,7 @@ const DownloadHistory = ({ lastRefreshTime }: { lastRefreshTime?: number }) => {
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
                         onMouseLeave={(e) => e.currentTarget.style.color = '#737373'}
-                        title="Xóa khỏi lịch sử"
+                        title="Delete from history"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -287,19 +269,19 @@ const StatusBadge = ({ status }: { status: string }) => {
     case 'Completed':
       return (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-          <CheckCircle2 size={10} /> Xong
+          <CheckCircle2 size={10} /> Done
         </span>
       );
     case 'Downloading':
       return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-          <Loader2 size={10} className="animate-spin" /> Tải...
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(131, 58, 180, 0.1)', color: '#3b82f6', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(131, 58, 180, 0.2)' }}>
+          <Loader2 size={10} className="animate-spin" /> Downloading...
         </span>
       );
     case 'Error':
       return (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '12px', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-          <AlertCircle size={10} /> Lỗi
+          <AlertCircle size={10} /> Error
         </span>
       );
     default:

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import './styles/neon.css';
 import {
   Search as SearchIcon, Plus, Home as HomeIcon, Library as LibraryIcon,
   History, Bell, Play, LogOut, User as UserIcon, Heart, Camera, Image as ImageIcon, Loader2
@@ -8,6 +9,7 @@ import PlayerBar from './Components/PlayerBar'; // Đảm bảo đường dẫn 
 import Home from './pages/Home';
 import Notifications from './pages/Notifications';
 import Search from './pages/Search';
+import Users from './pages/Users';
 import DownloadHistory from './pages/DownloadHistory';
 import Login from './pages/Login';
 import Register from './pages/Register_inform';
@@ -18,6 +20,7 @@ import Profile from './pages/Profile';
 import MainLayout from './Components/MainLayout';
 import LikedSongs from './pages/LikedSongs';
 import SharedWithMe from './pages/SharedWithMe';
+import AdminPanel from './pages/AdminPanel';
 import { AppHeader } from './Components/AppHeader';
 import { AudioProvider } from './Contexts/AudioContext';
 import { useEffect, useState, useRef } from 'react';
@@ -165,10 +168,12 @@ const ProtectedLayout = ({ user, handleLogout, goHome, showUserMenu, setShowUser
             <Route path="library" element={<LibraryPage />} />
             <Route path="history" element={<DownloadHistory lastRefreshTime={lastRefreshTime} />} />
             <Route path="liked" element={<LikedSongs lastRefreshTime={lastRefreshTime} />} />
-            <Route path="search" element={<Search />} />
+            <Route path="search" element={<Search searchQuery={searchQuery} onSearchChange={setSearchQuery} />} />
+            <Route path="users" element={<Users searchQuery={searchQuery} onSearchChange={setSearchQuery} />} />
             <Route path="import" element={<ImportMusic />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="shared-with-me" element={<SharedWithMe />} />
+            <Route path="admin" element={<AdminPanel />} />
             <Route 
               path="profile/:username" 
               element={<Profile currentUser={user} onUpdate={fetchProfile} onLogout={onLogout} />} 

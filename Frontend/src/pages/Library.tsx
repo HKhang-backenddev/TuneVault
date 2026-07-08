@@ -1,24 +1,55 @@
-import { useEffect, useState, MouseEvent, DragEvent } from 'react'; // Import DragEvent
+import { useEffect, useState, MouseEvent, DragEvent } from 'react';
 import api from '../axios';
-import { Music, Play, Pause, Trash2, ListPlus, Heart, Clock } from 'lucide-react'; // Import Pause
+import { Music, Play, Trash2, ListPlus, Heart, Pencil } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
+import EditSongModal from '../components/EditSongModal';
 
-// Define a more specific type for MediaItem to match the backend and AudioContext
 interface MediaItem {
   id: string;
   title: string;
   artist: string;
+  artistName?: string;
   url: string;
   thumbnailUrl: string;
   durationInSeconds?: number;
   isLiked?: boolean;
+  isOwner?: boolean;
+  canDelete?: boolean;
+  genre?: string;
 }
 
 const Library = () => {
-  const [mySongs, setMySongs] = useState<MediaItem[]>([]); // Use MediaItem type
-  const [menuConfig, setMenuConfig] = useState<{ x: number, y: number, song: MediaItem } | null>(null); // Use MediaItem type
-  const { playTrack, currentTrack, isPlaying } = useAudio();
+  const [mySongs, setMySongs] = useState<MediaItem[]>([]);
+  const [menuConfig, setMenuConfig] = useState<{ x: number, y: number, song: MediaItem } | null>(null);
+  const { playTrack, currentTrack } = useAudio();
   const [hearts, setHearts] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
+  const [editingSong, setEditingSong] = useState<MediaItem | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin (from API)
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const res = await api.get('/user/my-role');
+        console.log('Role check:', res.data);
+        setIsAdmin(res.data.role === 'Admin');
+        // Also update localStorage
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          user.role = res.data.role;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      } catch (e) {
+        console.error('Role check failed:', e);
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, []);
+
+  // Debug: show current status
+  console.log('isAdmin:', isAdmin);
 
   const formatTime = (seconds?: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -27,10 +58,8 @@ const Library = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // State to manage drag and drop
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
-
-  const token = localStorage.getItem('token'); // Lấy token để theo dõi thay đổi người dùng
+  const token = localStorage.getItem('token');
 
   const fetchSongs = () => {
     api.get('/media/library?pageSize=1000').then(res => setMySongs(res.data?.items || []));
@@ -38,16 +67,15 @@ const Library = () => {
 
   useEffect(() => {
     fetchSongs();
-  }, [token]); // Tải lại danh sách bài hát khi token thay đổi (đăng nhập/đăng xuất)
+  }, [token]);
 
-  // Lắng nghe sự kiện khi danh sách favorites thay đổi (ví dụ thả tim ở Home)
   useEffect(() => {
     const handler = () => fetchSongs();
     window.addEventListener('favoritesUpdated', handler as EventListener);
     return () => window.removeEventListener('favoritesUpdated', handler as EventListener);
   }, []);
 
-  const handleContextMenu = (e: MouseEvent, song: MediaItem) => { // Use MediaItem type
+  const handleContextMenu = (e: MouseEvent, song: MediaItem) => {
     e.preventDefault();
     setMenuConfig({ x: e.clientX, y: e.clientY, song });
   };
@@ -59,14 +87,13 @@ const Library = () => {
   }, []);
 
   const handleDelete = async (id: string, title: string) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa bài hát "${title}"?`)) {
+    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
       try {
         await api.delete(`/media/${id}`);
         fetchSongs();
       } catch (error: any) {
         console.error("Failed to delete song", error);
-        const msg = error.response?.data?.message || "Không thể xóa bài hát. Vui lòng thử lại.";
-        alert(msg);
+        alert(error.response?.data?.message || "Cannot delete song.");
       }
     }
   };
@@ -78,60 +105,40 @@ const Library = () => {
       const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
       const newHeart = { id: Date.now(), x: e.clientX, y: e.clientY, color: randomColor };
       setHearts(prev => [...prev, newHeart]);
-      
-      setTimeout(() => {
-        setHearts(prev => prev.filter(h => h.id !== newHeart.id));
-      }, 1000);
-
+      setTimeout(() => { setHearts(prev => prev.filter(h => h.id !== newHeart.id)); }, 1000);
       const res = await api.post(`/favorites/toggle/${song.id}`);
-      setMySongs(prev => prev.map(s => 
-        s.id === song.id ? { ...s, isLiked: res.data.isLiked } : s
-      ));
+      setMySongs(prev => prev.map(s => s.id === song.id ? { ...s, isLiked: res.data.isLiked } : s));
     } catch (error) {
       console.error("Failed to toggle favorite", error);
     }
   };
 
-  // --- Drag and Drop Handlers ---
   const handleDragStart = (e: DragEvent<HTMLDivElement>, index: number) => {
     setDraggedItemIndex(index);
     e.dataTransfer.effectAllowed = 'move';
-    // For visual feedback, you might want to set a drag image
-    // e.dataTransfer.setDragImage(e.currentTarget, 0, 0);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>, index: number) => {
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault();
     if (draggedItemIndex === null || draggedItemIndex === index) return;
-
-    // Optional: Add visual feedback for the drop target
-    e.currentTarget.style.borderTop = '2px solid #FF0000'; // Red border on top
+    e.currentTarget.style.borderTop = '2px solid #1DB954';
   };
 
   const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
-    // Optional: Remove visual feedback
     e.currentTarget.style.borderTop = '';
   };
 
   const handleDrop = (e: DragEvent<HTMLDivElement>, dropIndex: number) => {
     e.preventDefault();
-    // e.currentTarget.style.borderTop = ''; // Remove visual feedback
-
     if (draggedItemIndex === null || draggedItemIndex === dropIndex) {
       setDraggedItemIndex(null);
       return;
     }
-
     const newSongs = [...mySongs];
     const [draggedItem] = newSongs.splice(draggedItemIndex, 1);
     newSongs.splice(dropIndex, 0, draggedItem);
-
     setMySongs(newSongs);
     setDraggedItemIndex(null);
-
-    // TODO: Implement API call to persist the new order on the backend
-    // This would require a new endpoint on the backend to accept an ordered list of song IDs.
-    console.log("New song order:", newSongs.map(s => s.id));
   };
 
   const handleDragEnd = () => {
@@ -139,347 +146,304 @@ const Library = () => {
   };
 
   return (
-    <div className="min-h-screen pb-32 flex justify-center">
-      <style>{` /* Renamed animation to avoid potential conflicts */
-        @keyframes wave-library {
-          0%, 100% { height: 4px; }
-          50% { height: 12px; }
-        }
-        .visualizer-bar {
-          width: 2px;
-          background-color: #3b82f6;
-          border-radius: 1px;
-          transition: height 0.2s ease;
-          box-shadow: 0 0 5px #3b82f6;
-        }
-        .animate-wave-1 { animation: wave-library 0.6s ease-in-out infinite; }
-        .animate-wave-2 { animation: wave-library 0.8s ease-in-out infinite 0.1s; }
-        .animate-wave-3 { animation: wave-library 0.7s ease-in-out infinite 0.2s; }
-        .dragging {
-          opacity: 0.5;
-          border: 1px dashed #FF0000 !important;
-          background-color: rgba(255, 0, 0, 0.1) !important;
-        }
-        .song-item-neon {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-        @keyframes float-heart-lib { /* Đổi tên animation để tránh xung đột */
+    <div className="min-h-screen pb-32">
+      <style>{`
+        @keyframes float-heart-lib {
           0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
           25% { transform: translate(calc(-50% - 20px), calc(-50% - 50px)) scale(1); opacity: 0.8; }
           50% { transform: translate(calc(-50% + 20px), calc(-50% - 100px)) scale(1.5); opacity: 0.6; }
           75% { transform: translate(calc(-50% - 10px), calc(-50% - 150px)) scale(1.8); opacity: 0.3; }
           100% { transform: translate(-50%, calc(-50% - 200px)) scale(2); opacity: 0; }
         }
-        .floating-heart {
-          position: fixed;
-          pointer-events: none;
-          z-index: 9999;
-          animation: float-heart-lib 1s ease-out forwards;
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 8px; }
-        .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border-library {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
+        .floating-heart { position: fixed; pointer-events: none; z-index: 9999; animation: float-heart-lib 1s ease-out forwards; }
+        .neon-row { display: grid; grid-template-columns: 40px 5fr 3fr 100px; gap: 16px; padding: 8px 16px; border-radius: 8px; cursor: pointer; align-items: center; transition: all 0.3s ease; }
+        .neon-row:hover { background-color: #2a2a4e; box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+        .neon-row:hover .hover-opacity { opacity: 1; }
+        .neon-row:hover .hide-on-hover { opacity: 0; }
+        .hover-opacity { opacity: 0; transition: opacity 0.2s; }
+        .hide-on-hover { transition: opacity 0.2s; }
       `}</style>
 
-      {/* Main Content Card - Đồng bộ với LikedSongs và DownloadHistory */}
-      <div style={{
-        width: '100%',
-        maxWidth: '900px',
-        margin: '24px auto',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        border: '2px solid transparent',
-        borderRadius: '24px',
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-        backgroundOrigin: 'border-box',
-        backgroundClip: 'padding-box, border-box',
-        backgroundSize: '200% 100%',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(59, 130, 246, 0.2)',
-        animation: 'animated-border-library 8s linear infinite',
-        overflow: 'hidden',
+      {/* DEBUG: Show role status */}
+      <div style={{ 
+        padding: '12px 24px', 
+        backgroundColor: isAdmin ? 'rgba(0, 255, 136, 0.2)' : 'rgba(255, 77, 77, 0.2)',
+        borderBottom: `1px solid ${isAdmin ? '#00FF88' : '#ff4d4d'}`,
         display: 'flex',
-        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '12px'
       }}>
-        {/* Hero Header */}
-        <div style={{
-          padding: '32px',
-          paddingTop: '48px',
-          display: 'flex',
-          alignItems: 'flex-end',
-          gap: '24px',
-          background: 'linear-gradient(to bottom, rgba(30, 64, 175, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        }}>
-          <div style={{
-            width: '160px',
-            height: '160px',
-            background: 'linear-gradient(to bottom right, #3b82f6, #1e40af)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            <Music size={70} style={{ color: 'white', filter: 'drop-shadow(0 0 5px rgba(0,0,0,0.5))' }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', borderRadius: '16px' }}></div>
+        <span style={{ color: isAdmin ? '#00FF88' : '#ff4d4d', fontWeight: 'bold' }}>
+          {isAdmin ? '✅ BẠN LÀ ADMIN' : '❌ BẠN KHÔNG PHẢI ADMIN'}
+        </span>
+        <span style={{ color: '#888' }}>|</span>
+        <a 
+          href="/app/admin" 
+          style={{ color: '#00FFFF', textDecoration: 'underline', fontSize: '14px' }}
+        >
+          {isAdmin ? 'Chỉnh sửa bài hát' : 'Nhấn vào đây để trở thành Admin'}
+        </a>
+      </div>
+
+      {/* Header - Neon Purple/Pink */}
+      <div style={{ padding: '24px 32px', background: 'linear-gradient(180deg, #8800FF 0%, #1a1a2e 100%)', borderBottom: '1px solid rgba(136, 0, 255, 0.3)', boxShadow: '0 0 30px rgba(136, 0, 255, 0.3)' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '24px' }}>
+          <div style={{ width: '192px', height: '192px', background: 'linear-gradient(135deg, #8800FF, #FF0088)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(136, 0, 255, 0.8), 0 0 60px rgba(255, 0, 136, 0.5)' }}>
+            <Music size={80} style={{ color: 'white', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }} />
           </div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#FF6B6B', marginBottom: '8px' }}>
-              Bộ sưu tập
-            </p>
-            <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.05em', color: 'white', marginBottom: '12px' }}>
-              Thư viện của bạn
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 'bold', color: '#B0B0B0' }}>
-              <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>TV</div>
-              <span>TuneVault User</span>
-              <span style={{ color: '#555' }}>•</span>
-              <span style={{ color: 'white' }}>{mySongs.length} bài hát</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Actions Bar */}
-        <div style={{
-          padding: '24px 32px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: 'rgba(0, 0, 0, 0.3)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        }}>
-          <button
-            onClick={() => mySongs.length > 0 && playTrack(mySongs[0], mySongs)}
-            style={{
-              width: '56px',
-              height: '56px',
-              backgroundColor: '#3b82f6',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.2)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer',
-              border: 'none',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <Play size={28} fill="white" style={{ color: 'white', marginLeft: '3px' }} />
-          </button>
-
-          <button 
-            onClick={() => window.location.href = '/import'}
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              color: 'white',
-              padding: '8px 20px',
-              borderRadius: '24px',
-              fontSize: '12px',
-              fontWeight: '900',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
-          >
-            Nhập thêm nhạc
-          </button>
-        </div>
-
-        {/* List Frame */}
-        <div style={{ padding: '0 32px 32px' }}>
-          <div style={{
-            backgroundColor: 'rgba(24, 24, 24, 0.7)',
-            borderRadius: '24px',
-            padding: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: 'inset 0 0 15px rgba(0,0,0,0.5)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px',
-            marginTop: '24px',
-            maxHeight: '60vh',
-            overflowY: 'auto'
-          }} className="custom-scrollbar">
-            {/* Header Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '40px 5fr 3fr 1fr',
-              gap: '16px',
-              padding: '12px 24px',
-              color: '#737373',
-              fontSize: '10px',
-              fontWeight: '900',
-              textTransform: 'uppercase',
-              letterSpacing: '0.2em',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-              marginBottom: '8px',
-            }}>
-              <div style={{ textAlign: 'center' }}>#</div>
-              <div>Tiêu đề</div>
-              <div>Nghệ sĩ</div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', paddingRight: '8px' }}><Clock size={16} /></div>
-            </div>
-
-            {mySongs.length > 0 ? (
-              mySongs.map((song: MediaItem, index: number) => {
-                const isCurrent = currentTrack?.id === song.id;
-                return (
-                  <div 
-                    key={song.id} 
-                    onClick={() => playTrack(song, mySongs)}
-                    onContextMenu={(e) => handleContextMenu(e, song)}
-                    draggable="true"
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDrop={(e) => handleDrop(e, index)}
-                    onDragLeave={handleDragLeave}
-                    onDragEnd={handleDragEnd}
-                    className={`song-item-neon ${draggedItemIndex === index ? 'dragging' : ''}`}
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '40px 5fr 3fr 1fr',
-                      gap: '16px',
-                      padding: '8px 24px',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      alignItems: 'center',
-                      transition: 'all 0.2s ease',
-                      border: '1px solid transparent',
-                      backgroundColor: isCurrent ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isCurrent) {
-                        e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.08)';
-                        e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.2)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isCurrent) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.borderColor = 'transparent';
-                      }
-                    }}
-                  >
-                    <div style={{ color: '#737373', fontSize: '12px', fontFamily: 'monospace', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {isCurrent && isPlaying ? (
-                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '16px', width: '16px' }}>
-                          <div className="visualizer-bar animate-wave-1" style={{ height: isPlaying ? undefined : '6px' }} />
-                          <div className="visualizer-bar animate-wave-2" style={{ height: isPlaying ? undefined : '10px' }} />
-                          <div className="visualizer-bar animate-wave-3" style={{ height: isPlaying ? undefined : '5px' }} />
-                        </div>
-                      ) : (
-                        <span style={{ color: isCurrent ? '#3b82f6' : '#737373' }}>{(index + 1).toString().padStart(2, '0')}</span>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <img src={song.thumbnailUrl} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
-                      <div style={{ overflow: 'hidden' }}>
-                        <div style={{ fontWeight: '600', fontSize: '15px', color: isCurrent ? '#60a5fa' : 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-                      </div>
-                    </div>
-
-                    <div style={{ color: '#B0B0B0', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center' }}>
-                      {song.artist || 'Nghệ sĩ không xác định'}
-                    </div> 
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', color: '#737373', fontSize: '12px', fontWeight: '900', letterSpacing: '0.05em', paddingRight: '4px' }}>
-                      <button 
-                        onClick={(e) => handleToggleLike(e, song)}
-                        style={{
-                          color: song.isLiked ? '#3b82f6' : '#737373',
-                          opacity: song.isLiked ? 1 : 0,
-                          transition: 'all 0.2s ease',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                        }}
-                        onMouseEnter={(e) => { if (!song.isLiked) e.currentTarget.style.color = 'white'; e.currentTarget.style.opacity = '1'; }}
-                        onMouseLeave={(e) => { if (!song.isLiked) e.currentTarget.style.color = '#737373'; e.currentTarget.style.opacity = '0'; }}
-                      >
-                        <Heart size={16} fill={song.isLiked ? "currentColor" : "none"} />
-                      </button>
-                      <span style={{ fontFamily: 'monospace' }}>{formatTime(song.durationInSeconds)}</span>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDelete(song.id, song.title); }} 
-                        style={{ background: 'none', border: 'none', color: '#737373', cursor: 'pointer', transition: 'color 0.2s', padding: '4px' }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = '#737373'}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div style={{ textAlign: 'center', padding: '80px' }}>
-                <Music size={64} style={{ color: '#262626', marginBottom: '24px' }} />
-                <p style={{ color: '#737373', fontWeight: 'bold' }}>Thư viện của bạn đang trống.</p>
-                <button onClick={() => window.location.href = '/import'} style={{ marginTop: '24px', backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '12px 32px', borderRadius: '24px', fontWeight: 'bold', cursor: 'pointer' }}>Tải nhạc ngay</button>
-              </div>
-            )}
+          <div style={{ paddingBottom: '16px' }}>
+            <p style={{ fontSize: '12px', fontWeight: '700', color: '#00FFFF', textTransform: 'uppercase', margin: 0, textShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }}>Playlist</p>
+            <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', margin: '8px 0', lineHeight: 1, textShadow: '0 0 20px rgba(136, 0, 255, 0.8), 0 0 40px rgba(255, 0, 136, 0.6)' }}>Library</h1>
+            <p style={{ fontSize: '16px', color: '#b3b3b3', margin: 0 }}>{mySongs.length} songs</p>
           </div>
         </div>
       </div>
 
-      {menuConfig && (
-        <div style={{
-          position: 'fixed',
-          backgroundColor: 'rgba(24, 24, 24, 0.85)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-          borderRadius: '8px',
-          padding: '4px 0',
-          zIndex: 100,
-          minWidth: '200px',
-          left: menuConfig.x,
-          top: menuConfig.y,
-          backdropFilter: 'blur(10px)',
-        }}>
-          <button 
-            onClick={() => { console.log("Thêm vào hàng chờ:", menuConfig.song.title); }}
-            style={{ width: '100%', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px', color: 'white', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            <ListPlus size={16} /> Thêm vào hàng chờ
-          </button>
-          <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.05)', margin: '4px 0' }}></div>
-          <button 
-            onClick={() => handleDelete(menuConfig.song.id, menuConfig.song.title)}
-            style={{ width: '100%', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px', color: '#f87171', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            <Trash2 size={16} /> Xóa bài hát khỏi thư viện
+      {/* Top Tracks Section */}
+      {mySongs.length >= 4 && (
+        <div style={{ padding: '24px 32px 8px' }}>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            marginBottom: '20px',
+            color: '#fff',
+            textShadow: '0 0 20px rgba(131, 58, 180, 0.6)'
+          }}>
+            ⭐ Top Tracks
+          </h2>
+          <div style={{
+            display: 'flex',
+            gap: '16px',
+            overflowX: 'auto',
+            paddingBottom: '24px',
+            scrollSnapType: 'x mandatory'
+          }}>
+            <style>{`
+              .top-track-card { min-width: 160px; max-width: 160px; scroll-snap-align: start; }
+              .top-track-card:hover .play-overlay { opacity: 1 !important; transform: translateY(0) scale(1) !important; }
+            `}</style>
+            {mySongs.slice(0, 8).map((song, index) => {
+              const isCurrent = currentTrack?.id === song.id;
+              const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+              const rankColor = rankColors[index] || null;
+              return (
+                <div
+                  key={song.id}
+                  onClick={() => playTrack(song, mySongs)}
+                  className="top-track-card"
+                  style={{
+                    background: isCurrent
+                      ? 'linear-gradient(145deg, rgba(30, 215, 96, 0.2), rgba(131, 58, 180, 0.2))'
+                      : 'linear-gradient(145deg, #1e1e2e, #252540)',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    border: isCurrent ? '1px solid rgba(30, 215, 96, 0.5)' : '1px solid rgba(131, 58, 180, 0.2)',
+                    boxShadow: isCurrent ? '0 0 20px rgba(30, 215, 96, 0.3)' : '0 4px 15px rgba(0,0,0,0.3)',
+                    position: 'relative'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isCurrent) {
+                      e.currentTarget.style.transform = 'translateY(-8px)';
+                      e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.6)';
+                      e.currentTarget.style.boxShadow = '0 15px 30px rgba(131, 58, 180, 0.3)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isCurrent) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.borderColor = 'rgba(131, 58, 180, 0.2)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+                    }
+                  }}
+                >
+                  {/* Rank Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '6px',
+                    left: '6px',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: rankColor 
+                      ? `linear-gradient(135deg, ${rankColor}, ${rankColor}dd)` 
+                      : 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '10px',
+                    color: rankColor ? '#000' : '#fff',
+                    zIndex: 2,
+                    boxShadow: rankColor ? '0 2px 6px rgba(0,0,0,0.4)' : 'none'
+                  }}>
+                    {index + 1}
+                  </div>
+                  
+                  {/* Thumbnail */}
+                  <div style={{ position: 'relative', marginBottom: '10px' }}>
+                    {song.thumbnailUrl ? (
+                      <img 
+                        src={song.thumbnailUrl} 
+                        alt={song.title}
+                        style={{
+                          width: '100%',
+                          aspectRatio: '1',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '100%',
+                        aspectRatio: '1',
+                        background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Music size={40} style={{ color: '#fff' }} />
+                      </div>
+                    )}
+                    {/* Play Button Overlay */}
+                    <div 
+                      className="play-overlay"
+                      style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        right: '8px',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #1ed760, #00d4aa)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0,
+                        transform: 'translateY(8px) scale(0.9)',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 15px rgba(30, 215, 96, 0.5)'
+                      }}
+                    >
+                      <Play size={20} fill="black" color="black" style={{ marginLeft: '2px' }} />
+                    </div>
+                  </div>
+                  
+                  {/* Info */}
+                  <h4 style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#fff',
+                    margin: '0 0 4px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {song.title}
+                  </h4>
+                  <p style={{
+                    fontSize: '11px',
+                    color: '#b3b3b3',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {song.artist || 'Unknown'}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {mySongs.length > 0 && (
+        <div style={{ padding: '8px 32px' }}>
+          <button style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #00FF00, #FFFF00)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease', boxShadow: '0 0 20px rgba(0, 255, 0, 0.6), 0 0 40px rgba(255, 255, 0, 0.4)' }} className="hover:scale-105" onClick={() => playTrack(mySongs[0], mySongs)} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}>
+            <Play size={24} fill="black" color="black" style={{ marginLeft: '4px' }} />
           </button>
         </div>
       )}
 
-      {/* Render Floating Hearts */}
-      {hearts.map(h => (
-        <Heart 
-          key={h.id} 
-          className="floating-heart"
-          style={{ left: h.x, top: h.y, color: h.color }}
-          size={24}
-          fill="currentColor"
+      <div style={{ padding: '16px 32px 8px', borderBottom: '1px solid rgba(0, 255, 136, 0.2)' }}>
+        <div className="neon-row" style={{ cursor: 'default' }}>
+          <span style={{ color: '#00FFFF', fontSize: '14px', textShadow: '0 0 5px rgba(0, 255, 255, 0.5)' }}>#</span>
+          <span style={{ color: '#00FFFF', fontSize: '14px', textShadow: '0 0 5px rgba(0, 255, 255, 0.5)' }}>Title</span>
+          <span style={{ color: '#00FFFF', fontSize: '14px', textShadow: '0 0 5px rgba(0, 255, 255, 0.5)' }}>Album</span>
+          <span style={{ color: '#00FFFF', fontSize: '14px', textAlign: 'right', textShadow: '0 0 5px rgba(0, 255, 255, 0.5)' }}>⏱</span>
+        </div>
+      </div>
+
+      <div style={{ padding: '0 16px' }}>
+        {mySongs.length > 0 ? mySongs.map((song, index) => {
+          const isCurrent = currentTrack?.id === song.id;
+          return (
+            <div key={song.id} onClick={() => playTrack(song, mySongs)} onContextMenu={(e) => handleContextMenu(e, song)} draggable onDragStart={(e) => handleDragStart(e, index)} onDragOver={(e) => handleDragOver(e, index)} onDragLeave={handleDragLeave} onDrop={(e) => handleDrop(e, index)} onDragEnd={handleDragEnd} className="neon-row" style={{ backgroundColor: 'transparent' }}>
+              <div style={{ color: '#b3b3b3', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <span className="hide-on-hover" style={{ color: isCurrent ? '#FF00FF' : '#b3b3b3', textShadow: isCurrent ? '0 0 10px rgba(255, 0, 255, 0.8)' : 'none' }}>{index + 1}</span>
+                <button className="hover-opacity" style={{ position: 'absolute', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: 0 }}>
+                  <Play size={16} fill="currentColor" />
+                </button>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <img src={song.thumbnailUrl} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 0 10px rgba(0, 255, 136, 0.3)' }} alt="" />
+                <div style={{ fontSize: '16px', fontWeight: '500', color: isCurrent ? '#FF00FF' : '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px', textShadow: isCurrent ? '0 0 10px rgba(255, 0, 255, 0.5)' : 'none' }}>{song.title}</div>
+              </div>
+              <div style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                <button onClick={(e) => handleToggleLike(e, song)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: song.isLiked ? '#FF00FF' : '#b3b3b3', filter: song.isLiked ? 'drop-shadow(0 0 5px rgba(255, 0, 255, 0.8))' : 'none' }} onMouseEnter={(e) => { if (!song.isLiked) e.currentTarget.style.color = '#fff'; }} onMouseLeave={(e) => { if (!song.isLiked) e.currentTarget.style.color = '#b3b3b3'; }}>
+                  <Heart size={18} fill={song.isLiked ? "currentColor" : "none"} />
+                </button>
+                <span style={{ color: '#00FF00', fontSize: '14px', minWidth: '40px', textAlign: 'right', textShadow: '0 0 5px rgba(0, 255, 0, 0.5)' }}>{formatTime(song.durationInSeconds)}</span>
+                {isAdmin && (
+                  <button onClick={(e) => { e.stopPropagation(); setEditingSong(song); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: '#00FFFF' }} onMouseEnter={(e) => e.currentTarget.style.color = '#00FF88'} onMouseLeave={(e) => e.currentTarget.style.color = '#00FFFF'}>
+                    <Pencil size={16} style={{ filter: 'drop-shadow(0 0 5px rgba(0, 255, 255, 0.5))' }} />
+                  </button>
+                )}
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(song.id, song.title); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: '#b3b3b3' }} onMouseEnter={(e) => e.currentTarget.style.color = '#ff4d4d'} onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          );
+        }) : (
+          <div style={{ textAlign: 'center', padding: '80px 32px', backgroundColor: '#1a1a2e', borderRadius: '12px', margin: '20px', boxShadow: '0 0 30px rgba(136, 0, 255, 0.3)' }}>
+            <div style={{ width: '200px', height: '200px', background: 'linear-gradient(135deg, #8800FF, #FF0088)', borderRadius: '50%', margin: '0 auto 32px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(136, 0, 255, 0.6)' }}>
+              <Music size={80} style={{ color: 'white', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }} />
+            </div>
+            <p style={{ color: '#fff', fontSize: '32px', fontWeight: '700', margin: '0 0 8px', textShadow: '0 0 20px rgba(136, 0, 255, 0.5)' }}>Your library is empty</p>
+            <p style={{ color: '#b3b3b3', fontSize: '16px', margin: '0 0 24px' }}>Add music to build your collection</p>
+            <button onClick={() => window.location.href = '/app/import'} style={{ background: 'linear-gradient(135deg, #00FF00, #FFFF00)', color: 'black', border: 'none', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', boxShadow: '0 0 20px rgba(0, 255, 0, 0.5)' }}>Upload Music</button>
+          </div>
+        )}
+      </div>
+
+      {menuConfig && (
+        <div style={{ position: 'fixed', backgroundColor: '#1a1a2e', border: '1px solid rgba(255, 0, 255, 0.5)', borderRadius: '8px', padding: '8px 0', zIndex: 100, minWidth: '200px', left: menuConfig.x, top: menuConfig.y, boxShadow: '0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(0, 255, 136, 0.3)' }}>
+          <button onClick={() => { console.log("Add to queue:", menuConfig.song.title); }} style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', color: '#fff', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', textAlign: 'left' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2a2a4e'; e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 255, 136, 0.3)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; }}>
+            <ListPlus size={18} style={{ color: '#00FF00' }} /> Add to queue
+          </button>
+          <div style={{ height: '1px', backgroundColor: 'rgba(255, 0, 255, 0.3)', margin: '4px 0' }}></div>
+          <button onClick={() => handleDelete(menuConfig.song.id, menuConfig.song.title)} style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', color: '#ff4d4d', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', textAlign: 'left' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2a2a4e'; e.currentTarget.style.boxShadow = '0 0 10px rgba(255, 0, 136, 0.3)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; }}>
+            <Trash2 size={18} /> Remove from library
+          </button>
+        </div>
+      )}
+
+      {hearts.map(h => (<Heart key={h.id} className="floating-heart" style={{ left: h.x, top: h.y, color: h.color }} size={24} fill="currentColor" />))}
+
+      {editingSong && (
+        <EditSongModal
+          song={editingSong}
+          onClose={() => setEditingSong(null)}
+          onSave={(updatedSong) => {
+            setMySongs(prev => prev.map(s => s.id === updatedSong.id ? updatedSong : s));
+          }}
         />
-      ))}
+      )}
     </div>
   );
 };

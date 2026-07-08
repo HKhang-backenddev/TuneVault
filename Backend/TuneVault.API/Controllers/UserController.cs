@@ -127,6 +127,31 @@ public class UserController : BaseApiController
         return Ok(items);
     }
 
+    /// <summary>Đặt chính mình làm Admin (chỉ dùng để test).</summary>
+    [HttpPost("make-me-admin")]
+    public async Task<IActionResult> MakeMeAdmin()
+    {
+        var userId = RequireUserId();
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return NotFound(new { message = "Không tìm thấy người dùng." });
+
+        user.Role = "Admin";
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = $"User {user.Username} is now Admin!", role = user.Role });
+    }
+
+    /// <summary>Lấy role của người dùng hiện tại.</summary>
+    [HttpGet("my-role")]
+    public async Task<IActionResult> GetMyRole()
+    {
+        var userId = RequireUserId();
+        var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return NotFound(new { message = "Không tìm thấy người dùng." });
+
+        return Ok(new { username = user.Username, role = user.Role ?? "User" });
+    }
+
     private async Task<object> BuildProfileDtoAsync(User user, Guid currentUserId)
     {
         var followerCount = await _context.UserFollows.CountAsync(f => f.FollowingId == user.Id);

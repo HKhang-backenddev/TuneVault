@@ -1,12 +1,32 @@
-/* Thiết lập cơ bản cho ứng dụng giống Spotify */
-html, body, #root {
+/* Thiết lập cơ bản cho ứng dụng giống Spotify - FULL SCREEN */
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #000000; /* Nền đen chủ đạo */
+  background-color: #121212;
   color: #ffffff;
-  /* overflow: hidden; Tránh scrollbar kép do layout h-screen */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Màu accent Spotify */
+:root {
+  --spotify-green: #1DB954;
+  --spotify-black: #121212;
+  --spotify-dark: #181818;
+  --spotify-light: #282828;
+  --spotify-gray: #b3b3b3;
+  --spotify-white: #ffffff;
+  --header-height: 64px;
+  --sidebar-width: 240px;
+  --player-height: 90px;
 }
 
 /* Ép tất cả văn bản trong Auth Form phải sáng màu */
@@ -17,24 +37,25 @@ html, body, #root {
   color: #ffffff !important;
 }
 
-/* Class chuyên nghiệp giống Google nhưng màu tím */
+/* Class chuyên nghiệp giống Spotify */
 .google-style-card {
-  background-color: #000000 !important;
-  border: 1px solid #333 !important; /* Đổi sang viền xám tối cho giống YT hơn */
-  border-radius: 1rem !important;
-  box-shadow: 0 0 40px rgba(255, 0, 0, 0.05) !important; /* Đổ bóng đỏ cực nhẹ */
+  background-color: #181818 !important;
+  border: 1px solid #282828 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
 }
 
 .google-style-input {
-  background-color: #000000 !important;
+  background-color: #121212 !important;
   color: #ffffff !important;
-  border: 1px solid #3f3f46 !important; /* Xám đậm */
+  border: 1px solid #282828 !important;
+  border-radius: 4px !important;
   transition: all 0.2s ease !important;
 }
 
 .google-style-input:focus {
-  border-color: #FF0000 !important; /* Đổi sang đỏ khi focus */
-  box-shadow: 0 0 0 1px #FF0000 !important;
+  border-color: #1DB954 !important;
+  box-shadow: 0 0 0 1px #1DB954 !important;
   outline: none !important;
 }
 
@@ -42,27 +63,366 @@ input::placeholder {
   color: #727272 !important;
 }
 
-/* Đảm bảo root chiếm toàn bộ màn hình */
-#root {
-  height: 100%;
-  width: 100%;
-  display: block; /* Tránh flex-column ở root làm hỏng h-screen bên trong */
+/* ===== SPOTIFY LAYOUT - FIT SCREEN NO SCROLL ===== */
+
+/* Main app container - fills screen */
+.app-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
 }
 
-/* Tùy chỉnh thanh cuộn cho giống Spotify */
-.custom-scrollbar::-webkit-scrollbar {
+/* Content area - takes remaining space */
+.app-main {
+  display: flex !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  height: calc(100vh - var(--header-height) - var(--player-height)) !important;
+}
+
+/* Header - fixed height */
+.app-header {
+  height: var(--header-height) !important;
+  flex-shrink: 0 !important;
+}
+
+/* Sidebar - fixed width */
+.app-sidebar {
+  width: var(--sidebar-width) !important;
+  flex-shrink: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Main content - scrollable horizontally only */
+.app-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 16px !important;
+}
+
+/* Player bar - fixed at bottom */
+.app-player {
+  height: var(--player-height) !important;
+  flex-shrink: 0 !important;
+}
+
+/* Content pages - fit screen */
+.page-content {
+  height: 100% !important;
+  overflow-y: auto !important;
+  padding: 16px !important;
+}
+
+/* Song rows - horizontal scroll only */
+.song-row-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding-bottom: 8px !important;
+}
+
+/* Song card - compact size */
+.song-card {
+  min-width: 140px !important;
+  max-width: 160px !important;
+  flex-shrink: 0 !important;
+}
+
+/* ===== NEON SCROLLBAR - Global Style ===== */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(18, 18, 18, 0.8);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #833ab4, #fd1d1d, #fcb045);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #c084fc, #f472b6, #fd1d1d);
+  box-shadow: 0 0 15px rgba(131, 58, 180, 0.6), 0 0 30px rgba(253, 29, 29, 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #00FFFF, #00FF88);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(18, 18, 18, 0.8);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(131, 58, 180, 0.8) rgba(18, 18, 18, 0.8);
+}
+
+/* Hover glow effect on scrollbar thumb */
+*:hover::-webkit-scrollbar-thumb {
+  animation: scrollGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes scrollGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(131, 58, 180, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(131, 58, 180, 0.8), 0 0 30px rgba(253, 29, 29, 0.4);
+  }
+}
+
+/* Tùy chỉnh thanh cuộn - Legacy support */
+.custom-scrollbar::-webkit-scrollbar,
+.spotify-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track,
+.spotify-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.spotify-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #833ab4, #fd1d1d);
+  border-radius: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.spotify-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #c084fc, #f472b6);
+  box-shadow: 0 0 15px rgba(131, 58, 180, 0.6);
+}
+
+/* Spotify scrollbar for grids */
+.spotify-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(131, 58, 180, 0.8) transparent;
+}
+
+/* Spotify hover effect cho cards */
+.spotify-card-hover {
+  background-color: #282828;
+  transition: background-color 0.2s ease;
+}
+
+.spotify-card-hover:hover {
+  background-color: #333333;
+}
+
+/* Nút Spotify */
+.spotify-button {
+  background-color: #1DB954;
+  color: black;
+  border: none;
+  border-radius: 50%;
+  font-weight: bold;
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.spotify-button:hover {
+  transform: scale(1.04);
+  background-color: #1ed760;
+}
+
+.spotify-button:active {
+  transform: scale(0.95);
+}
+
+/* Text link hover */
+.spotify-link:hover {
+  text-decoration: underline;
+  color: var(--spotify-green);
+}
+
+/* Neon glow effects với màu Spotify */
+.neon-logo-box {
+  background: linear-gradient(135deg, #1DB954 0%, #169c46 100%);
+  box-shadow: 0 0 20px rgba(29, 185, 84, 0.4);
+}
+
+.neon-green-glow {
+  text-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+}
+
+/* Progress bar Spotify style */
+.spotify-progress-bar {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.spotify-progress-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #1DB954;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.spotify-progress-bar:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+/* ===== RESPONSIVE DESIGN - FIT SCREEN ===== */
+
+/* App Layout - Full Height */
+.app-container {
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.app-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Spotify song cards - Responsive sizes */
+.spotify-card {
+  min-width: 160px !important;
+  max-width: 200px !important;
+}
+
+/* Horizontal scroll container - Fit screen */
+.scroll-container {
+  display: flex !important;
+  gap: 16px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding-bottom: 16px !important;
+  flex-wrap: nowrap !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Song cards in horizontal scroll */
+.scroll-card {
+  min-width: 140px !important;
+  max-width: 180px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Section title */
+.section-title {
+  font-size: 20px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Grid for search results - Responsive */
+.song-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  gap: 16px !important;
+}
+
+/* Full width sections */
+.full-width-section {
+  width: 100% !important;
+  padding: 0 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Player bar - Fixed bottom */
+.player-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* Header - Responsive */
+.app-header {
+  padding: 12px 16px !important;
+  min-height: 60px !important;
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Large screens */
+@media (min-width: 1400px) {
+  .scroll-card {
+    min-width: 180px !important;
+    max-width: 220px !important;
+  }
+  
+  .spotify-card {
+    min-width: 180px !important;
+    max-width: 220px !important;
+  }
+}
+
+/* Medium screens */
+@media (max-width: 1200px) {
+  .scroll-card {
+    min-width: 140px !important;
+    max-width: 170px !important;
+  }
+  
+  .section-title {
+    font-size: 18px !important;
+  }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .scroll-card {
+    min-width: 130px !important;
+    max-width: 160px !important;
+  }
+  
+  .spotify-card {
+    min-width: 130px !important;
+    max-width: 160px !important;
+  }
+  
+  .song-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .scroll-card {
+    min-width: 120px !important;
+    max-width: 150px !important;
+  }
+  
+  .section-title {
+    font-size: 16px !important;
+  }
+  
+  .app-header {
+    padding: 8px 12px !important;
+  }
+  
+  .song-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    gap: 12px !important;
+  }
 }

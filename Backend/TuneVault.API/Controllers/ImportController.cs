@@ -77,6 +77,7 @@ public class ImportController : BaseApiController
                     Genre = string.IsNullOrWhiteSpace(request.Genre) ? "YouTube" : request.Genre,
                     OwnerId = userId,
                     ArtistId = artist.Id,
+                    Artist = artist,
                     CreatedAt = DateTime.UtcNow
                 };
 

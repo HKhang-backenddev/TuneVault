@@ -60,10 +60,10 @@ const SharedWithMe = () => {
     e.stopPropagation(); // Ngăn không cho sự kiện click phát nhạc
     try {
       await api.post(`/media/save/${mediaId}`);
-      alert('Đã lưu bài hát vào thư viện của bạn!');
+      alert('Song saved to your library!');
       navigate('/'); // Chuyển hướng về trang chủ
     } catch (error: any) {
-      const message = error.response?.data?.message || "Không thể lưu bài hát này.";
+      const message = error.response?.data?.message || "Cannot save this song.";
       alert(message);
     }
   };
@@ -76,59 +76,45 @@ const SharedWithMe = () => {
     const hours = Math.round(minutes / 60);
     const days = Math.round(hours / 24);
 
-    if (seconds < 60) return "vừa xong";
-    if (minutes < 60) return `${minutes} phút trước`;
-    if (hours < 24) return `${hours} giờ trước`;
-    if (days === 1) return `hôm qua`;
+    if (seconds < 60) return "just now";
+    if (minutes < 60) return `${minutes} minutes ago`;
+    if (hours < 24) return `${hours} hours ago`;
+    if (days === 1) return `yesterday`;
     return date.toLocaleDateString('vi-VN');
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '900px', margin: '24px auto', paddingBottom: '6rem' }}>
-      <style>{`
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border-shared {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-      `}</style>
+    <div style={{ width: '100%', padding: '24px 32px' }}>
       <div style={{
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        border: '2px solid transparent',
-        borderRadius: '24px',
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), linear-gradient(135deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-        backgroundOrigin: 'border-box',
-        backgroundClip: 'padding-box, border-box',
-        backgroundSize: '200% 100%',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(16, 185, 129, 0.2)',
-        animation: 'animated-border-shared 8s linear infinite',
+        backgroundColor: '#1a1a2e',
+        borderRadius: '12px',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        boxShadow: '0 0 30px rgba(131, 58, 180, 0.3)',
       }}>
-        {/* Hero Header */}
+        {/* Hero Header - Neon Green Style */}
         <div style={{
           padding: '32px', paddingTop: '48px', display: 'flex', alignItems: 'flex-end', gap: '24px',
-          background: 'linear-gradient(to bottom, rgba(5, 150, 105, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+          background: 'linear-gradient(180deg, #833ab4 0%, #1a1a2e 100%)',
+          borderBottom: '1px solid rgba(131, 58, 180, 0.2)',
         }}>
           <div style={{
-            width: '160px', height: '160px', background: 'linear-gradient(to bottom right, #10b981, #047857)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            width: '192px', height: '192px', background: 'linear-gradient(135deg, #833ab4, #fd1d1d)',
+            boxShadow: '0 0 30px rgba(131, 58, 180, 0.8), 0 0 60px rgba(0, 255, 255, 0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px',
           }}>
-            <Users size={70} style={{ color: 'white' }} />
+            <Users size={80} style={{ color: 'black', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }} />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#6ee7b7', marginBottom: '8px' }}>
-              Hộp thư đến
+            <p style={{ fontSize: '12px', fontWeight: '700', color: '#000', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Playlist
             </p>
-            <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.05em', color: 'white', marginBottom: '12px' }}>
-              Được chia sẻ với tôi
+            <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', marginBottom: '16px', lineHeight: 1, textShadow: '0 0 20px rgba(131, 58, 180, 0.8), 0 0 40px rgba(0, 255, 255, 0.6)' }}>
+              Shared With Me
             </h1>
-            <p style={{ color: '#B0B0B0', fontSize: '13px', fontWeight: 'bold' }}>
-              {items.length} bài hát được gửi đến bạn
+            <p style={{ color: '#b3b3b3', fontSize: '14px' }}>
+              {items.length} songs
             </p>
           </div>
         </div>
@@ -136,29 +122,30 @@ const SharedWithMe = () => {
         {/* List Frame */}
         <div style={{ padding: '24px 32px 32px' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '80px', color: '#737373', fontSize: '12px', fontWeight: '900', letterSpacing: '0.2em' }} className="animate-pulse">
-              ĐANG TẢI...
+            <div style={{ textAlign: 'center', padding: '80px', color: '#833ab4', fontSize: '14px', fontWeight: '700', textShadow: '0 0 10px rgba(131, 58, 180, 0.5)' }}>
+              LOADING...
             </div>
           ) : items.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px' }}>
-              <Music size={64} style={{ color: '#262626', marginBottom: '24px', margin: '0 auto' }} />
-              <p style={{ color: '#737373', fontWeight: 'bold' }}>Hộp thư của bạn đang trống.</p>
+            <div style={{ textAlign: 'center', padding: '80px', backgroundColor: '#1a1a2e', borderRadius: '12px', boxShadow: '0 0 20px rgba(131, 58, 180, 0.2)' }}>
+              <Music size={64} style={{ color: '#833ab4', marginBottom: '24px', filter: 'drop-shadow(0 0 20px rgba(131, 58, 180, 0.8))' }} />
+              <p style={{ color: '#b3b3b3', fontWeight: 'bold', fontSize: '18px' }}>Your inbox is empty.</p>
             </div>
           ) : (
             <div style={{
-              backgroundColor: 'rgba(24, 24, 24, 0.7)', borderRadius: '24px', padding: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: 'inset 0 0 15px rgba(0,0,0,0.5)',
+              backgroundColor: 'rgba(26, 26, 46, 0.8)', borderRadius: '12px', padding: '16px',
+              border: '1px solid rgba(131, 58, 180, 0.2)', boxShadow: '0 0 20px rgba(131, 58, 180, 0.2)',
             }}>
               {/* Header Grid */}
               <div style={{
                 display: 'grid', gridTemplateColumns: '40px 5fr 3fr 2fr 1fr', gap: '16px', padding: '12px 24px',
-                color: '#737373', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.2em',
+                color: '#fd1d1d', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em',
+                textShadow: '0 0 5px rgba(0, 255, 255, 0.5)',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '8px',
               }}>
                 <div style={{ textAlign: 'center' }}>#</div>
-                <div>Tiêu đề</div>
-                <div>Người gửi</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> Ngày nhận</div>
+                <div>Title</div>
+                <div>Sender</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> Date Received</div>
                 <div></div>
               </div>
 
@@ -203,7 +190,7 @@ const SharedWithMe = () => {
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', opacity: 0 }} className="group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => handleSave(e, item.mediaId)}
-                      title="Lưu vào thư viện"
+                      title="Save to Library"
                       style={{ background: 'none', border: 'none', color: '#737373', cursor: 'pointer', padding: '8px' }}
                       onMouseEnter={(e) => e.currentTarget.style.color = '#22c55e'}
                       onMouseLeave={(e) => e.currentTarget.style.color = '#737373'}
@@ -212,7 +199,7 @@ const SharedWithMe = () => {
                     </button>
                     <button
                       onClick={() => handlePlay(item, items)}
-                      title="Phát nhạc"
+                      title="Play Music"
                       style={{ background: 'none', border: 'none', color: '#737373', cursor: 'pointer', padding: '8px' }}
                       onMouseEnter={(e) => e.currentTarget.style.color = '#3b82f6'}
                       onMouseLeave={(e) => e.currentTarget.style.color = '#737373'}

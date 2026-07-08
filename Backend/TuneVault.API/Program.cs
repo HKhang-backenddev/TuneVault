@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using BCrypt.Net;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TuneVault.Application.Artists;
@@ -187,18 +188,91 @@ builder.Services.AddDbContextFactory<TuneVault.Infrastructure.TuneVaultDbContext
 
 var app = builder.Build();
 
-// During development, ensure the database is created to avoid schema issues when running locally.
+// Apply migrations automatically on startup
 try
 {
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<TuneVault.Infrastructure.TuneVaultDbContext>();
-        db.Database.EnsureCreated();
+        db.Database.Migrate();
+        Console.WriteLine("Database migrations applied successfully!");
     }
 }
 catch (Exception ex)
 {
     Console.WriteLine($"Warning: failed to ensure database created: {ex.Message}");
+}
+
+// Seed sample data if database is empty
+try
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<TuneVault.Infrastructure.TuneVaultDbContext>();
+        if (db.MediaItems.Count() < 5)
+        {
+            Console.WriteLine("Seeding sample music data...");
+            
+            // Create an admin user for demo
+            var adminUser = db.Users.FirstOrDefault(u => u.Role == "Admin");
+            if (adminUser == null)
+            {
+                adminUser = new TuneVault.Domain.User
+                {
+                    Id = Guid.NewGuid(),
+                    Username = "admin",
+                    Email = "admin@tunevault.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                    DisplayName = "TuneVault Admin",
+                    Role = "Admin",
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.Users.Add(adminUser);
+                db.SaveChanges();
+                Console.WriteLine("Admin user created!");
+            }
+            
+            // Create sample artists
+            var artists = new[]
+            {
+                new TuneVault.Domain.Artist { Id = Guid.NewGuid(), Name = "The Weeknd", CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.Artist { Id = Guid.NewGuid(), Name = "Taylor Swift", CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.Artist { Id = Guid.NewGuid(), Name = "Drake", CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.Artist { Id = Guid.NewGuid(), Name = "Ed Sheeran", CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.Artist { Id = Guid.NewGuid(), Name = "Billie Eilish", CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.Artist { Id = Guid.NewGuid(), Name = "Post Malone", CreatedAt = DateTime.UtcNow },
+            };
+            db.Artists.AddRange(artists);
+            db.SaveChanges();
+            
+            // Create sample music
+            var sampleMusic = new[]
+            {
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "Blinding Lights", Genre = "Pop", OwnerId = adminUser.Id, ArtistId = artists[0].Id, ThumbnailUrl = "https://picsum.photos/seed/blinding/300/300", DurationInSeconds = 200, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "Starboy", Genre = "Pop", OwnerId = adminUser.Id, ArtistId = artists[0].Id, ThumbnailUrl = "https://picsum.photos/seed/starboy/300/300", DurationInSeconds = 230, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "Anti-Hero", Genre = "Pop", OwnerId = adminUser.Id, ArtistId = artists[1].Id, ThumbnailUrl = "https://picsum.photos/seed/antih/300/300", DurationInSeconds = 200, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "Shape of You", Genre = "Pop", OwnerId = adminUser.Id, ArtistId = artists[3].Id, ThumbnailUrl = "https://picsum.photos/seed/shape/300/300", DurationInSeconds = 234, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "God's Plan", Genre = "Hip-Hop", OwnerId = adminUser.Id, ArtistId = artists[2].Id, ThumbnailUrl = "https://picsum.photos/seed/godsplan/300/300", DurationInSeconds = 198, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "Hotline Bling", Genre = "Hip-Hop", OwnerId = adminUser.Id, ArtistId = artists[2].Id, ThumbnailUrl = "https://picsum.photos/seed/hotline/300/300", DurationInSeconds = 267, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "bad guy", Genre = "Electronic", OwnerId = adminUser.Id, ArtistId = artists[4].Id, ThumbnailUrl = "https://picsum.photos/seed/badguy/300/300", DurationInSeconds = 194, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "Rockstar", Genre = "Rock", OwnerId = adminUser.Id, ArtistId = artists[5].Id, ThumbnailUrl = "https://picsum.photos/seed/rockstar/300/300", DurationInSeconds = 218, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "Circles", Genre = "Pop", OwnerId = adminUser.Id, ArtistId = artists[5].Id, ThumbnailUrl = "https://picsum.photos/seed/circles/300/300", DurationInSeconds = 215, CreatedAt = DateTime.UtcNow },
+                new TuneVault.Domain.MediaItem { Id = Guid.NewGuid(), Title = "Stay", Genre = "Pop", OwnerId = adminUser.Id, ArtistId = artists[4].Id, ThumbnailUrl = "https://picsum.photos/seed/stay/300/300", DurationInSeconds = 141, CreatedAt = DateTime.UtcNow },
+            };
+            db.MediaItems.AddRange(sampleMusic);
+            db.SaveChanges();
+            
+            Console.WriteLine($"Sample music added: {sampleMusic.Length} songs!");
+        }
+        else
+        {
+            Console.WriteLine($"Database already has {db.MediaItems.Count()} songs.");
+        }
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Warning: failed to seed sample data: {ex.Message}");
 }
 
 // Cấu hình để phục vụ các file tĩnh từ thư mục mediaStoragePath

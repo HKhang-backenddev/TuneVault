@@ -1,134 +1,306 @@
-import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Library, History, Heart, ChevronsLeft, ChevronsRight, User as UserIcon, Share2, Users } from 'lucide-react';
-import { useAudio } from '../Contexts/AudioContext';
-import { AppHeader } from './AppHeader';
-import PlayerBar from './PlayerBar';
-import { NowPlayingSidebar } from './NowPlayingSidebar'; // Import component mới
-import { ShareSidebar } from './ShareSidebar';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Library, History, Heart, Home, Search, Plus, Music, ListMusic, ChevronLeft, ChevronRight, Users, User as UserIcon } from 'lucide-react';
 import { User } from '@shared-types/user';
+import { ShareSidebar } from './ShareSidebar';
 
-const MenuBox = ({ user }: { user: User | null }) => {
+const SidebarLibrary = ({ user }: { user: User | null }) => {
   const location = useLocation();
-  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
 
   const menuItems = [
-    // Cập nhật path để nó là một hàm có thể tạo link động
-    { name: 'Hồ sơ', icon: UserIcon, path: (u: User | null) => u?.username ? `/app/profile/${u.username}` : '/login', color: '#8b5cf6' }, // Purple
-    { name: 'Thư viện', icon: Library, path: '/app/library', color: '#f97316' }, // Orange
-    { name: 'Lịch sử', icon: History, path: '/app/history', color: '#eab308' }, // Yellow
-    { name: 'Bài hát đã thích', icon: Heart, path: '/app/liked', color: '#ec4899' }, // Pink
-    { name: 'Được chia sẻ', icon: Users, path: '/app/shared-with-me', color: '#10b981' }, // Green
+    { name: 'Home', icon: Home, path: '/app' },
+    { name: 'Search Songs', icon: Search, path: '/app/search' },
+    { name: 'Find Users', icon: Users, path: '/app/users' },
+    { name: 'My Profile', icon: UserIcon, path: user ? `/app/profile/${user.username}` : '/app', color: '#c084fc' },
   ];
 
-  const { selectSongForShare, currentTrack } = useAudio();
-  const handleShareClick = () => {
-    if (currentTrack) {
-      selectSongForShare(currentTrack);
-    }
-  };
+  const libraryItems = [
+    { name: 'Liked Songs', icon: Heart, path: '/app/liked', color: '#1ed760' },
+    { name: 'Your Library', icon: Library, path: '/app/library', color: '#00FFFF' },
+    { name: 'Download History', icon: History, path: '/app/history', color: '#b3b3b3' },
+    { name: 'Shared With Me', icon: ListMusic, path: '/app/shared-with-me', color: '#b3b3b3' },
+  ];
 
   return (
-    <div style={Object.assign({
-      width: isMenuCollapsed ? '88px' : '240px',
-      flexShrink: 0,
-      backgroundColor: '#121212',
-      borderRadius: '12px',
-      padding: '16px',
-      border: '1px solid rgba(59, 130, 246, 0.15)',
-      alignSelf: 'flex-start',
-      transition: 'width 0.3s ease',
-      position: 'relative',
-    })}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '12px', marginBottom: '12px' }}>
-        {!isMenuCollapsed && (
-          <h2 style={{
-            fontSize: '12px',
-            fontWeight: '900',
-            color: '#60a5fa',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            padding: '0 12px',
-            margin: 0,
-            whiteSpace: 'nowrap',
-            opacity: isMenuCollapsed ? 0 : 1,
-            transition: 'all 0.3s ease',
-            textShadow: '0 0 8px rgba(59, 130, 246, 0.7)',
-          }}>
-            Thư viện
-          </h2>
-        )}
-        <button
-          onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
-          style={{ background: 'transparent', border: 'none', color: '#a7a7a7', cursor: 'pointer', padding: '8px', borderRadius: '50%', marginLeft: isMenuCollapsed ? 'auto' : '0', marginRight: isMenuCollapsed ? 'auto' : '0' }}
-          className="hover:bg-neutral-800 hover:text-white"
-          title={isMenuCollapsed ? "Mở rộng" : "Thu gọn"}
-        >
-          {isMenuCollapsed ? <ChevronsRight size={20} /> : <ChevronsLeft size={20} />}
-        </button>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+    <div style={{
+      width: '320px',
+      height: '100%',
+      background: 'linear-gradient(180deg, rgba(18, 18, 18, 1) 0%, rgba(26, 26, 46, 0.9) 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      borderRight: '1px solid rgba(131, 58, 180, 0.3)',
+      boxShadow: '5px 0 30px rgba(131, 58, 180, 0.15)',
+    }}>
+
+      {/* Main Menu with Neon Hover */}
+      <div style={{ padding: '16px 12px 8px' }}>
         {menuItems.map(item => {
           const isActive = location.pathname === item.path;
-          // Tạo đường dẫn dựa trên việc path là chuỗi hay hàm
-          const finalPath = typeof item.path === 'function' ? item.path(user) : item.path;
           return (
             <Link
               key={item.name}
-              to={finalPath}
-              title={isMenuCollapsed ? item.name : ''}
-              style={Object.assign({
+              to={item.path}
+              style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '16px',
-                padding: '12px',
-                borderRadius: '8px',
-                transition: 'all 0.2s ease',
-                color: isActive ? 'white' : '#a7a7a7',
-                backgroundColor: isActive ? item.color : 'transparent',
-                fontWeight: isActive ? 'bold' : '600',
-                border: '1px solid transparent',
-                justifyContent: isMenuCollapsed ? 'center' : 'flex-start',
-              })}
-              className={isActive ? 'shadow-lg' : ''}
-              onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.backgroundColor = `${item.color}20`; e.currentTarget.style.color = item.color; } }}
-              onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#a7a7a7'; } }}
+                padding: '14px 18px',
+                borderRadius: '10px',
+                color: isActive ? '#fff' : '#b3b3b3',
+                backgroundColor: isActive ? 'rgba(131, 58, 180, 0.25)' : 'transparent',
+                textDecoration: 'none',
+                transition: 'all 0.3s ease',
+                fontWeight: isActive ? '700' : '500',
+                fontSize: '16px',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+              onMouseEnter={(e) => { 
+                if (!isActive) { 
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(131, 58, 180, 0.15)'; 
+                  (e.currentTarget as HTMLElement).style.color = '#fff';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(131, 58, 180, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => { 
+                if (!isActive) { 
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; 
+                  (e.currentTarget as HTMLElement).style.color = '#b3b3b3'; 
+                  (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                }
+              }}
             >
-              <item.icon 
-                size={22} 
-                style={{ color: isActive ? 'white' : item.color, transition: 'color 0.2s' }} 
-              />
-              {!isMenuCollapsed && <span style={{ whiteSpace: 'nowrap' }}>{item.name}</span>}
+              {isActive && (
+                <div style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '4px',
+                  height: '60%',
+                  background: 'linear-gradient(180deg, #833ab4, #fd1d1d)',
+                  borderRadius: '0 4px 4px 0',
+                  boxShadow: '0 0 15px rgba(131, 58, 180, 0.8)',
+                }} />
+              )}
+              <item.icon size={24} style={{ 
+                filter: isActive || item.color ? `drop-shadow(0 0 8px ${item.color || 'rgba(131, 58, 180, 0.8)'})` : 'none', color: item.color || (isActive ? '#fff' : '#b3b3b3')
+              }} />
+              <span style={{ 
+                textShadow: isActive ? '0 0 10px rgba(131, 58, 180, 0.5)' : 'none'
+              }}>{item.name}</span>
             </Link>
           );
         })}
       </div>
-      {/* Nút chia sẻ mới */}
-      <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '12px', marginTop: '12px' }}>
-        <button
-          onClick={handleShareClick}
-          disabled={!currentTrack}
-          title={isMenuCollapsed ? (currentTrack ? "Chia sẻ bài hát đang phát" : "Phát một bài hát để chia sẻ") : ''}
-          style={Object.assign({
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '12px',
-            borderRadius: '8px',
-            transition: 'all 0.3s ease',
-            color: currentTrack ? '#a7a7a7' : '#555',
-            backgroundColor: 'transparent',
-            fontWeight: '600',
-            border: '1px solid transparent',
-            justifyContent: isMenuCollapsed ? 'center' : 'flex-start',
-            width: '100%',
-            cursor: currentTrack ? 'pointer' : 'not-allowed',
+
+      {/* Library Section with Neon Border */}
+      <div style={{
+        flex: 1,
+        background: 'linear-gradient(145deg, rgba(24, 24, 36, 0.8), rgba(26, 26, 46, 0.6))',
+        borderRadius: '12px',
+        margin: '0 8px',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        border: '1px solid rgba(131, 58, 180, 0.2)',
+        boxShadow: 'inset 0 0 30px rgba(131, 58, 180, 0.05)',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <Link
+            to="/app/library"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              color: '#b3b3b3',
+              textDecoration: 'none',
+              transition: 'color 0.2s',
+            }}
+            onMouseEnter={(e) => { 
+              (e.currentTarget as HTMLElement).style.color = '#fff'; 
+            }}
+            onMouseLeave={(e) => { 
+              (e.currentTarget as HTMLElement).style.color = '#b3b3b3'; 
+            }}
+          >
+            <Library size={22} style={{ 
+              filter: 'drop-shadow(0 0 5px rgba(0, 255, 255, 0.5))'
+            }} />
+            <span style={{ 
+              fontSize: '15px', 
+              fontWeight: '700',
+              textShadow: '0 0 10px rgba(0, 255, 255, 0.3)'
+            }}>Your Library</span>
+          </Link>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                border: 'none',
+                backgroundColor: 'transparent',
+                color: '#b3b3b3',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.3s',
+              }}
+              title="Create playlist"
+              onMouseEnter={(e) => { 
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(131, 58, 180, 0.3)'; 
+                (e.currentTarget as HTMLElement).style.color = '#fff';
+                (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(131, 58, 180, 0.5)';
+              }}
+              onMouseLeave={(e) => { 
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; 
+                (e.currentTarget as HTMLElement).style.color = '#b3b3b3';
+                (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+              }}
+            >
+              <Plus size={22} />
+            </button>
+          </div>
+        </div>
+
+        {/* Library items with Neon Effects */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '0 8px 8px',
+        }}>
+          {libraryItems.map(item => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.name}
+                to={item.path}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  color: isActive ? '#fff' : '#b3b3b3',
+                  backgroundColor: isActive ? 'rgba(131, 58, 180, 0.2)' : 'transparent',
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease',
+                  marginBottom: '4px',
+                  border: isActive ? '1px solid rgba(131, 58, 180, 0.4)' : '1px solid transparent',
+                }}
+                onMouseEnter={(e) => { 
+                  if (!isActive) { 
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(131, 58, 180, 0.15)'; 
+                    (e.currentTarget as HTMLElement).style.color = '#fff';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(131, 58, 180, 0.3)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(131, 58, 180, 0.2)';
+                  }
+                }}
+                onMouseLeave={(e) => { 
+                  if (!isActive) { 
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; 
+                    (e.currentTarget as HTMLElement).style.color = '#b3b3b3'; 
+                    (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
+                    (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                  }
+                }}
+              >
+                <div style={{
+                  width: '52px',
+                  height: '52px',
+                  background: item.name === 'Liked Songs'
+                    ? 'linear-gradient(135deg, #833ab4, #fd1d1d)'
+                    : item.name === 'Your Library'
+                    ? 'linear-gradient(135deg, #00FFFF, #00d4aa)'
+                    : 'linear-gradient(135deg, #333, #444)',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: item.name === 'Liked Songs' || item.name === 'Your Library'
+                    ? '0 4px 15px rgba(131, 58, 180, 0.4)'
+                    : '0 4px 8px rgba(0,0,0,0.3)',
+                }}>
+                  <item.icon 
+                    size={24} 
+                    color={item.color} 
+                    fill={item.color === '#1ed760' || item.color === '#00FFFF' ? item.color : 'none'}
+                    style={{
+                      filter: item.color === '#1ed760' || item.color === '#00FFFF' 
+                        ? `drop-shadow(0 0 5px ${item.color})` 
+                        : 'none'
+                    }}
+                  />
+                </div>
+                <div style={{ overflow: 'hidden' }}>
+                  <span style={{ 
+                    fontSize: '15px', 
+                    fontWeight: '500', 
+                    display: 'block', 
+                    whiteSpace: 'nowrap', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    color: isActive ? '#fff' : '#b3b3b3',
+                  }}>{item.name}</span>
+                  <span style={{ 
+                    fontSize: '11px', 
+                    color: '#888', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '4px', 
+                    marginTop: '2px' 
+                  }}>
+                    {item.name === 'Liked Songs' && (
+                      <>
+                        <span style={{ color: '#1ed760' }}>♥</span> Playlist • 
+                      </>
+                    )}
+                    {item.name === 'Your Library' && 'Playlist • '}
+                    {item.name === 'Download History' && 'Personal • '}
+                    {item.name === 'Shared With Me' && 'Personal • '}
+                  </span>
+                </div>
+              </Link>
+            );
           })}
-          className={currentTrack ? 'menu-item-rainbow-hover' : ''}
-        >
-          <Share2 size={22} />
-          {!isMenuCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Chia sẻ bài hát</span>}
-        </button>
+        </div>
+      </div>
+
+      {/* Playlist divider line with neon glow */}
+      <div style={{
+        height: '1px',
+        background: 'linear-gradient(90deg, transparent, rgba(131, 58, 180, 0.5), transparent)',
+        margin: '12px 16px',
+        boxShadow: '0 0 10px rgba(131, 58, 180, 0.3)',
+      }} />
+
+      {/* Playlist list */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '0 8px 16px',
+      }}>
+        <p style={{ 
+          fontSize: '13px', 
+          color: '#888', 
+          padding: '12px 12px', 
+          textAlign: 'center',
+          background: 'rgba(131, 58, 180, 0.05)',
+          borderRadius: '8px',
+          border: '1px solid rgba(131, 58, 180, 0.1)',
+        }}>
+          Create playlists to organize your music
+        </p>
       </div>
     </div>
   );
@@ -136,18 +308,44 @@ const MenuBox = ({ user }: { user: User | null }) => {
 
 const MainLayout = ({ user, children }: { user: User | null, children: React.ReactNode }) => {
     return (
-        <div className="flex-1 flex min-h-0" style={{ display: 'flex', gap: '24px', padding: '24px', color: 'white', height: '100%' }}>
-            <MenuBox user={user} />
-            {/* SỬA LỖI: Thêm position và z-index để đảm bảo nó nằm dưới AppHeader */}
-            <div style={{ 
-              flex: 1, 
-              minWidth: 0, 
+        <div style={{ 
+          display: 'flex', 
+          height: '100vh', 
+          width: '100vw', 
+          overflow: 'hidden', 
+          backgroundColor: '#121212',
+          position: 'relative'
+        }}>
+            {/* Background ambient glow */}
+            <div style={{
+              position: 'absolute',
+              top: '0',
+              left: '320px',
+              width: '500px',
+              height: '500px',
+              background: 'radial-gradient(circle, rgba(131, 58, 180, 0.1) 0%, transparent 70%)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }} />
+            
+            {/* Sidebar */}
+            <SidebarLibrary user={user} />
+
+            {/* Main content */}
+            <div style={{
+              flex: 1,
               overflowY: 'auto',
-              position: 'relative', // Tạo stacking context
-              zIndex: 1 // Đảm bảo nó nằm dưới header (có z-index cao hơn)
-            }} className="custom-scrollbar">{children}</div>
-            <ShareSidebar user={user} />
-            <NowPlayingSidebar /> {/* Thêm sidebar mới vào đây */}
+              overflowX: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              zIndex: 1,
+            }} className="custom-scrollbar neon-scrollbar">
+              <div style={{ flex: 1 }}>
+                {children}
+              </div>
+              <ShareSidebar user={user} />
+            </div>
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../axios';
-import { Youtube, UploadCloud, Music, Loader2, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { Youtube, UploadCloud, Music, Loader2, CheckCircle, AlertTriangle, XCircle, Plus, FileAudio, Link } from 'lucide-react';
 
 const ImportMusic = () => {
   const [activeTab, setActiveTab] = useState('youtube');
@@ -11,7 +11,9 @@ const ImportMusic = () => {
   const [genre, setGenre] = useState('Pop');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false); // State cho hiệu ứng kéo thả
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const genres = ['Pop', 'Hip-Hop', 'Rock', 'Jazz', 'Electronic', 'Classical', 'R&B', 'Country', 'Latin', 'Metal', 'Indie', 'Other'];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -25,7 +27,7 @@ const ImportMusic = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setStatus({ type: 'info', message: 'Đang xử lý, vui lòng chờ...' });
+    setStatus({ type: 'info', message: 'Processing, please wait...' });
 
     if (activeTab === 'youtube') {
       try {
@@ -35,19 +37,19 @@ const ImportMusic = () => {
           artist: artist,
           genre: genre
         });
-        setStatus({ type: 'success', message: 'Yêu cầu nhập từ YouTube đã được gửi đi. Bài hát sẽ sớm xuất hiện trong thư viện.' });
+        setStatus({ type: 'success', message: 'Import request from YouTube has been sent. The song will appear in your library soon.' });
         setYoutubeUrl('');
         // Reset các trường tùy chọn
         setTitle('');
         setArtist('');
         setGenre('Pop');
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi nhập từ YouTube.';
+        const errorMessage = error.response?.data?.message || 'An error occurred while importing from YouTube.';
         setStatus({ type: 'error', message: errorMessage });
       }
     } else if (activeTab === 'upload') {
       if (!file) {
-        setStatus({ type: 'error', message: 'Vui lòng chọn một tệp nhạc.' });
+        setStatus({ type: 'error', message: 'Please select a music file.' });
         setIsLoading(false);
         return;
       }
@@ -64,13 +66,13 @@ const ImportMusic = () => {
             'Content-Type': 'multipart/form-data',
           },
         });
-        setStatus({ type: 'success', message: `Đã tải lên thành công bài hát "${title}".` });
+        setStatus({ type: 'success', message: `Successfully uploaded the song "${title}".` });
         // Reset form
         setFile(null);
         setTitle('');
         setArtist('');
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi tải tệp lên.';
+        const errorMessage = error.response?.data?.message || 'An error occurred while uploading the file.';
         setStatus({ type: 'error', message: errorMessage });
       }
     }
@@ -90,7 +92,7 @@ const ImportMusic = () => {
     const colors = {
       success: 'bg-green-500/10 text-green-400 border-green-500/20',
       error: 'bg-red-500/10 text-red-400 border-red-500/20',
-      info: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      info: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
     };
 
     return (
@@ -123,46 +125,36 @@ const ImportMusic = () => {
 
   return (
     <div style={{
-      maxWidth: '700px',
-      margin: '2rem auto',
-      padding: '2.5rem',
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      borderRadius: '24px',
-      border: '2px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      backgroundSize: '200% 100%',
-      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-      backdropFilter: 'blur(12px)',
-      animation: 'animated-border-import 8s linear infinite',
+      maxWidth: '800px',
+      margin: '24px auto',
+      padding: '32px',
+      backgroundColor: '#1a1a2e',
+      borderRadius: '12px',
+      boxShadow: '0 0 30px rgba(131, 58, 180, 0.3)',
+      border: '1px solid rgba(131, 58, 180, 0.3)',
     }}>
       <style>{`
-        @keyframes animated-border-import {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
         .input-neon:focus {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+          border-color: #833ab4 !important;
+          box-shadow: 0 0 20px rgba(131, 58, 180, 0.5), 0 0 40px rgba(255, 0, 255, 0.3) !important;
         }
       `}</style>
-      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2rem', color: 'white', textAlign: 'center', textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #3b82f6, 0 0 40px #3b82f6' }}>
-        Thêm nhạc mới
+      <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '2rem', color: '#833ab4', textAlign: 'center', textShadow: '0 0 20px rgba(131, 58, 180, 0.8), 0 0 40px rgba(255, 0, 255, 0.6)' }}>
+        Add New Music
       </h1>
 
-      {/* Tabs */}
-      <div style={{ position: 'relative', display: 'flex', padding: '4px', backgroundColor: 'rgba(10, 10, 10, 0.8)', borderRadius: '9999px', marginBottom: '2.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+      {/* Tabs - Neon Orange/Pink */}
+      <div style={{ position: 'relative', display: 'flex', padding: '4px', backgroundColor: 'rgba(26, 26, 46, 0.8)', borderRadius: '9999px', marginBottom: '2.5rem', border: '1px solid rgba(131, 58, 180, 0.3)' }}>
         <div style={{
           position: 'absolute',
           top: '4px',
           bottom: '4px',
           width: 'calc(50% - 4px)',
-          backgroundColor: '#3b82f6',
+          background: 'linear-gradient(135deg, #833ab4, #FF00FF)',
           borderRadius: '9999px',
           transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           transform: activeTab === 'youtube' ? 'translateX(0%)' : 'translateX(100%)',
-          boxShadow: '0 0 15px rgba(59, 130, 246, 0.6)'
+          boxShadow: '0 0 20px rgba(131, 58, 180, 0.8), 0 0 40px rgba(255, 0, 255, 0.5)'
         }}></div>
         {['youtube', 'upload'].map(tab => (
           <button
@@ -186,8 +178,8 @@ const ImportMusic = () => {
               color: activeTab === tab ? 'white' : '#a3a3a3',
             }}
           >
-            {tab === 'youtube' ? <Youtube size={20} /> : <UploadCloud size={20} />}
-            {tab === 'youtube' ? 'YouTube' : 'Tải lên'}
+            {tab === 'youtube' ? <Youtube size={20} style={{ filter: 'drop-shadow(0 0 5px rgba(255,102,0,0.8))' }} /> : <UploadCloud size={20} style={{ filter: 'drop-shadow(0 0 5px rgba(255,0,255,0.8))' }} />}
+            {tab === 'youtube' ? 'YouTube' : 'Upload'}
           </button>
         ))}
       </div>
@@ -196,7 +188,7 @@ const ImportMusic = () => {
         {activeTab === 'youtube' ? (
           <div>
             <label htmlFor="youtubeUrl" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Dán link YouTube vào đây
+              Paste YouTube link here
             </label>
             <input
               id="youtubeUrl"
@@ -213,13 +205,13 @@ const ImportMusic = () => {
           // Tab Upload
           <div>
             <label htmlFor="fileUpload" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Chọn tệp nhạc
+              Select music file
             </label>
             <div
               style={{
                 border: `2px dashed ${isDragOver ? '#3b82f6' : 'rgba(255, 255, 255, 0.2)'}`,
                 borderRadius: '0.75rem',
-                padding: '2.5rem',
+                padding: '32px',
                 textAlign: 'center',
                 cursor: 'pointer',
                 color: isDragOver ? '#3b82f6' : '#a3a3a3',
@@ -255,8 +247,8 @@ const ImportMusic = () => {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                   <UploadCloud size={32} />
-                  <span style={{ fontWeight: 'bold' }}>Kéo thả hoặc nhấn để chọn tệp</span>
-                  <span style={{ fontSize: '12px' }}>Hỗ trợ các định dạng MP3, WAV, FLAC...</span>
+                  <span style={{ fontWeight: 'bold' }}>Drag and drop or click to select file</span>
+                  <span style={{ fontSize: '12px' }}>Supported formats: MP3, WAV, FLAC...</span>
                 </div>
               )}
             </div>
@@ -266,18 +258,18 @@ const ImportMusic = () => {
         {/* Các trường thông tin chung cho cả 2 tab */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <p style={{ fontSize: '0.875rem', color: '#737373', textAlign: 'center', fontStyle: 'italic' }}>
-              {activeTab === 'youtube' ? 'Bạn có thể tùy chỉnh thông tin dưới đây, nếu để trống hệ thống sẽ tự nhận dạng.' : 'Vui lòng điền thông tin cho bài hát.'}
+              {activeTab === 'youtube' ? 'You can customize the information below, if left blank the system will auto-detect.' : 'Please fill in the information for the song.'}
             </p>
           <div>
             <label htmlFor="title" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Tiêu đề
+              Title
             </label>
             <input
               id="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={activeTab === 'youtube' ? 'Để trống để tự nhận dạng' : 'Tên bài hát'}
+              placeholder={activeTab === 'youtube' ? 'Leave blank to auto-detect' : 'Song name'}
               style={{...inputStyle, fontSize: '1rem'}} className="input-neon"
               required={activeTab === 'upload'}
             />
@@ -285,21 +277,21 @@ const ImportMusic = () => {
 
           <div>
             <label htmlFor="artist" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Nghệ sĩ
+              Artist
             </label>
             <input
               id="artist"
               type="text"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
-              placeholder={activeTab === 'youtube' ? 'Để trống để tự nhận dạng' : 'Tên nghệ sĩ'}
+              placeholder={activeTab === 'youtube' ? 'Leave blank to auto-detect' : 'Artist name'}
               style={{...inputStyle, fontSize: '1rem'}} className="input-neon"
             />
           </div>
 
           <div>
             <label htmlFor="genre" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#a3a3a3' }}>
-              Thể loại
+              Genre
             </label>
             <select
               id="genre"
@@ -315,7 +307,7 @@ const ImportMusic = () => {
               <option>Chill Music</option>
               <option>Rap</option>
               <option>YouTube</option>
-              <option>Khác</option>
+              <option>Other</option>
             </select>
           </div>
         </div>
@@ -342,7 +334,7 @@ const ImportMusic = () => {
           className="hover:scale-[1.02] transition-all active:scale-95"
         >
           {isLoading && <Loader2 size={18} className="animate-spin" />}
-          {isLoading ? 'Đang xử lý...' : (activeTab === 'youtube' ? 'Nhập từ YouTube' : 'Tải lên')}
+          {isLoading ? 'Processing...' : (activeTab === 'youtube' ? 'Import from YouTube' : 'Upload')}
         </button>
       </form>
 

@@ -1,12 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../axios';
-import { Play, Pause, Music, ChevronLeft, ChevronRight, Heart, Search as SearchIcon, Share2, Trash2, User } from 'lucide-react';
+import { Play, Pause, Music, Heart, Search as SearchIcon, User, Loader2 } from 'lucide-react';
 import { useAudio } from '../Contexts/AudioContext';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-
-declare global {
-  interface Window { runScrollDiagnostics?: () => void; }
-}
+import { Link } from 'react-router-dom';
 
 interface MediaItem {
   id: string;
@@ -15,6 +11,7 @@ interface MediaItem {
   url: string;
   thumbnailUrl: string;
   genre?: string;
+  genreName?: string;
   isLiked?: boolean;
   isOwner?: boolean;
 }
@@ -27,656 +24,194 @@ interface UserResult {
 }
 
 interface HomeProps {
-  user: {
-    displayName: string;
-  } | null;
+  user: { displayName: string } | null;
   searchQuery: string;
   lastRefreshTime: number;
 }
 
 const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
-  const { playTrack, togglePlay, currentTrack, isPlaying, updateLikedStatus, selectSongForShare } = useAudio();
-  const [sections, setSections] = useState<{ title: string, items: MediaItem[] }[]>([]);
+  const { playTrack, togglePlay, currentTrack, isPlaying, updateLikedStatus } = useAudio();
+  const [sections, setSections] = useState<{ title: string; items: MediaItem[] }[]>([]);
   const [userResults, setUserResults] = useState<UserResult[]>([]);
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [hearts, setHearts] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
-  const [greeting, setGreeting] = useState('Chào bạn');
-  const frameRef = useRef<HTMLDivElement>(null);
-  const [canScrollUp, setCanScrollUp] = useState(false);
-  const [canScrollDown, setCanScrollDown] = useState(false);
-  const [isFrameHovered, setIsFrameHovered] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const checkFrameScroll = () => {
-    const el = frameRef.current;
-    if (!el) return;
-    setCanScrollUp(el.scrollTop > 10);
-    setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 10);
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
   };
 
-  const scrollFrame = (direction: 'up' | 'down') => {
-    const el = frameRef.current;
-    if (!el) return;
-    const amount = Math.max(200, el.clientHeight * 0.6);
-    el.scrollBy({ top: direction === 'down' ? amount : -amount, behavior: 'smooth' });
-  };
-
-  const handleDelete = async (e: React.MouseEvent, songId: string, songTitle: string) => {
-    e.stopPropagation(); // Ngăn không cho sự kiện click của card cha được kích hoạt
-    if (window.confirm(`Bạn có chắc chắn muốn xóa bài hát "${songTitle}" không?`)) {
-      try {
-        await api.delete(`/media/${songId}`);
-        
-        // Xóa bài hát khỏi tất cả các section trên giao diện
-        setSections(prev => prev.map(sec => ({
-          ...sec,
-          items: sec.items.filter(item => item.id !== songId)
-        })).filter(sec => sec.items.length > 0)); // Xóa luôn section nếu nó rỗng
-
-        // Xóa khỏi kết quả tìm kiếm nếu có
-        setSearchResults(prev => prev.filter(item => item.id !== songId));
-
-      } catch (err: any) {
-        console.error("Lỗi khi xóa bài hát:", err);
-        const msg = err.response?.data?.message || "Không thể xóa bài hát. Vui lòng thử lại.";
-        alert(msg);
-      }
-    }
-  };
-  // Hàm xử lý Thích/Bỏ thích bài hát
   const toggleLike = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
     try {
       const randomColors = ['#FF0000', '#FF1493', '#FF4500', '#FFD700', '#FF6B6B', '#E91E63'];
       const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
-      // Tạo hiệu ứng trái tim bay lên tại vị trí click
       const newHeart = { id: Date.now(), x: e.clientX, y: e.clientY, color: randomColor };
       setHearts(prev => [...prev, newHeart]);
-      
-      // Xóa trái tim sau khi hoàn thành animation (1s)
-      setTimeout(() => {
-        setHearts(prev => prev.filter(h => h.id !== newHeart.id));
-      }, 1000);
-
+      setTimeout(() => { setHearts(prev => prev.filter(h => h.id !== newHeart.id)); }, 1000);
       const res = await api.post(`/favorites/toggle/${id}`);
       const liked = res.data.isLiked;
-      
-      // Cập nhật trạng thái trong các danh sách hiện có trên trang Home
-      setSections(prev => prev.map(sec => ({
-        ...sec,
-        items: sec.items.map(item => item.id === id ? { ...item, isLiked: liked } : item)
-      })));
+      setSections(prev => prev.map(sec => ({ ...sec, items: sec.items.map(item => item.id === id ? { ...item, isLiked: liked } : item) })));
       setSearchResults(prev => prev.map(item => item.id === id ? { ...item, isLiked: liked } : item));
+      if (currentTrack?.id === id) updateLikedStatus(liked);
+      try { window.dispatchEvent(new CustomEvent('favoritesUpdated')); } catch {}
+    } catch (err) { console.error("Error toggling like:", err); }
+  };
 
-      // Nếu bài đang thả tim là bài đang phát, cập nhật luôn thanh PlayerBar
-      if (currentTrack?.id === id) {
-        updateLikedStatus(liked);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch all songs using /media endpoint (AllowAnonymous)
+        const [mediaRes, adminRes] = await Promise.all([
+          api.get('/media?pageSize=100'),
+          api.get('/media/admin-songs?pageSize=50').catch(() => ({ data: { items: [] } }))
+        ]);
+
+        // Parse admin songs
+        let adminItems: MediaItem[] = [];
+        if (adminRes?.data?.items) {
+          adminItems = adminRes.data.items;
+        } else if (Array.isArray(adminRes?.data)) {
+          adminItems = adminRes.data;
+        }
+
+        // Parse library songs
+        let libraryItems: MediaItem[] = [];
+        if (Array.isArray(mediaRes?.data)) {
+          libraryItems = mediaRes.data;
+        } else if (mediaRes?.data?.items) {
+          libraryItems = mediaRes.data.items;
+        } else if (mediaRes?.data?.data) {
+          libraryItems = mediaRes.data.data;
+        }
+        const genreMap = new Map<string, MediaItem[]>();
+        
+        libraryItems.forEach(song => {
+          const genre = song.genre || song.genreName || 'Other';
+          if (!genreMap.has(genre)) {
+            genreMap.set(genre, []);
+          }
+          genreMap.get(genre)!.push(song);
+        });
+        
+        // Create sections from genre map
+        const sectionsData: { title: string; items: MediaItem[] }[] = [];
+
+        // Add Admin's Featured Songs section at the top if admin has songs
+        if (adminItems.length > 0) {
+          sectionsData.push({ title: "🎵 Admin's Picks", items: adminItems });
+        }
+        
+        genreMap.forEach((items, genre) => {
+          if (items.length > 0) {
+            sectionsData.push({ title: genre, items });
+          }
+        });
+        
+        setSections(sectionsData);
+      } catch (err) { 
+        console.error("Error fetching data:", err); 
       }
-      // Thông báo cho toàn app rằng danh sách yêu thích đã thay đổi (dùng khi không có SignalR)
-      try { window.dispatchEvent(new CustomEvent('favoritesUpdated')); } catch {};
-    } catch (err) {
-      console.error("Lỗi khi thả tim:", err);
-    }
-  };
+      setLoading(false);
+    };
+    fetchData();
+  }, [lastRefreshTime]);
 
-  const styles = {
-    container: { color: 'white' },
-    section: { marginBottom: '40px' },
-    sectionTitle: { fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '-0.5px' },
-    grid: {
-      display: 'flex',
-      gap: '24px',
-      overflowX: 'auto' as const,
-      paddingBottom: '12px',
-      msOverflowStyle: 'none' as const,
-      scrollbarWidth: 'none' as const,
-    },
-    card: {
-      backgroundColor: 'rgba(18, 18, 18, 0.7)',
-      padding: '16px',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      width: '200px',
-      minWidth: '200px',
-      flexShrink: 0,
-      position: 'relative' as const,
-      backdropFilter: 'blur(5px)',
-      zIndex: 1,
-      border: '1px solid rgba(59, 130, 246, 0.1)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    },
-    // Styles cho nút cuộn trái/phải
-    buttonScroll: {
-      position: 'absolute' as const,
-      top: '40%',
-      transform: 'translateY(-50%)', // Base transform
-      zIndex: 50,
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      padding: '12px',
-      borderRadius: '9999px', // full circle
-      transition: 'all 0.3s ease',
-      boxShadow: '0 0 15px rgba(59, 130, 246, 0.5), inset 0 0 5px rgba(59, 130, 246, 0.3)',
-      color: '#3b82f6',
-      cursor: 'pointer',
-      border: '2px solid #3b82f6',
-      backdropFilter: 'blur(10px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      // ensure buttons are visible even if parent stacking context is weird
-      visibility: 'visible' as const,
-    },
-    buttonScrollLeft: {
-      left: '16px',
-      transform: 'translateY(-50%) translateX(8px)', // translate-x-2
-    },
-    buttonScrollRight: {
-      right: '16px',
-      transform: 'translateY(-50%) translateX(-8px)', // -translate-x-2
-    },
-    thumbnailWrapper: {
-      position: 'relative' as const,
-      width: '100%',
-      aspectRatio: '1/1',
-      marginBottom: '16px',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-      borderRadius: '4px',
-      overflow: 'hidden',
-    },
-    thumbnail: { width: '100%', height: '100%', objectFit: 'cover' as const },
-    playButton: {
-      position: 'absolute' as const,
-      right: '8px',
-      bottom: '8px',
-      width: '48px',
-      height: '48px',
-      backgroundColor: '#3b82f6', // TuneVault Neon Blue
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: '0 0 20px rgba(59, 130, 246, 0.7)',
-      opacity: 0,
-      // Sửa lại transform để khi isCurrent, nó không bị giật
-      transform: 'translateY(10px)',
-      // Thêm zIndex để nút play không bị đè bởi các hiệu ứng khác
-      zIndex: 10,
-      transition: 'all 0.3s ease',
-      color: 'white',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-    },
-    cardTitle: { fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
-    cardArtist: { fontSize: '14px', color: '#a7a7a7', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
+  useEffect(() => {
+    if (!searchQuery.trim()) { setSearchResults([]); setUserResults([]); return; }
+    const search = async () => {
+      try {
+        const [songRes, userRes] = await Promise.all([
+          api.get(`/media/search?query=${encodeURIComponent(searchQuery)}`),
+          api.get(`/users/search?query=${encodeURIComponent(searchQuery)}`)
+        ]);
+        setSearchResults(songRes.data?.items || []);
+        setUserResults(userRes.data || []);
+      } catch (err) { console.error("Error searching:", err); }
+    };
+    const timer = setTimeout(search, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-    sectionContainer: {
-    marginBottom: '40px',
-    padding: '24px',
-    backgroundColor: 'rgba(10, 10, 10, 0.6)', // Màu nền tối cho khung
-    borderRadius: '16px',
-    border: '1px solid rgba(255, 255, 255, 0.08)', // Viền mờ bao quanh
-    transition: 'all 0.3s ease',
-  },
-    
-  sectionTitleRow: {
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: '20px' 
-  },
-
-  };
-
-  const SongCard = ({ song }: { song: MediaItem }) => {
+  const SongCard = ({ song, playlist }: { song: MediaItem; playlist: MediaItem[] }) => {
     const isCurrent = currentTrack?.id === song.id;
     return (
-      <div 
-        style={styles.card} 
-        className="group neon-card hover:bg-[#1a1a1a] neon-card-active-effect"
-        role="button"
-        tabIndex={0}
-        aria-label={`Phát ${song.title} - ${song.artist || 'Nghệ sĩ không xác định'}`}
-        onClick={() => playTrack(song, searchResults.length > 0 ? searchResults : sections.flatMap(s => s.items))}
-        onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playTrack(song); } }}
-      >
-        <div style={styles.thumbnailWrapper}>
-          <img src={song.thumbnailUrl || "/assets/default-cover.png"} alt={song.title} style={styles.thumbnail} />
-          <button
-            type="button"
-            // Ngăn việc click vào nút play kích hoạt click của card cha
-            // Điều này đảm bảo togglePlay() được gọi thay vì playTrack(song) một lần nữa
-            onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-            aria-label={isCurrent ? `Tạm dừng ${song.title}` : `Phát ${song.title}`}
-            style={styles.playButton}
-            className="group-hover:opacity-100 group-hover:translate-y-0"
-          >
-            {isCurrent && isPlaying ? <Pause size={24} fill="black" /> : <Play size={24} fill="black" className="ml-1" />}
-          </button>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ overflow: 'hidden', flex: 1 }}>
-            <h3 style={styles.cardTitle}>{song.title}</h3>
-            <p style={styles.cardArtist}>{song.artist || 'Nghệ sĩ không xác định'}</p>
-          </div>
-          <div className="flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <button
-              onClick={(e) => { e.stopPropagation(); toggleLike(e, song.id); }}
-              aria-label={song.isLiked ? 'Bỏ thích' : 'Yêu thích'}
-              className={`transition-all ${song.isLiked ? 'text-blue-500' : 'text-neutral-500 hover:text-white'}`}
-              title={song.isLiked ? "Bỏ thích" : "Yêu thích"}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-            >
-              <Heart size={18} fill={song.isLiked ? "currentColor" : "none"} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); selectSongForShare(song); }}
-              aria-label={`Chia sẻ ${song.title}`}
-              className="text-neutral-500 hover:text-white transition-all"
-              title="Chia sẻ bài hát này"
-            >
-              <Share2 size={16} />
-            </button>
-            <button
-              onClick={(e) => handleDelete(e, song.id, song.title)}
-              aria-label={`Xóa ${song.title}`}
-              className="text-neutral-500 hover:text-blue-500 transition-all"
-              title="Xóa bài hát này"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const UserCard = ({ user }: { user: UserResult }) => {
-    const navigate = useNavigate();
-    return (
       <div
-        style={{...styles.card, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', textAlign: 'center'}}
-        className="group neon-card hover:bg-[#1a1a1a]"
-        role="button"
-        onClick={() => navigate(`/app/profile/${user.username}`)}
-      >
-        <div style={{
-          width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden',
-          border: '3px solid rgba(59, 130, 246, 0.5)',
-          boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backgroundColor: '#1a1a1a'
-        }}>
-          {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt={user.displayName} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-          ) : (
-            <User size={40} className="text-neutral-500" />
-          )}
-        </div>
-        <div>
-          <h3 style={{...styles.cardTitle, marginBottom: '4px'}}>{user.displayName}</h3>
-          <p style={{...styles.cardArtist, fontSize: '12px'}}>@{user.username}</p>
-        </div>
-      </div>
-    );
-  };
-
-  // Component con để xử lý cuộn cho từng Section
-  const SectionRow = ({ section, index }: { section: { title: string, items: MediaItem[] }, index: number }) => {
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
-    const [isHovered, setIsHovered] = useState(false);
-    const [canScroll, setCanScroll] = useState({ left: false, right: false });
-    const [translate, setTranslate] = useState(0);
-
-    // Kiểm tra có thể cuộn
-    const checkScroll = () => {
-      if (!scrollRef.current || !contentRef.current) return;
-      const outer = scrollRef.current;
-      const inner = contentRef.current;
-      const scrollLeft = translate;
-      const scrollWidth = inner.scrollWidth;
-      const clientWidth = outer.clientWidth;
-      // Use smaller epsilon to be more permissive when widths are near-equal
-      const eps = 5;
-      setCanScroll({
-        left: scrollLeft > eps,
-        right: scrollLeft + clientWidth < scrollWidth - eps
-      });
-    };
-
-    useEffect(() => {
-      // Run several delayed checks to catch late image loads/layout changes
-      const t1 = setTimeout(checkScroll, 50);
-      const t2 = setTimeout(checkScroll, 200);
-      const t3 = setTimeout(checkScroll, 500);
-      window.addEventListener('resize', checkScroll);
-
-      let roOuter: ResizeObserver | null = null;
-      let roInner: ResizeObserver | null = null;
-      if (typeof ResizeObserver !== 'undefined') {
-        try {
-          if (scrollRef.current) {
-            roOuter = new ResizeObserver(() => setTimeout(checkScroll, 50));
-            roOuter.observe(scrollRef.current);
-          }
-        } catch {}
-        try {
-          if (contentRef.current) {
-            roInner = new ResizeObserver(() => setTimeout(checkScroll, 50));
-            roInner.observe(contentRef.current);
-          }
-        } catch {}
-      }
-
-      // If images in the row load after render, trigger checkScroll when they finish
-      const imgs: HTMLImageElement[] = contentRef.current ? Array.from(contentRef.current.querySelectorAll('img')) as HTMLImageElement[] : [];
-      const onImgLoad = () => setTimeout(checkScroll, 30);
-      imgs.forEach(img => {
-        if (img.complete) return;
-        img.addEventListener('load', onImgLoad);
-        img.addEventListener('error', onImgLoad);
-      });
-
-      return () => {
-        clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
-        window.removeEventListener('resize', checkScroll);
-        if (roOuter) roOuter.disconnect();
-        if (roInner) roInner.disconnect();
-        imgs.forEach(img => {
-          try { img.removeEventListener('load', onImgLoad); img.removeEventListener('error', onImgLoad); } catch {}
-        });
-      };
-    }, [section.items]);
-
-    // Core scroll performer used by mouse and keyboard handlers
-    const performScroll = async (direction: 'left' | 'right', outerEl?: HTMLElement | null) => {
-      const outer = outerEl ?? scrollRef.current;
-      const inner = contentRef.current;
-      if (!outer || !inner) return;
-
-      const scrollAmount = Math.max(120, outer.clientWidth * 0.8);
-      const maxTranslate = Math.max(0, inner.scrollWidth - outer.clientWidth);
-      let newTranslate = translate + (direction === 'right' ? scrollAmount : -scrollAmount);
-      newTranslate = Math.max(0, Math.min(maxTranslate, newTranslate));
-
-      if (inner.scrollWidth <= outer.clientWidth) {
-        setCanScroll({ left: false, right: false });
-        return;
-      }
-
-      setTranslate(newTranslate);
-      try {
-        const eps = 5;
-        setCanScroll({
-          left: newTranslate > eps,
-          right: newTranslate + outer.clientWidth < inner.scrollWidth - eps
-        });
-      } catch {}
-
-      // If inner still had no overflow, attempt temporary debug clones to allow movement (very rare)
-      try {
-        const scrollBefore = inner.scrollWidth;
-        let createdClones = false;
-        if (inner.scrollWidth <= outer.clientWidth && inner.children.length > 0) {
-          createdClones = true;
-          const toClone = Math.min(6, inner.children.length);
-          for (let i = 0; i < toClone; i++) {
-            const clone = inner.children[i].cloneNode(true) as HTMLElement;
-            clone.setAttribute('data-debug-clone', '1');
-            inner.appendChild(clone);
-          }
-          await awaitTick(40);
-          if (inner.scrollWidth === scrollBefore) {
-            for (let i = 0; i < toClone; i++) {
-              const ph = document.createElement('div');
-              ph.setAttribute('data-debug-clone', '1');
-              ph.setAttribute('aria-hidden', 'true');
-              ph.style.width = '200px'; ph.style.minWidth = '200px'; ph.style.flex = '0 0 auto'; ph.style.marginRight = '24px';
-              inner.appendChild(ph);
-            }
-            await awaitTick(40);
-          }
-
-          // cleanup clones shortly after
-          window.setTimeout(() => {
-            try { Array.from(inner.querySelectorAll('[data-debug-clone]')).forEach(c => c.remove()); setTimeout(checkScroll, 50); } catch {}
-          }, 800);
-        }
-      } catch (err) { console.debug('performScroll debug clone error', err); }
-
-      setTimeout(checkScroll, 400);
-    };
-
-    const handleScroll = (e: React.MouseEvent, direction: 'left' | 'right') => {
-      e.preventDefault();
-      e.stopPropagation();
-      // Try to find the row relative to the clicked button; fallback to ref
-      const btn = e.currentTarget as HTMLElement | null;
-      let targetRow: HTMLElement | null = null;
-      try { const wrapper = btn?.parentElement ?? null; if (wrapper) targetRow = wrapper.querySelector('.no-scrollbar') as HTMLElement | null; } catch {}
-      if (!targetRow) targetRow = scrollRef.current;
-      performScroll(direction, targetRow);
-    };
-
-    // small helper to await a layout tick
-    const awaitTick = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
-
-    return (
-      <div
-        style={{ 
-          marginBottom: '40px', 
-          padding: '24px',
-          borderRadius: '16px', 
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          backgroundColor: 'transparent',
+        onClick={() => playTrack(song, playlist)}
+        style={{
+          backgroundColor: '#1a1a2e',
+          borderRadius: '12px',
+          padding: '16px',
+          cursor: 'pointer',
+          width: '180px',
+          minWidth: '180px',
           transition: 'all 0.3s ease',
           position: 'relative',
+          border: '1px solid transparent',
+          boxShadow: '0 0 15px rgba(255, 0, 255, 0.2)',
         }}
-        onMouseEnter={() => { setIsHovered(true); setTimeout(checkScroll, 50); }}
-        onMouseLeave={() => setIsHovered(false)}
-        onFocus={() => { setIsHovered(true); setTimeout(checkScroll, 50); }}
-        onBlur={(e: React.FocusEvent) => {
-          const related = e.relatedTarget as Node | null;
-          if (related && (e.currentTarget as Element).contains(related)) return;
-          setIsHovered(false);
+        onMouseEnter={(e) => { 
+          e.currentTarget.style.backgroundColor = '#2a2a4e'; 
+          e.currentTarget.style.borderColor = '#FF00FF';
+          e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 0, 255, 0.5), 0 0 50px rgba(0, 255, 255, 0.3)';
+          const btn = e.currentTarget.querySelector('.play-btn') as HTMLElement;
+          if (btn) btn.style.opacity = '1';
+          if (btn) btn.style.transform = 'translateY(0)';
         }}
-        tabIndex={-1}
+        onMouseLeave={(e) => { 
+          e.currentTarget.style.backgroundColor = '#1a1a2e';
+          e.currentTarget.style.borderColor = 'transparent';
+          e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 0, 255, 0.2)';
+          const btn = e.currentTarget.querySelector('.play-btn') as HTMLElement;
+          if (btn) btn.style.opacity = '0';
+          if (btn) btn.style.transform = 'translateY(8px)';
+        }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px' }}>
-          <h2 style={{ ...styles.sectionTitle, marginBottom: 0 }} className="section-title-neon">{section.title}</h2>
-          <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#b3b3b3', cursor: 'pointer' }} className="hover:underline">HIỆN TẤT CẢ</span>
-        </div>
-
-        <div
-          className="relative"
-          role="group"
-          aria-label={section.title}
-          onKeyDown={(e: React.KeyboardEvent) => {
-            if (e.key === 'ArrowLeft') { e.preventDefault(); performScroll('left'); }
-            if (e.key === 'ArrowRight') { e.preventDefault(); performScroll('right'); }
-          }}
-        >
-          {/* Nút cuộn trái */}
+        <div style={{ position: 'relative', marginBottom: '16px' }}>
+          <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)' }} alt="" />
           <button
-            type="button"
-            onClick={(e) => handleScroll(e, 'left')}
-            disabled={!canScroll.left}
+            className="play-btn"
+            onClick={(e) => { e.stopPropagation(); playTrack(song, playlist); }}
             style={{
-              ...styles.buttonScroll,
-              ...styles.buttonScrollLeft,
-              opacity: (canScroll.left && isHovered) ? 1 : 0,
-              visibility: (canScroll.left && isHovered) ? 'visible' as const : 'hidden' as const,
-              pointerEvents: (canScroll.left && isHovered) ? 'auto' : 'none',
-              filter: canScroll.left ? undefined : 'grayscale(60%)',
-              transition: 'all 0.25s ease'
+              position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
+              backgroundColor: '#00FFFF', borderRadius: '50%', border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
+              boxShadow: '0 0 20px rgba(0, 255, 255, 0.8)',
             }}
-            className="neon-button"
-            title={canScroll.left ? 'Cuộn sang trái' : 'Không thể cuộn trái'}
           >
-            <ChevronLeft size={24} />
-          </button>
-
-          <div
-            ref={scrollRef}
-            style={{ ...styles.grid, overflowX: 'hidden' }}
-            className="no-scrollbar"
-            onScroll={checkScroll}
-          >
-            <div
-              id={`section-content-${index}`}
-              ref={contentRef}
-              style={{
-                display: 'flex',
-                gap: '24px',
-                willChange: 'transform',
-                transform: `translateX(-${translate}px)`,
-                transition: 'transform 360ms cubic-bezier(0.4,0,0.2,1)'
-              }}
-            >
-              {section.items.map(song => <SongCard key={song.id} song={song} />)}
-            </div>
-          </div>
-
-          {/* Nút cuộn phải */}
-          <button
-            type="button"
-            onClick={(e) => handleScroll(e, 'right')}
-            aria-controls={`section-content-${index}`}
-            disabled={!canScroll.right}
-            style={{
-              ...styles.buttonScroll,
-              ...styles.buttonScrollRight,
-              opacity: (canScroll.right && isHovered) ? 1 : 0,
-              visibility: (canScroll.right && isHovered) ? 'visible' as const : 'hidden' as const,
-              pointerEvents: (canScroll.right && isHovered) ? 'auto' : 'none',
-              filter: canScroll.right ? undefined : 'grayscale(60%)',
-              transition: 'all 0.25s ease'
-            }}
-            className="neon-button"
-            title={canScroll.right ? 'Cuộn sang phải' : 'Không thể cuộn phải'}
-          >
-            <ChevronRight size={24} />
+            {isCurrent && isPlaying ? <Pause size={22} fill="black" color="black" /> : <Play size={22} fill="black" color="black" style={{ marginLeft: '2px' }} />}
           </button>
         </div>
+        <div style={{ fontSize: '16px', fontWeight: '600', color: isCurrent ? '#00FFFF' : '#fff', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: isCurrent ? '0 0 10px rgba(0, 255, 255, 0.5)' : 'none' }}>{song.title}</div>
+        <div style={{ fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
       </div>
     );
   };
 
-  // Khi có sự kiện share mới, reload Home để người nhận thấy thay đổi ngay trên route '/'
-  useEffect(() => {
-    const handler = () => {
-      // Home component có sẵn dependency lastRefreshTime ở useEffect bên dưới
-      // nên chỉ cần trigger lại việc load bằng cách đổi lastRefreshTime thông qua prop.
-      // Vì lastRefreshTime nằm ngoài Home, ta reload bằng cách gọi setSections/searchResults tại đây.
-      // Cách đơn giản nhất: tăng cục bộ bằng cách tái gọi luồng hiện tại.
-      // (Ở đây ta gọi lại bằng cách dispatch lại lastRefreshTime theo cơ chế sẵn có.)
-      try { window.dispatchEvent(new CustomEvent('favoritesUpdated')); } catch {}
-    };
-    window.addEventListener('sharedListUpdated', handler as EventListener);
-    return () => window.removeEventListener('sharedListUpdated', handler as EventListener);
-  }, []);
-
-  useEffect(() => {
-    if (searchQuery) {
-      // Tìm kiếm cả bài hát và người dùng
-      const searchAll = async () => {
-        const [songsRes, usersRes] = await Promise.all([
-          api.get(`/media?query=${searchQuery}`),
-          api.get(`/User/search?query=${searchQuery}`)
-        ]);
-        setSearchResults(songsRes.data?.items || []);
-        setUserResults(usersRes.data || []);
-      };
-      searchAll();
-    } else {
-      // Tải dữ liệu cho các khung thể loại khác nhau(Cac khung the loai nhac trong Home)
-      const loadHomeData = async () => {
-        const genres = ['YouTube', 'Lofi', 'Pop', 'Rock', 'EDM', 'Acoustic', 'Chill Music', 'Rap'];
-        const results = await Promise.all([
-          api.get('/media?pageSize=20'), // Mới nhất
-          ...genres.map(g => api.get(`/media?genre=${g}&pageSize=20`))
-        ]);
-
-        const newSections = [
-          { title: 'Mới cập nhật', items: results[0].data?.items || [] },
-          ...genres.map((g, i) => ({ title: g, items: results[i+1].data?.items || [] }))
-        ].filter(s => s.items.length > 0);
-
-        setSections(newSections);
-      };
-      loadHomeData();
-    }
-  }, [searchQuery, lastRefreshTime]);
-
-  useEffect(() => {
-    const getGreeting = () => {
-      const hour = new Date().getHours();
-      if (hour >= 5 && hour < 11) {
-        return 'Chào buổi sáng';
-      } else if (hour >= 11 && hour < 13) {
-        return 'Chào buổi trưa';
-      } else if (hour >= 13 && hour < 18) {
-        return 'Chào buổi chiều';
-      } else {
-        return 'Chào buổi tối';
-      }
-    };
-    setGreeting(getGreeting());
-  }, []);
-
-  // Debug listeners removed for production; diagnostics were used during development.
-
-  // Debug UI removed after verification
-
+  const UserCard = ({ user: u }: { user: UserResult }) => (
+    <Link to={`/app/profile/${u.username}`} style={{ textDecoration: 'none', backgroundColor: '#181818', borderRadius: '8px', padding: '16px', cursor: 'pointer', width: '180px', minWidth: '180px', transition: 'background-color 0.3s ease', display: 'block' }}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}>
+      <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: '50%', overflow: 'hidden', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#282828', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+        {u.avatarUrl ? <img src={u.avatarUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <User size={60} style={{ color: '#b3b3b3' }} />}
+      </div>
+      <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.displayName}</div>
+      <div style={{ fontSize: '12px', color: '#b3b3b3', textAlign: 'center', marginTop: '4px' }}>Nguoi dung</div>
+    </Link>
+  );
 
   return (
-    <div style={styles.container}>
+    <div style={{ color: 'white', padding: '20px', minHeight: '100%', boxSizing: 'border-box' }}>
       <style>{`
-        .group:hover .play-button-trigger {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .section-title-neon {
-          transition: all 0.4s ease;
-        }
-        .section-title-neon:hover {
-          color: #93c5fd;
-          text-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
-        }
-        .neon-card:hover {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 20px rgba(59, 130, 246, 0.5) !important;
-          transform: translateY(-8px) scale(1.02);
-        }
-        @keyframes neon-shift {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-        .neon-title-blue {
-          background: linear-gradient(
-            90deg, 
-            #3b82f6 0%, 
-            #93c5fd 25%, 
-            #3b82f6 50%, 
-            #93c5fd 75%, 
-            #3b82f6 100%
-          );
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: neon-shift 4s linear infinite;
-          filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.6));
-          display: inline-block;
-        }
-        .neon-button:hover {
-          background-color: #3b82f6 !important;
-          color: white !important;
-          box-shadow: 0 0 25px #3b82f6, 0 0 50px rgba(59, 130, 246, 0.5) !important;
-          border-color: #93c5fd !important;
-          /* Kết hợp scale với transform hiện tại của inline style */
-          filter: brightness(1.2);
-          z-index: 60;
-        }
+        .spotify-scroll::-webkit-scrollbar { height: 8px; }
+        .spotify-scroll::-webkit-scrollbar-track { background: transparent; }
+        .spotify-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        .spotify-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
         @keyframes float-heart-home {
           0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
           25% { transform: translate(calc(-50% - 20px), calc(-50% - 50px)) scale(1); opacity: 0.8; }
@@ -684,176 +219,314 @@ const Home = ({ user, searchQuery, lastRefreshTime }: HomeProps) => {
           75% { transform: translate(calc(-50% - 10px), calc(-50% - 150px)) scale(1.8); opacity: 0.3; }
           100% { transform: translate(-50%, calc(-50% - 200px)) scale(2); opacity: 0; }
         }
-        .floating-heart {
-          position: fixed;
-          pointer-events: none;
-          z-index: 9999;
-          animation: float-heart-home 1s ease-out forwards;
-        }
-        /* --- Tùy chỉnh thanh cuộn cho khung danh sách nhạc --- */
-        .song-list-frame::-webkit-scrollbar {
-          width: 12px;
-        }
-        .song-list-frame::-webkit-scrollbar-track {
-          background: transparent; /* Nền trong suốt */
-        }
-        .song-list-frame::-webkit-scrollbar-thumb {
-          background-color: rgba(59, 130, 246, 0.4); /* Màu xanh neon bán trong suốt */
-          border-radius: 10px;
-          border: 3px solid transparent; /* Tạo khoảng cách với cạnh */
-          background-clip: content-box;
-        }
-        .song-list-frame::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(59, 130, 246, 0.7); /* Đậm hơn khi di chuột vào */
-        }
-        /* Keyframes cho viền chuyển động */
-        @keyframes animated-border-home {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
+        .floating-heart { position: fixed; pointer-events: none; z-index: 9999; animation: float-heart-home 1s ease-out forwards; }
       `}</style>
 
-      {searchQuery ? (
-        <div className="flex flex-col gap-10">
-          {/* Kết quả tìm kiếm người dùng */}
+      {loading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
+          <Loader2 size={48} style={{ color: '#1DB954', animation: 'spin 1s linear infinite' }} />
+          <p style={{ color: '#b3b3b3', fontSize: '16px' }}>Loading music...</p>
+        </div>
+      ) : searchQuery ? (
+        <div>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#fff', marginBottom: '24px' }}>Search results for "{searchQuery}"</h2>
           {userResults.length > 0 && (
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle} className="section-title-neon">Người dùng</h2>
-              <div style={styles.grid}>
-                {userResults.map(user => <UserCard key={user.id} user={user} />)}
+            <div style={{ marginBottom: '32px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Artists</h3>
+              <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }} className="spotify-scroll">
+                {userResults.map(u => <UserCard key={u.id} user={u} />)}
               </div>
             </div>
           )}
-          {/* Kết quả tìm kiếm bài hát */}
-          <div style={styles.section}>
-            <h2 style={styles.sectionTitle} className="section-title-neon">Bài hát</h2>
-            {searchResults.length > 0 ? (
-              <div style={styles.grid}>
-                {searchResults.map(song => <SongCard key={song.id} song={song} />)}
+          {searchResults.length > 0 ? (
+            <div>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#fff', marginBottom: '16px' }}>Songs</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '24px' }}>
+                {searchResults.map(song => <SongCard key={song.id} song={song} playlist={searchResults} />)}
               </div>
-            ) : (
-              <p style={{ color: '#a7a7a7' }}>Không tìm thấy bài hát nào khớp với "{searchQuery}".</p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '80px 0' }}>
+              <SearchIcon size={64} style={{ color: '#535353', marginBottom: '16px' }} />
+              <p style={{ color: '#b3b3b3', fontSize: '18px' }}>No results found</p>
+            </div>
+          )}
         </div>
       ) : (
-        <>
-          <h1 
-            style={{ ...styles.sectionTitle, fontSize: '32px', marginBottom: '32px' }}
-            className="neon-title-blue"
-          >
-            {greeting}{user ? `, ${user.displayName}` : ''}!
+        <div>
+          <h1 style={{ fontSize: '36px', fontWeight: '900', color: '#fff', marginBottom: '32px' }}>
+            {getGreeting()}
           </h1>
-          
-          <div
-            ref={frameRef}
-            style={{ 
-              padding: '28px', 
-              borderRadius: '24px', 
-              border: '2px solid transparent',
-              backgroundColor: 'rgba(0, 0, 0, 0.6)', // Tăng độ trong suốt
-              backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), linear-gradient(160deg, #c084fc, #3b82f6, #10b981, #c084fc)',
-              backgroundOrigin: 'border-box',
-              backgroundClip: 'padding-box, border-box',
-              backgroundSize: '200% 100%',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.2)',
-              animation: 'animated-border-home 8s linear infinite',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              maxHeight: '70vh',
-              overflowY: 'auto',
-              paddingBottom: '120px', // Thêm khoảng đệm dưới để không bị PlayerBar che
-            }}
-            className="song-list-frame"
-            onScroll={checkFrameScroll}
-            onMouseEnter={() => { setIsFrameHovered(true); setTimeout(checkFrameScroll, 50); }}
-            onMouseLeave={() => setIsFrameHovered(false)}
-          >
-            {/* Nút cuộn lên */}
-            <button
-              type="button"
-              onClick={() => scrollFrame('up')}
-              disabled={!canScrollUp}
-              style={{
-                position: 'sticky',
-                top: '0px',
-                zIndex: 40,
-                width: '100%',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: canScrollUp && isFrameHovered ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                border: 'none',
-                color: canScrollUp && isFrameHovered ? '#3b82f6' : 'transparent',
-                cursor: canScrollUp ? 'pointer' : 'default',
-                transition: 'all 0.25s ease',
-                opacity: canScrollUp && isFrameHovered ? 1 : 0,
-                pointerEvents: canScrollUp && isFrameHovered ? 'auto' : 'none',
-                backdropFilter: 'blur(4px)',
-                borderRadius: '12px 12px 0 0',
-                marginBottom: '4px',
-              }}
-              className="neon-button"
-              title="Cuộn lên"
-            >
-              <ChevronLeft size={20} style={{ transform: 'rotate(90deg)' }} />
-            </button>
 
-            {sections.map((section, idx) => <SectionRow key={idx} section={section} index={idx} />)}
-
-            {/* Nút cuộn xuống */}
-            <button
-              type="button"
-              onClick={() => scrollFrame('down')}
-              disabled={!canScrollDown}
-              style={{
-                position: 'sticky',
-                bottom: '0px',
-                zIndex: 40,
-                width: '100%',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: canScrollDown && isFrameHovered ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                border: 'none',
-                color: canScrollDown && isFrameHovered ? '#3b82f6' : 'transparent',
-                cursor: canScrollDown ? 'pointer' : 'default',
-                transition: 'all 0.25s ease',
-                opacity: canScrollDown && isFrameHovered ? 1 : 0,
-                pointerEvents: canScrollDown && isFrameHovered ? 'auto' : 'none',
-                backdropFilter: 'blur(4px)',
-                borderRadius: '0 0 12px 12px',
-                marginTop: '4px',
+          {/* Quick Access Cards - Neon Cyberpunk Style */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+            gap: '16px', 
+            marginBottom: '40px' 
+          }}>
+            <Link 
+              to="/app/liked"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0',
+                background: 'linear-gradient(135deg, #FF00FF, #00FFFF)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                boxShadow: '0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)',
+                transition: 'all 0.3s ease',
               }}
-              className="neon-button"
-              title="Cuộn xuống"
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(255, 0, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.5)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)'; }}
             >
-              <ChevronLeft size={20} style={{ transform: 'rotate(-90deg)' }} />
-            </button>
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px', textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>Liked Songs</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>Your favorite tracks</div>
+              </div>
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)', marginRight: '16px', borderRadius: '4px' }}>
+                <Heart size={48} fill="white" color="white" style={{ filter: 'drop-shadow(0 0 10px rgba(255,0,255,0.8))' }} />
+              </div>
+            </Link>
+
+            <Link 
+              to="/app/library"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0',
+                background: 'linear-gradient(135deg, #00FF00, #FFFF00)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                boxShadow: '0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(255, 255, 0, 0.3)',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(0, 255, 0, 0.8), 0 0 60px rgba(255, 255, 0, 0.5)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(255, 255, 0, 0.3)'; }}
+            >
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#000', marginBottom: '8px' }}>Your Library</div>
+                <div style={{ fontSize: '13px', color: 'rgba(0,0,0,0.7)' }}>Browse your collection</div>
+              </div>
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', marginRight: '16px', borderRadius: '4px' }}>
+                <Music size={48} color="#000" style={{ filter: 'drop-shadow(0 0 10px rgba(0,255,0,0.8))' }} />
+              </div>
+            </Link>
+
+            <Link 
+              to="/app/search"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0',
+                background: 'linear-gradient(135deg, #FF6600, #FF00FF)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                boxShadow: '0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(255, 0, 255, 0.3)',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(255, 102, 0, 0.8), 0 0 60px rgba(255, 0, 255, 0.5)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(255, 0, 255, 0.3)'; }}
+            >
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '8px', textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>Browse All</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>Discover new music</div>
+              </div>
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', marginRight: '16px', borderRadius: '4px' }}>
+                <SearchIcon size={48} color="white" style={{ filter: 'drop-shadow(0 0 10px rgba(255,102,0,0.8))' }} />
+              </div>
+            </Link>
+
+            <Link 
+              to="/app/import"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0',
+                background: 'linear-gradient(135deg, #00FFFF, #0066FF)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                boxShadow: '0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3)',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 102, 255, 0.5)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3)'; }}
+            >
+              <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#000', marginBottom: '8px' }}>Add Music</div>
+                <div style={{ fontSize: '13px', color: 'rgba(0,0,0,0.7)' }}>Import from YouTube</div>
+              </div>
+              <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', marginRight: '16px', borderRadius: '4px' }}>
+                <Music size={48} color="#000" style={{ filter: 'drop-shadow(0 0 10px rgba(0,255,255,0.8))' }} />
+              </div>
+            </Link>
           </div>
 
+          {/* All Songs - Horizontal scroll like Spotify */}
+          {(() => {
+            const allSongs = sections.flatMap(s => s.items);
+            return allSongs.length > 0 && (
+              <div style={{ marginBottom: '40px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#fff', margin: 0 }}>All Songs</h2>
+                  <button 
+                    onClick={() => playTrack(allSongs[0], allSongs)}
+                    style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+                  >
+                    <Play size={16} fill="black" />
+                  </button>
+                </div>
+                {/* Horizontal scroll */}
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '16px',
+                  overflowX: 'auto',
+                  paddingBottom: '16px',
+                }}
+                className="spotify-scroll"
+                >
+                  {allSongs.slice(0, 10).map(song => (
+                    <div key={song.id} 
+                      style={{ 
+                        backgroundColor: '#1a1a1a', 
+                        borderRadius: '8px', 
+                        padding: '16px', 
+                        cursor: 'pointer',
+                        minWidth: '160px',
+                        width: '160px',
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                      }}
+                      onMouseEnter={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#282828';
+                        const btn = e.currentTarget.querySelector('.mini-play-btn') as HTMLElement;
+                        if (btn) { btn.style.opacity = '1'; btn.style.transform = 'translateY(0)'; }
+                      }}
+                      onMouseLeave={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#1a1a1a';
+                        const btn = e.currentTarget.querySelector('.mini-play-btn') as HTMLElement;
+                        if (btn) { btn.style.opacity = '0'; btn.style.transform = 'translateY(8px)'; }
+                      }}
+                      onClick={() => playTrack(song, allSongs)}
+                    >
+                      <div style={{ position: 'relative', marginBottom: '12px' }}>
+                        <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
+                        <button
+                          className="mini-play-btn"
+                          onClick={(e) => { e.stopPropagation(); playTrack(song, allSongs); }}
+                          style={{
+                            position: 'absolute', right: '8px', bottom: '8px', width: '40px', height: '40px',
+                            backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
+                            boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                          }}
+                        >
+                          {currentTrack?.id === song.id && isPlaying ? <Pause size={18} fill="black" color="black" /> : <Play size={18} fill="black" color="black" />}
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{song.title}</div>
+                      <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Genre sections - Horizontal scroll like Spotify */}
+          {sections.map((section, idx) => (
+            <div key={idx} style={{ marginBottom: '40px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#fff', margin: 0 }}>{section.title}</h2>
+                <button 
+                  onClick={() => playTrack(section.items[0], section.items)}
+                  style={{ backgroundColor: '#1DB954', color: 'black', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+                >
+                  <Play size={16} fill="black" />
+                </button>
+              </div>
+              {/* Horizontal scroll */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '16px',
+                overflowX: 'auto',
+                paddingBottom: '16px',
+              }}
+              className="spotify-scroll"
+              >
+                {section.items.slice(0, 8).map(song => (
+                  <div key={song.id} 
+                    style={{ 
+                      backgroundColor: '#1a1a1a', 
+                      borderRadius: '8px', 
+                      padding: '16px', 
+                      cursor: 'pointer',
+                      minWidth: '180px',
+                      width: '180px',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                    }}
+                    onMouseEnter={(e) => { 
+                      e.currentTarget.style.backgroundColor = '#282828';
+                      const btn = e.currentTarget.querySelector('.genre-play-btn') as HTMLElement;
+                      if (btn) { btn.style.opacity = '1'; btn.style.transform = 'translateY(0)'; }
+                    }}
+                    onMouseLeave={(e) => { 
+                      e.currentTarget.style.backgroundColor = '#1a1a1a';
+                      const btn = e.currentTarget.querySelector('.genre-play-btn') as HTMLElement;
+                      if (btn) { btn.style.opacity = '0'; btn.style.transform = 'translateY(8px)'; }
+                    }}
+                    onClick={() => playTrack(song, section.items)}
+                  >
+                    <div style={{ position: 'relative', marginBottom: '12px' }}>
+                      <img src={song.thumbnailUrl} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} alt="" />
+                      <button
+                        className="genre-play-btn"
+                        onClick={(e) => { e.stopPropagation(); playTrack(song, section.items); }}
+                        style={{
+                          position: 'absolute', right: '8px', bottom: '8px', width: '48px', height: '48px',
+                          backgroundColor: '#1DB954', borderRadius: '50%', border: 'none', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s ease',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                        }}
+                      >
+                        {currentTrack?.id === song.id && isPlaying ? <Pause size={20} fill="black" color="black" /> : <Play size={20} fill="black" color="black" />}
+                      </button>
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{song.title}</div>
+                    <div style={{ fontSize: '13px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist || 'Unknown Artist'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
           {sections.length === 0 && (
-             <div style={{ textAlign: 'center', padding: '100px 0' }}>
-                <Music size={64} style={{ color: '#282828', marginBottom: '24px' }} />
-                <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Chưa có nhạc trong thư viện</h2>
-                <p style={{ color: '#a7a7a7', marginTop: '8px' }}>Hãy bắt đầu thêm nhạc từ YouTube để tạo nên thế giới âm nhạc của bạn.</p>
-             </div>
+            <div style={{ textAlign: 'center', padding: '60px 40px', backgroundColor: '#1a1a2e', borderRadius: '12px', marginTop: '20px', border: '1px solid rgba(131, 58, 180, 0.3)' }}>
+              <div style={{ width: '120px', height: '120px', backgroundColor: 'rgba(131, 58, 180, 0.2)', borderRadius: '50%', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(131, 58, 180, 0.3)' }}>
+                <Music size={60} style={{ color: '#833ab4' }} />
+              </div>
+              <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#c084fc', marginBottom: '12px', textShadow: '0 0 10px rgba(131, 58, 180, 0.5)' }}>Chưa có nhạc</h2>
+              <p style={{ color: '#b3b3b3', marginBottom: '24px', fontSize: '15px' }}>Admin hãy thêm nhạc để mọi người cùng nghe nhé!</p>
+              <Link to="/app/import" style={{ backgroundColor: '#833ab4', color: 'white', padding: '14px 32px', borderRadius: '24px', fontWeight: '700', textDecoration: 'none', display: 'inline-block', boxShadow: '0 0 20px rgba(131, 58, 180, 0.5)' }}>
+                + Thêm nhạc
+              </Link>
+            </div>
           )}
-        </>
+        </div>
       )}
 
-      {/* Render các trái tim đang bay */}
-      {hearts.map(h => (
-        <Heart 
-          key={h.id} 
-          className="floating-heart"
-          style={{ left: h.x, top: h.y, color: h.color }}
-          size={24}
-          fill="currentColor"
-        />
-      ))}
+      {hearts.map(h => (<Heart key={h.id} className="floating-heart" style={{ left: h.x, top: h.y, color: h.color }} size={24} fill="currentColor" />))}
     </div>
   );
 };

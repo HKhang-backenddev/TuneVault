@@ -63,6 +63,57 @@ public class MediaController : BaseApiController
         return Ok(new { items, total = result.Total, page = result.Page, pageSize = result.PageSize });
     }
 
+    /// <summary>Lấy danh sách nhạc của Admin để hiển thị trên Home của tất cả users.</summary>
+    [HttpGet("admin-songs")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAdminSongs([FromQuery] int pageSize = 50)
+    {
+        try
+        {
+            // Lấy tất cả users có role là Admin
+            var adminIds = _context.Users
+                .Where(u => u.Role == "Admin")
+                .Select(u => u.Id)
+                .ToList();
+
+            if (!adminIds.Any())
+            {
+                return Ok(new { items = new List<object>(), total = 0 });
+            }
+
+            // Lấy nhạc của các admin (sắp xếp theo ngày tạo mới nhất)
+            var adminSongs = _context.MediaItems
+                .Include(m => m.Artist)
+                .Where(m => adminIds.Contains(m.OwnerId))
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(pageSize)
+                .ToList();
+
+            // Map sang DTO
+            var items = adminSongs.Select(song => new
+            {
+                id = song.Id,
+                title = song.Title,
+                artist = song.Artist != null ? song.Artist.Name : "Unknown Artist",
+                artistName = song.Artist?.Name ?? "Unknown Artist",
+                thumbnailUrl = song.ThumbnailUrl ?? "",
+                genre = song.Genre,
+                genreName = song.Genre,
+                durationInSeconds = song.DurationInSeconds,
+                url = song.FilePath,
+                createdAt = song.CreatedAt,
+                isOwner = false,
+                ownerUsername = _context.Users.FirstOrDefault(u => u.Id == song.OwnerId)?.Username ?? "admin"
+            }).ToList();
+
+            return Ok(new { items, total = items.Count });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error fetching admin songs", error = ex.Message });
+        }
+    }
+
     /// <summary>Thư viện cá nhân — chỉ bài hát của user đang đăng nhập.</summary>
     [HttpGet("library")]
     [Authorize]
@@ -151,6 +202,7 @@ public class MediaController : BaseApiController
             Genre = string.IsNullOrWhiteSpace(genre) ? "Pop" : genre,
             OwnerId = userId,
             ArtistId = artistEntity?.Id,
+            Artist = artistEntity,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -158,6 +210,52 @@ public class MediaController : BaseApiController
         await _context.SaveChangesAsync();
 
         return Ok(new { id = mediaItem.Id, message = "Tải lên thành công." });
+    }
+
+    /// <summary>Chỉnh sửa thông tin bài hát (Admin only).</summary>
+    [HttpPut("{id:guid}")]
+    [Authorize]
+    public async Task<IActionResult> UpdateSong(Guid id, [FromBody] UpdateSongRequest request)
+    {
+        var userId = RequireUserId();
+        
+        // Check if user is admin
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null || user.Role != "Admin")
+            return Forbid();
+
+        var media = await _context.MediaItems
+            .Include(m => m.Artist)
+            .FirstOrDefaultAsync(m => m.Id == id);
+            
+        if (media == null)
+            return NotFound(new { message = "Không tìm thấy bài hát." });
+
+        // Update title
+        if (!string.IsNullOrWhiteSpace(request.Title))
+            media.Title = request.Title;
+
+        // Update genre
+        if (!string.IsNullOrWhiteSpace(request.Genre))
+            media.Genre = request.Genre;
+
+        // Update artist
+        if (request.ArtistName != null)
+        {
+            var artist = await GetOrCreateArtistAsync(request.ArtistName);
+            media.ArtistId = artist?.Id;
+            media.Artist = artist;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { 
+            id = media.Id, 
+            title = media.Title,
+            artist = media.Artist?.Name ?? "Nghệ sĩ không xác định",
+            genre = media.Genre,
+            message = "Cập nhật thành công." 
+        });
     }
 
     /// <summary>Lưu bài hát được chia sẻ vào thư viện cá nhân.</summary>
@@ -326,7 +424,7 @@ public class MediaController : BaseApiController
                 id = m.Id,
                 title = m.Title,
                 artist = m.Artist?.Name ?? "Nghệ sĩ không xác định",
-                url = $"/api/media/stream/{m.Id}`",
+                url = $"/api/media/stream/{m.Id}",
                 thumbnailUrl = m.ThumbnailUrl ?? "",
                 durationInSeconds = m.DurationInSeconds,
                 genre = m.Genre,
@@ -356,3 +454,5 @@ public class MediaController : BaseApiController
         return artist;
     }
 }
+
+public record UpdateSongRequest(string? Title = null, string? ArtistName = null, string? Genre = null);
