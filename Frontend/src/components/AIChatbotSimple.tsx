@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
-import api from '../../axios';
+import api from '../axios';
 
 interface Message {
   id: number;

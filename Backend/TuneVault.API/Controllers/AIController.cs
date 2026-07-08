@@ -33,8 +33,11 @@ public class AIController : BaseApiController
             return BadRequest(new { error = "Message is required" });
         }
 
-        var apiKey = _configuration["AI:GroqApiKey"];
-        var model = _configuration["AI:Model"] ?? "llama-3.3-70b-versatile";
+        var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") 
+                     ?? _configuration["AI:GroqApiKey"];
+        var model = Environment.GetEnvironmentVariable("GROQ_MODEL") 
+                    ?? _configuration["AI:Model"] 
+                    ?? "llama-3.3-70b-versatile";
 
         if (string.IsNullOrEmpty(apiKey))
         {
