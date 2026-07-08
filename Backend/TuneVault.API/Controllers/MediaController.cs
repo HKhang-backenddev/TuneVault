@@ -100,7 +100,7 @@ public class MediaController : BaseApiController
                 genre = song.Genre,
                 genreName = song.Genre,
                 durationInSeconds = song.DurationInSeconds,
-                url = song.FilePath,
+                url = $"/api/media/stream/{song.Id}",
                 createdAt = song.CreatedAt,
                 isOwner = false,
                 ownerUsername = _context.Users.FirstOrDefault(u => u.Id == song.OwnerId)?.Username ?? "admin"
