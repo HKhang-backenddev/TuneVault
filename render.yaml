@@ -50,11 +50,10 @@ services:
           type: web
           property: hostport
 
-  # Database - PostgreSQL (Free 90 days)
-  - type: pserv
-    name: tunevault-db
-    runtime: postgresql
-    plan: free
-    region: singapore
+databases:
+  # PostgreSQL Database (Free 90 days)
+  - name: tunevault-db
     databaseName: tunevault
     user: tunevault_user
+    plan: free
+    region: singapore
