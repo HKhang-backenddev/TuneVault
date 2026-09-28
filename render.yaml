@@ -28,10 +28,6 @@ services:
         value: /var/data/media
       - key: Storage__ProfilePath
         value: /var/data/profile
-    disk:
-      name: tunevault-media
-      mountPath: /var/data
-      sizeGB: 1
 
   # Frontend - React + Vite Static Site
   - type: web
@@ -41,7 +37,6 @@ services:
     staticPublishPath: Frontend/dist
     env: production
     plan: free
-    region: singapore
     branch: main
     envVars:
       - key: VITE_API_URL
