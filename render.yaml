@@ -1,0 +1,60 @@
+services:
+  # Backend API - .NET 8 Web API
+  - type: web
+    name: tunevault-api
+    runtime: docker
+    dockerfilePath: ./Backend/TuneVault.API/Dockerfile
+    env: production
+    plan: free
+    region: singapore
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://*:10000
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: tunevault-db
+          property: connectionString
+      - key: Jwt__SecretKey
+        generateValue: true
+      - key: Jwt__Issuer
+        value: TuneVault
+      - key: Jwt__Audience
+        value: TuneVaultUsers
+      - key: Storage__MediaPath
+        value: /var/data/media
+      - key: Storage__ProfilePath
+        value: /var/data/profile
+    disk:
+      name: tunevault-media
+      mountPath: /var/data
+      sizeGB: 1
+
+  # Frontend - React + Vite Static Site
+  - type: web
+    name: tunevault-frontend
+    runtime: static
+    buildCommand: cd Frontend && npm ci && npm run build
+    staticPublishPath: Frontend/dist
+    env: production
+    plan: free
+    region: singapore
+    branch: main
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: tunevault-api
+          type: web
+          property: hostport
+
+  # Database - PostgreSQL (Free 90 days)
+  - type: pserv
+    name: tunevault-db
+    runtime: postgresql
+    plan: free
+    region: singapore
+    databaseName: tunevault
+    user: tunevault_user

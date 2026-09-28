@@ -52,3 +52,39 @@ npm install //neu chua cai dat
 npm run dev
 ```
 4. Mở trình duyệt và truy cập http://localhost:5173. Frontend sẽ tự động kết nối với Backend đang chạy online.
+
+---
+
+## 🚀 Deploy trên Render (Free)
+
+Dự án đã cấu hình sẵn **Infrastructure as Code** với `render.yaml` để deploy toàn bộ stack lên Render miễn phí.
+
+### Kiến trúc deploy
+
+| Service | Loại | Plan |
+|---------|------|------|
+| **Backend API** | Web Service (Docker) | Free |
+| **Frontend** | Static Site | Free |
+| **Database** | PostgreSQL | Free (90 ngày) |
+| **File Storage** | Persistent Disk 1GB | Free |
+
+### Cách deploy
+
+1. **Fork/Clone repo này**
+2. Vào [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint**
+3. Connect GitHub repo → **Apply**
+4. Render tự động tạo 3 services + database + disk
+
+### Environment Variables (tự động)
+
+- `VITE_API_URL` → Frontend tự trỏ đến Backend URL
+- `ConnectionStrings__DefaultConnection` → Tự connect PostgreSQL
+- `Jwt__SecretKey` → Auto-generate secure key
+- `Storage` paths → Gán vào Persistent Disk `/var/data`
+
+### Lưu ý Free Tier
+
+- **Web Service**: Sleep sau 15p idle (cold start ~30-60s)
+- **PostgreSQL**: Free 90 ngày → Sau đó migrate sang [Neon.tech](https://neon.tech) (free forever)
+- **Disk**: 1GB cho media upload
+- **Bandwidth**: 100GB/tháng cho Static Site
